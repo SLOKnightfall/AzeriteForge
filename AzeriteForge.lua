@@ -161,18 +161,64 @@ local function validTrait(traitID)
 	end
 end
 
+local sortTable = {}
 local function getTraitRanking(traitID, locationID)
 	if not traitRanks[traitID] then return false  end
 
+	local itemLevel = 0
+	local itemLink = nil
 	local rank = 0
-	local  _, stackedRank = AzeriteForge:FindStackedTraits(traitID, locationID, SelectedAzeriteTraits)
-	local maxRank = 1
- 
-	for index, itemrank in pairs(traitRanks[traitID]) do
-		maxRank = itemrank
+	local bag, slot = locationID:GetBagAndSlot()
+	if locationID.equipmentSlotIndex then
+		itemLink = GetInventoryItemLink("player", locationID.equipmentSlotIndex)
+
+	elseif bag and slot then
+		itemLink = GetContainerItemLink(bag, slot)
+
 	end
 
-	rank = traitRanks[traitID][stackedRank + 1] or maxRank
+	if itemLink then
+		 _, _, _, itemLevel = GetItemInfo(itemLink)
+	end
+
+	local ItemLocation = AzeriteLocations[locationID] or AzeriteLocations[locationID.equipmentSlotIndex] or locationID
+
+
+	if #traitRanks[traitID] >0 then
+		rank = 0
+		local  _, stackedRank = AzeriteForge:FindStackedTraits(traitID, locationID, SelectedAzeriteTraits)
+		local maxRank = 1
+	 
+		for index, itemrank in pairs(traitRanks[traitID]) do
+			maxRank = itemrank
+		end
+
+		rank = traitRanks[traitID][stackedRank + 1] or maxRank
+
+
+	else
+		rank = itemLevel
+		sortTable = {}
+		for id, data in pairs(traitRanks[traitID]) do
+			tinsert(sortTable, id)
+		end
+
+		table.sort(sortTable, function(a,b) return a < b  end)
+
+		for index, ilevel in pairs(sortTable) do
+			if itemLevel <= ilevel then
+				break
+
+			end
+			rank = ilevel
+		end
+		if rank <= sortTable[1] then
+			rank = sortTable[1]
+
+		end
+
+		rank = traitRanks[traitID][rank]	
+	end
 
 	return rank
 end
@@ -194,8 +240,6 @@ local function openLocation(itemLocation)
 end
 
 
-
-
 ---------
 
 local options = {
@@ -203,25 +247,47 @@ local options = {
     handler = AzeriteForge,
     type = "group",
     args = {
-        debug = {
-            type = "execute",
-            name = "Debug",
-            func = function()
-		local debugger = GetDebugger()
+	debug = {
+		type = "execute",
+		name = "Debug",
+		func = function()
+			local debugger = GetDebugger()
 
-		if debugger:Lines() == 0 then
-			debugger:AddLine("Nothing to report.")
+			if debugger:Lines() == 0 then
+				debugger:AddLine("Nothing to report.")
+				debugger:Display()
+				debugger:Clear()
+				return
+			end
 			debugger:Display()
-			debugger:Clear()
-			return
-		end
-
-		debugger:Display()
-	end,
-
-        },
-
-    },
+			end,
+		},
+	resetStacking = {
+		type = "execute",
+		name = L["Reset Default Data with Stacking Data"],
+		func = function()
+			TraitDB = TraitDB or {}
+			TraitDB[specid] = loadDefaultData("StackData")-- StackData
+			traitRanks = TraitDB[specid]
+			end,	
+		},
+	resetIlevel = {
+		type = "execute",
+		name = L["Reset Default Data with iLevel Data"],
+		func = function()
+			TraitDB = TraitDB or {}
+			TraitDB[specid] = loadDefaultData("iLevelData")-- StackData
+			traitRanks = TraitDB[specid]
+			end,
+			
+		},
+	showMapicon = {
+		type = "toggle",
+		name = L["Show Minimap Icon"],
+		set = function(info,val) AzeriteForge.db.profile.showMapicon = val end,
+		get = function(info) return AzeriteForge.db.profile.showMapicon end
+		},
+	},
 }
 
 
@@ -234,17 +300,14 @@ local talent_options = {
 	options={
 			name = "Options",
 			type = "group",
-			--hidden = true,
 			args={
 				Topheader = {
 					order = 0,
 					type = "header",
 					name = "AzeriteForge",
-
 				},
 				search = {
-					name = " ",
-					--desc = GetSpellDescription(azeriteTraits[traitID].spellID),
+					name = "",
 					type = "input",
 					width = "full",
 					order = .01,
@@ -256,48 +319,7 @@ local talent_options = {
 					order = 0.2,
 					type = "description",
 					name = "\n",
-
 				},
-
-
-			},
-		},
-	},
-}
-
-local talent_options = {
-    name = "AzeriteForge_Talents",
-    handler = AzeriteForge,
-    type = 'group',
-    args = {
-	options={
-			name = "Options",
-			type = "group",
-			--hidden = true,
-			args={
-				Topheader = {
-					order = 0,
-					type = "header",
-					name = "AzeriteForge",
-
-				},
-				search = {
-					name = " ",
-					--desc = GetSpellDescription(azeriteTraits[traitID].spellID),
-					type = "input",
-					width = "full",
-					order = .01,
-					set = function(info,val) searchbar = val end,
-					get = function(info) return searchbar end
-					},
-
-				filler1 = {
-					order = 0.2,
-					type = "description",
-					name = "\n",
-
-				},
-
 
 			},
 		},
@@ -305,7 +327,6 @@ local talent_options = {
 	stats = {
 		name = "Stats",
 		type = "group",
-		--hidden = true,
 		args={	
 			Topheader = {
 				order = 0,
@@ -321,13 +342,11 @@ local talent_options = {
 				order = 3,
 				type = "header",
 				name = L["Shoulder Powers"],
-
 				},
 			chestHeader = {
 				order = 5,
 				type = "header",
 				name = L["Chest Powers"],
-
 				},
 			},
 		},
@@ -336,9 +355,7 @@ local talent_options = {
 }
 local DB_DEFAULTS = {
     profile = {
-        notification = {
-            sink = {},
-        },
+	showMapicon = true,
         debugPrint = false,
     },
     global = {
@@ -414,19 +431,18 @@ end
 
 
 function AzeriteForge:OnInitialize()
-	self.db = LibStub("AceDB-3.0"):New("AzeriteForgeDB", DB_DEFAULTS, true)
 
-	LibStub("AceConfig-3.0"):RegisterOptionsTable("AzeriteForge_Talents", talent_options)
-
-
-	LibStub("AceConfig-3.0"):RegisterOptionsTable("AzeriteForge", options)
-	self:RegisterChatCommand("az", "ChatCommand")
-	self:RegisterChatCommand("azeriteforge", "ChatCommand")
 
 end
 
 
 function AzeriteForge:OnEnable()
+	self.db = LibStub("AceDB-3.0"):New("AzeriteForgeDB", DB_DEFAULTS, true)
+	LibStub("AceConfig-3.0"):RegisterOptionsTable("AzeriteForge_Talents", talent_options)
+	LibStub("AceConfig-3.0"):RegisterOptionsTable("AzeriteForge", options)
+	self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("AzeriteForge", "AzeriteForge")
+	self:RegisterChatCommand("az", "ChatCommand")
+	self:RegisterChatCommand("azeriteforge", "ChatCommand")
     -- Called when the addon is enabled
     
 	globalDb = self.db.global
@@ -546,7 +562,8 @@ end
 
 --Looks to see if an Azerite ability is on other gear pieces
 function AzeriteForge:FindStackedTraits(powerID, locationID, traitList)
-	local ItemLocation = AzeriteLocations[locationID]
+
+	local ItemLocation = AzeriteLocations[locationID] or AzeriteLocations[locationID.equipmentSlotIndex] or locationID
 	local foundLocations = nil
 	local count = 0
 	for location, data in pairs(traitList) do
@@ -808,6 +825,7 @@ local RespecCost = C_AzeriteEmpoweredItem.GetAzeriteEmpoweredItemRespecCost()
 	f:SetScript("OnLeave", function()GameTooltip:Hide() end)
 end
 
+
 local function CreateImportFrame()
 	local AceGUI = LibStub("AceGUI-3.0")
 	-- Create a container frame
@@ -867,7 +885,7 @@ local function CreateCharacterFrameTabs()
 		end
 
 		if CharacterFrame:IsShown() then
-			CharacterFrame:Hide()
+			--CharacterFrame:Hide()
 
 		end
 	end)
@@ -1138,7 +1156,7 @@ function AzeriteEmpoweredItemPowerMixin:OnEnter()
 		local itemLevel = item:GetCurrentItemLevel();
 		local itemLink = item:GetItemLink();
 		local location = self.azeriteItemDataSource:GetItemLocation()
-		local duplicateLocations = AzeriteForge:FindStackedTraits(self:GetAzeritePowerID(),location.equipmentSlotIndex,SelectedAzeriteTraits)
+		local duplicateLocations = AzeriteForge:FindStackedTraits(self:GetAzeritePowerID(),location,SelectedAzeriteTraits)
 		GameTooltip:SetAzeritePower(itemID, itemLevel, self:GetAzeritePowerID(), itemLink);
 
 		if self:CanBeSelected() then
@@ -1240,8 +1258,8 @@ function AzeriteEmpoweredItemPowerMixin:OnShow()
 			DB = AvailableAzeriteTraits
 		end
 
-		local _,DuplicateTriaits = AzeriteForge:FindStackedTraits(self:GetAzeritePowerID(),location.equipmentSlotIndex, DB)
-		local traitRank = getTraitRanking(self:GetAzeritePowerID(),location.equipmentSlotIndex, DB)
+		local _,DuplicateTriaits = AzeriteForge:FindStackedTraits(self:GetAzeritePowerID(),location, DB)
+		local traitRank = getTraitRanking(self:GetAzeritePowerID(),location, DB)
 
 		if traitRank and self.TraitRank then --and HasAnyUnselectedPowers then 
 			self.AdditionalTraits:SetPoint("CENTER",0,20)

@@ -13,6 +13,13 @@ L["Toggle Chest Azerite Panel"] = true
 L["Head Powers"] = true
 L["Shoulder Powers"] = true
 L["Chest Powers"] = true
+
+L["Reset Default Data with Stacking Data"] = true
+L["Reset Default Data with iLevel Data"] = true
+L["Show Minimap Icon"] = true
 --@end-do-not-package@
+
+
+
 
 --@localization(locale="enUS", format="lua_additive_table")@

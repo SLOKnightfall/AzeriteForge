@@ -17,6 +17,11 @@ L["Chest Powers"] = true
 L["Reset Default Data with Stacking Data"] = true
 L["Reset Default Data with iLevel Data"] = true
 L["Show Minimap Icon"] = true
+L["Tooltip Settings"]= true
+L["Show current spec traits"]= true
+L["Icons only"] = true
+L["Enhanced Tooltips"] =  true
+
 --@end-do-not-package@
 
 

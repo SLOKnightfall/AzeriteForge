@@ -1,5 +1,5 @@
 ## Interface: 80000
-## Notes: Info on all things Azerite
+## Notes: Azerite Trait Weights and other Azerite information
 ## Title: AzeriteForge v.@project-version@
 ## Author: SLOKnightfall
 ## X-Category: 
@@ -8,14 +8,12 @@
 ## OptionalDeps: 
 ## X-Gatherer-Plugin-Name: AzeriteForge
 ## X-Gatherer-Plugin-Type: 
-
 ## SavedVariables: AzeriteForgeDB
 
 #Libraries
 Libs\LibStub-1.0\LibStub.lua
 Libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
 Libs\AceAddon-3.0\AceAddon-3.0.xml
-Libs\AceBucket-3.0\AceBucket-3.0.xml
 Libs\AceGUI-3.0\AceGUI-3.0.xml
 Libs\AceConfig-3.0\AceConfig-3.0.xml
 Libs\AceConsole-3.0\AceConsole-3.0.xml
@@ -24,12 +22,9 @@ Libs\AceDBOptions-3.0\AceDBOptions-3.0.xml
 Libs\AceEvent-3.0\AceEvent-3.0.xml
 Libs\AceLocale-3.0\AceLocale-3.0.xml
 Libs\AceHook-3.0\AceHook-3.0.xml
-Libs\AceSerializer-3.0\AceSerializer-3.0.xml
-Libs\MSA-DropDownMenu-1.0\MSA-DropDownMenu-1.0.xml
 Libs\LibTextDump-1.0\LibTextDump-1.0.lua
 Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
 Libs\LibDBIcon-1.0\LibDBIcon-1.0.lua
-Libs\LibSink-2.0\LibSink-2.0\lib.xml
 
 #Localization
 Localization\localization-enUS.lua
@@ -44,7 +39,7 @@ Localization\localization-ruRU.lua
 Localization\localization-zhCN.lua
 Localization\localization-zhTW.lua
 
-#Core
 
+#Core
 TraitData.lua
 AzeriteForge.lua

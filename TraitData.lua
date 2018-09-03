@@ -1,6 +1,6 @@
 --Data Obtained from https://raw.githubusercontent.com/herotc/bfa.herodamage.com/master/src/assets/wow-data/raw/AzeritePower.jsonlocal AzeriteForge = LibStub("AceAddon-3.0"):GetAddon("AzeriteForge")
 --Data Obtained from https://raw.githubusercontent.com/herotc/bfa.herodamage.com/master/static/reports/
-AzeriteForge = LibStub("AceAddon-3.0"):NewAddon("AzeriteForge", "AceConsole-3.0", "AceEvent-3.0",  "LibSink-2.0","AceBucket-3.0", "AceHook-3.0","AceSerializer-3.0")
+AzeriteForge = LibStub("AceAddon-3.0"):NewAddon("AzeriteForge", "AceConsole-3.0", "AceEvent-3.0", "AceHook-3.0")
 
 
 AzeriteForge.StackData = {

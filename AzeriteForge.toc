@@ -45,5 +45,6 @@ Localization\localization-zhCN.lua
 Localization\localization-zhTW.lua
 
 #Core
+
 TraitData.lua
 AzeriteForge.lua

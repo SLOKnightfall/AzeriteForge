@@ -1583,6 +1583,7 @@ local function CreateAzeriteDataFrame()
 
 	headSlotButton:SetScript("OnClick", function(self, button, down)
 		AF.ShowEmpoweredItem(AzeriteLocations["Head"])
+		AzeriteForge.Bag:Hide()
 
 		end)
 
@@ -1605,6 +1606,7 @@ local function CreateAzeriteDataFrame()
 	shoulderSlotButton:SetHeight(45)
 	shoulderSlotButton:SetScript("OnClick", function(self, button, down)
 		AF.ShowEmpoweredItem(AzeriteLocations["Shoulder"])
+		AzeriteForge.Bag:Hide()
 
 	end)
 
@@ -1634,6 +1636,7 @@ local function CreateAzeriteDataFrame()
 	chestSlotButton:SetHeight(45)
 	chestSlotButton:SetScript("OnClick", function(self, button, down)
 		AF.ShowEmpoweredItem(AzeriteLocations["Chest"])
+		AzeriteForge.Bag:Hide()
 	end)
 
 	chestSlotButton:SetScript("OnEnter", function(self)
@@ -1654,7 +1657,7 @@ local function CreateAzeriteDataFrame()
 
 	local characterButton = CreateFrame("Button", nil , AzeriteEmpoweredItemUI,MainMenuBarMicroButton)
 	buttons.characterButton = characterButton
-	characterButton:SetNormalTexture("Interface\\Icons\\inv_tailoring_hexweavebag")
+	characterButton:SetNormalTexture(azeriteIcon)
 	characterButton.texture = characterButton:CreateTexture("AZF_CharacterButton_Texture", "OVERLAY")
 	characterButton.texture:SetAllPoints()
 	characterButton.texture:SetColorTexture(1, 1, 1, 0.5)

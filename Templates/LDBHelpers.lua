@@ -151,10 +151,11 @@ function AF.setLDBItems(location)
 	local locationID = locationIDs[location]
 	local itemID =  GetInventoryItemID("player", locationID)
 	local HasAnyUnselectedPowers = false
-
-	if itemID then 
+	local azeriteLocation = ItemLocation:CreateFromEquipmentSlot(locationID)
+	local isAzeriteItem = C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItem(azeriteLocation)
+	if isAzeriteItem then 
 		itemName, itemLink, _, _, _, _, _, _,_, itemIcon  = GetItemInfo(itemID)
-		HasAnyUnselectedPowers = C_AzeriteEmpoweredItem.HasAnyUnselectedPowers(AzeriteLocations[location])
+		HasAnyUnselectedPowers = C_AzeriteEmpoweredItem.HasAnyUnselectedPowers(azeriteLocation)
 	end
 
 	if HasAnyUnselectedPowers then itemName = "*"..itemName.."*" end

@@ -44,8 +44,6 @@ local function OpenToBestEmpoweredLocation()
 	end
 end
 
-
-
 --LDB handlers
 local AzeriteForgeInfoLDB = LibStub("LibDataBroker-1.1"):NewDataObject("AzeriteForge", {
 	type = "data source",
@@ -56,25 +54,25 @@ local AzeriteForgeInfoLDB = LibStub("LibDataBroker-1.1"):NewDataObject("AzeriteF
 			LibStub("AceConfigDialog-3.0"):Open("AzeriteForge")
 		elseif (button == "LeftButton") then
 			--AF.ShowEmpoweredItem(AzeriteLocations["Head"])
-OpenToBestEmpoweredLocation()
+			OpenToBestEmpoweredLocation()
 		end
 	end,})
 
 AF.AzeriteForgeInfoLDB = AzeriteForgeInfoLDB
 
-
 function AzeriteForgeInfoLDB:OnTooltipShow()
-	AF.BuildAzeriteInfoTooltip(GameTooltip)
+	AF.BuildAzeriteInfoTooltip(self)
 end
+
 
 function AzeriteForgeInfoLDB:OnEnter()
 	GameTooltip:SetOwner(self, "ANCHOR_NONE")
 	GameTooltip:SetPoint("TOPLEFT", self, "BOTTOMLEFT")
 	GameTooltip:ClearLines()
-	--AF:BuildAzeriteInfoTooltip(self)
 	AzeriteForgeInfoLDB.OnTooltipShow(GameTooltip)
 	GameTooltip:Show()
 end
+
 
 function AzeriteForgeInfoLDB:OnLeave()
 	GameTooltip:Hide()

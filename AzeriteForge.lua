@@ -584,46 +584,44 @@ local function UpdateWeeklyQuest()
 	local questID = C_IslandsQueue.GetIslandsWeeklyQuestID();
 	
 	local _, _, _, WeeklyGain, WeeklyRequired = GetQuestObjectiveInfo(questID, 1, false);
-	WeeklyQuestGain = WeeklyGain
-	WeeklyQuestRequired = WeeklyRequired
+	WeeklyQuestGain = WeeklyGain or 0
+	WeeklyQuestRequired = WeeklyRequired or 0
 end
 
 
 
 function AF:OnInitialize()
-
-end
-
-
-function AF:OnEnable()
 	self.db = LibStub("AceDB-3.0"):New("AzeriteForgeDB", DB_DEFAULTS, true)
 	LibStub("AceConfig-3.0"):RegisterOptionsTable("AzeriteForge_Talents", talent_options)
 	LibStub("AceConfig-3.0"):RegisterOptionsTable("AzeriteForge", options)
 	self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("AzeriteForge", "AzeriteForge")
-	--("AzeriteForge_Talents", widget, "stats")
-	self:RegisterChatCommand("az", "ChatCommand")
-	self:RegisterChatCommand("azeriteforge", "ChatCommand")
-    -- Called when the addon is enabled
-    
 	globalDb = self.db.global
 	configDb = self.db.profile
 	Config = self.db.profile
 	AzeriteForgeDB.SavedSpecData = AzeriteForgeDB.SavedSpecData or {}
 	AzeriteForgeDB.SavedSpecData[specID] = traitRanks
-	
-    	self:RegisterEvent("AZERITE_ITEM_EXPERIENCE_CHANGED")
+
+end
+
+
+function AF:OnEnable()
+	self:RegisterChatCommand("az", "ChatCommand")
+	self:RegisterChatCommand("azeriteforge", "ChatCommand")
+
+	self:RegisterEvent("AZERITE_ITEM_EXPERIENCE_CHANGED")
 	self:RegisterEvent("AZERITE_ITEM_POWER_LEVEL_CHANGED")
 	self:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
 	self:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
+	self:RegisterEvent("PLAYER_ENTERING_WORLD")
 
 	AzeriteForgeMiniMap:Register("AzeriteForgeMini", AF.AzeriteForgeInfoLDB, Config.MMDB)
 	AzeriteForge.MinimapIcon = AzeriteForgeMiniMap:GetMinimapButton("AzeriteForgeMini")
+
 	spec = GetSpecialization()
 	specID = GetSpecializationInfo(spec) 
 	className, classFile, classID = UnitClass("player")
 
 	AF:CreateFrames()
-
 	AF:BuildAzeriteDataTables()
 	AF:GetAzeriteData()
 	AF:GetAzeriteTraits()
@@ -640,6 +638,9 @@ function AF:OnEnable()
 --AF:RawHook(AzeriteEmpoweredItemPowerMixin,"OnEnter",true) 
 end
 
+function AF:PLAYER_ENTERING_WORLD()
+end
+
 
 function AF:OnDisable()
     -- Called when the addon is disabled
@@ -648,7 +649,7 @@ end
 
 function AF:PLAYER_EQUIPMENT_CHANGED(event, ...)
 	local InventorySlotId = ...
-	if InventorySlotId == 1 or InventorySlotId == 3 or InventorySlotId == 5 then
+	if InventorySlotId == INVSLOT_HEAD or InventorySlotId == 3 or InventorySlotId == 5 then
 		AF:GetAzeriteTraits()
 		AF:GetAzeriteData()
 	AF:GetAzeriteTraits()
@@ -833,7 +834,7 @@ function AF:BuildAzeriteDataTables()
 end
 
 
-
+--Handler to import AzeriteForge export strings
 local function AZForgeImport(data)
 	wipe(traitRanks)
 	ClearDebugger()
@@ -843,8 +844,6 @@ local function AZForgeImport(data)
 		for traitID, rankData in string.gmatch(traitData,"%[(%w+)%](.+)") do
 			traitRanks[tonumber(traitID)] = traitRanks[tonumber(traitID)] or {}
 			for id, rank in string.gmatch(rankData,"(%w+):(%p?%w+),") do
-				
---Debug(traitID.."/"..id.."/"..rank)
 				traitRanks[tonumber(traitID)][tonumber(id)] = tonumber(rank)
 			end
 		end
@@ -874,6 +873,8 @@ local pvpPairs = { -- Used for Exporting/Importing. These powers have same effec
 	[496] = -6,
 	[497] = -6
 }
+
+--Inserts data from AzeritePowerWeights export strings
 local function insertCustomScalesData(classIndex, specID, powerData) -- Inser into table
 	local t = {}
 	if powerData and powerData ~= "" then -- String to table
@@ -901,8 +902,8 @@ local function insertCustomScalesData(classIndex, specID, powerData) -- Inser in
 end
 
 
+--Processes AzeritePowerWeights export strings
 local function AzeritePowerWeightsImport(data)
-
 		local player_spec = GetSpecialization()
 		local player_specID = GetSpecializationInfo(spec)
 		local template = "^%s*%(%s*AzeritePowerWeights%s*:%s*(%d+)%s*:%s*\"([^\"]+)\"%s*:%s*(%d+)%s*:%s*(%d+)%s*:%s*(.+)%s*%)%s*$"
@@ -919,7 +920,6 @@ local function AzeritePowerWeightsImport(data)
 			return false
 		end
 
-	
 		if type(classID) ~= "number" or classID < 1 or type(specID) ~= "number" or specID < 1 then -- No class or no spec, this really shouldn't happen ever
 			--Print(L.ImportPopup_Error_MalformedString)
 		else -- Everything seems to be OK
@@ -935,7 +935,6 @@ end
 --Multiple traits can be imported if seperated by commas and only one Rank is needed
 function AF:ImportData(data)
 	if not data then return end
-
 
 	local validAddons = {"AZFORGE", "AzeritePowerWeights"}
 	local exportAddon = false
@@ -988,6 +987,7 @@ function AF:TextGetter(traitID)
 	return text 
 end
 
+
 function AF:ParseText(traitID, val)
 	local text = {string.split(",",val)}
 
@@ -1004,8 +1004,6 @@ function AF:ParseText(traitID, val)
 		traitRanks[traitID] = text
 	end
 end
-
-
 
 
 function AF.loadDefaultData(DB)
@@ -1025,7 +1023,6 @@ function AF.loadDefaultData(DB)
 	end
 	return traitRanks
 end
-
 
 
 --loads defaults into saved variables table
@@ -1060,14 +1057,11 @@ local function findItemLocation(itemLink)
 		for j = 1, GetContainerNumSlots(i) do
 			local _, _, _, _, _, _, link = GetContainerItemInfo(i, j);
 			if link == itemLink then 
-			return i, j
+				return i, j
 			end
-
 		end
 	end
 	return false
-
-
 end
 
 

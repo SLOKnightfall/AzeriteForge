@@ -3,7 +3,7 @@
 ## Title: AzeriteForge v.@project-version@
 ## Author: SLOKnightfall
 ## X-Category: 
-## X-Email:
+## X-Email: SLOKnightfall@gmail.com
 ## Version:@project-version@
 ## OptionalDeps: 
 ## X-Gatherer-Plugin-Name: AzeriteForge

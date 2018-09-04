@@ -17,15 +17,15 @@ local AF = AzeriteForge
 
 local BagScrollFrame
 AF.BagScrollFrame = BagScrollFrame
-local currentXp, currentMaxXp, startXp
-local currentLevel, startLevel
-local lastXpGain=0
+local currentXp, currentMaxXp, startXp =  0, 0 , 0 
+local currentLevel, startLevel = 0 , 0 
+local lastXpGain = 0
 local azeriteItemLocation
 local azeriteIcon = "Interface/Icons/Inv_smallazeriteshard"
 local azeriteItemIcon = azeriteIcon
 local COLOR_GREEN  = CreateColor(0.1, 0.8, 0.1, 1)
-local spec = "nil"
-local specID  = "nil"
+local spec = 0
+local specID  = 0
 local className, classFile, classID
 local UnselectedPowersCount = 0
 
@@ -307,7 +307,7 @@ local options = {
 				order = 1,
 				width = "double",
 				func = function()
-					traitRanks = loadDefaultData("StackData")-- StackData
+					traitRanks = AF.loadDefaultData("StackData")-- StackData
 					AzeriteForgeDB.SavedSpecData[specID] = traitRanks
 					end,	
 				},
@@ -317,7 +317,7 @@ local options = {
 				order = 2,
 				width = "double",
 				func = function()
-					traitRanks = loadDefaultData("iLevelData")-- StackData
+					traitRanks = AF.loadDefaultData("iLevelData")-- StackData
 					AzeriteForgeDB.SavedSpecData[specID] = traitRanks
 					end,
 					
@@ -760,7 +760,7 @@ function AF:GetAzeriteLocationTraits(location)
 
 	local allTierInfo = C_AzeriteEmpoweredItem.GetAllTierInfo(locationData)
 
-	if not allTierInfo[1]["azeritePowerIDs"][1] then return end
+	if not allTierInfo then return end
 
 	for j in ipairs(allTierInfo) do
 		local tierLevel = allTierInfo[j]["unlockLevel"]
@@ -833,14 +833,10 @@ function AF:BuildAzeriteDataTables()
 end
 
 
---Imports text data into the traitsRanks Table
---Data format is ["localized trait name" or trait id, Rank1, Rank2, Rank3],
---Multiple traits can be imported if seperated by commas and only one Rank is needed
-function AF:ImportData(data)
-	if not data then return end
+
+local function AZForgeImport(data)
 	wipe(traitRanks)
 	ClearDebugger()
-
 	local traits = {string.split("^",data )}
 
 	for i, traitData in ipairs(traits) do
@@ -853,6 +849,116 @@ function AF:ImportData(data)
 			end
 		end
 	end
+	print("Importing AzeriteForge data")
+end
+
+
+
+--modified code from AzeritePowerWeights
+local reallyBigNumber = 2^31 - 1 -- 2147483647, go over this and errors are thrown
+
+local pvpPairs = { -- Used for Exporting/Importing. These powers have same effects, but are different powers
+	-- Horde
+	[486] = 6,
+	[487] = 6,
+	[488] = 6,
+	[489] = 6,
+	[490] = 6,
+	[491] = 6,
+
+	-- Alliance
+	[492] = -6,
+	[493] = -6,
+	[494] = -6,
+	[495] = -6,
+	[496] = -6,
+	[497] = -6
+}
+local function insertCustomScalesData(classIndex, specID, powerData) -- Inser into table
+	local t = {}
+	if powerData and powerData ~= "" then -- String to table
+		for _, weight in pairs({ strsplit(",", powerData) }) do
+			local azeritePowerID, value = strsplit("=", strtrim(weight))
+			azeritePowerID = tonumber(azeritePowerID) or nil
+			value = tonumber(value) or nil
+
+			traitRanks[azeritePowerID] = traitRanks[azeritePowerID] or {}
+
+			if azeritePowerID and value and value > 0 then
+				value = value > reallyBigNumber and reallyBigNumber or value
+
+				tinsert(traitRanks[azeritePowerID],  value)
+
+				if pvpPairs[azeritePowerID] then -- Mirror PvP Powers for both factions
+					local pvpID = azeritePowerID + pvpPairs[azeritePowerID]
+					traitRanks[pvpID] = traitRanks[pvpID] or {}
+					tinsert(traitRanks[pvpID],  value)
+				end
+			end
+		end
+	end
+
+end
+
+
+local function AzeritePowerWeightsImport(data)
+
+		local player_spec = GetSpecialization()
+		local player_specID = GetSpecializationInfo(spec)
+		local template = "^%s*%(%s*AzeritePowerWeights%s*:%s*(%d+)%s*:%s*\"([^\"]+)\"%s*:%s*(%d+)%s*:%s*(%d+)%s*:%s*(.+)%s*%)%s*$"
+
+		local startPos, endPos, stringVersion, scaleName, classID, specID, powerWeights = strfind(data, template)
+		stringVersion = tonumber(stringVersion) or 0
+		scaleName = scaleName or L.ScaleName_Unnamed
+		powerWeights = powerWeights or ""
+		classID = tonumber(classID) or nil
+		specID = tonumber(specID) or nil
+
+		if not specID == player_spec then
+			print("import not for this spec")
+			return false
+		end
+
+	
+		if type(classID) ~= "number" or classID < 1 or type(specID) ~= "number" or specID < 1 then -- No class or no spec, this really shouldn't happen ever
+			--Print(L.ImportPopup_Error_MalformedString)
+		else -- Everything seems to be OK
+			local result = insertCustomScalesData(classID, specID, powerWeights)
+			print("Importing AzeritePowerWeights data")
+		end
+
+end
+
+
+--Imports text data into the traitsRanks Table
+--Data format is ["localized trait name" or trait id, Rank1, Rank2, Rank3],
+--Multiple traits can be imported if seperated by commas and only one Rank is needed
+function AF:ImportData(data)
+	if not data then return end
+
+
+	local validAddons = {"AZFORGE", "AzeritePowerWeights"}
+	local exportAddon = false
+
+	for _, addonName in ipairs(validAddons) do
+		local isfound = strfind(data, addonName)
+
+		if isfound then 
+			exportAddon = addonName
+		end
+	end
+
+	if not exportAddon then print("Not Valid Import Data"); return end
+
+	if exportAddon == "AZFORGE" then 
+
+		AZForgeImport(data)
+
+	elseif exportAddon == "AzeritePowerWeights" then
+
+		AzeritePowerWeightsImport(data)
+	end
+	 AzeriteForge.ImportWindow:Hide()
 end
 
 
@@ -902,8 +1008,16 @@ end
 
 
 
-function loadDefaultData(DB)
+function AF.loadDefaultData(DB)
 	local traitRanks = {}
+	spec = GetSpecialization()
+	specID = GetSpecializationInfo(spec)
+
+	if not AzeriteForge[DB][specID] then
+		Debug("No default data found - possibly healer class")
+		return traitRanks 
+	end
+
 	for name, data in pairs(AzeriteForge[DB][specID]) do	
 		 if AzeriteTraitsName_to_ID[name] then
 			traitRanks[AzeriteTraitsName_to_ID[name]] = data
@@ -916,7 +1030,7 @@ end
 
 --loads defaults into saved variables table
 function AF:LoadClassTraitRanks(DB)
-	traitRanks = AzeriteForgeDB.SavedSpecData[specID] or loadDefaultData("StackData")
+	traitRanks = AzeriteForgeDB.SavedSpecData[specID] or AF.loadDefaultData("StackData")
 	AzeriteForgeDB.SavedSpecData[specID] = traitRanks
 end
 
@@ -957,7 +1071,7 @@ local function findItemLocation(itemLink)
 end
 
 
-function getItemsLocation(link)
+local function getItemsLocation(link)
 
 	for x,y in pairs (locationIDs) do
 		local itemLink = GetInventoryItemLink("player", y)
@@ -1287,10 +1401,12 @@ function AF:CreateImportFrame()
 	local btn = AceGUI:Create("Button")
 	btn:SetWidth(100)
 	btn:SetText(L["Import"])
+	btn:SetCallback("OnClick", function() AF:ImportData(textField:GetText()) end)
 
 	widget:AddChild(btn)
 	btn:ClearAllPoints()
 	btn:SetPoint( "TOPRIGHT", 0,-25)
+	window:SetScript("OnShow", function () textField:SetText("") end)
 	AzeriteForge.ImportWindow = window
 
 end
@@ -1829,7 +1945,7 @@ end
 --Modified blizzard plugins
 
 LoadAddOn("Blizzard_AzeriteUI")
-function AzeriteEmpoweredItemPowerMixin_OnEnter(self,...)
+local function AzeriteEmpoweredItemPowerMixin_OnEnter(self,...)
 	local location = self.azeriteItemDataSource:GetItemLocation()
 	local duplicateLocations = AF:FindStackedTraits(self:GetAzeritePowerID(),location,SelectedAzeriteTraits)
 
@@ -1844,7 +1960,7 @@ AF:SecureHook(AzeriteEmpoweredItemPowerMixin,"OnEnter", AzeriteEmpoweredItemPowe
 
 
 
-function AzeriteEmpoweredItemPowerMixin_Setup(self,...)
+local function AzeriteEmpoweredItemPowerMixin_Setup(self,...)
 
 	local f = self:CreateFontString(nil, "DIALOG", "GameFontNormalHuge3Outline")
 	f:SetTextColor(HIGHLIGHT_FONT_COLOR:GetRGB())
@@ -1864,7 +1980,7 @@ end
 AF:SecureHook(AzeriteEmpoweredItemPowerMixin,"Setup", AzeriteEmpoweredItemPowerMixin_Setup)
 
 
-function AzeriteEmpoweredItemPowerMixin_Reset(self)
+local function AzeriteEmpoweredItemPowerMixin_Reset(self)
 	if self.AdditionalTraits then
 		self.AdditionalTraits:Hide()
 		self.TraitRank:Hide()
@@ -1898,7 +2014,7 @@ local function UpdateValues(location)
 end
 
 
-function AzeriteEmpoweredItemPowerMixin_OnShow(self,...)
+local function AzeriteEmpoweredItemPowerMixin_OnShow(self,...)
 	if self.azeriteItemDataSource then 
 		local location = self.azeriteItemDataSource:GetItemLocation()
 		local HasAnyUnselectedPowers = C_AzeriteEmpoweredItem.HasAnyUnselectedPowers(location)

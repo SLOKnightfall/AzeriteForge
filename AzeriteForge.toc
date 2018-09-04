@@ -39,7 +39,11 @@ Localization\localization-ruRU.lua
 Localization\localization-zhCN.lua
 Localization\localization-zhTW.lua
 
+#Templates
+Templates\AceGUIWidgets.lua
+
 
 #Core
 TraitData.lua
 AzeriteForge.lua
+Templates\LDBHelpers.lua

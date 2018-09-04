@@ -13,9 +13,10 @@ AzeriteForge = LibStub("AceAddon-3.0"):GetAddon("AzeriteForge")
 local L = LibStub("AceLocale-3.0"):GetLocale("AzeriteForge")
 AzeriteForgeMiniMap = LibStub("LibDBIcon-1.0")
 local AceGUI = LibStub("AceGUI-3.0")
+local AF = AzeriteForge
 
 local BagScrollFrame
-
+AF.BagScrollFrame = BagScrollFrame
 local currentXp, currentMaxXp, startXp
 local currentLevel, startLevel
 local lastXpGain=0
@@ -27,7 +28,6 @@ local spec = "nil"
 local specID  = "nil"
 local className, classFile, classID
 local UnselectedPowersCount = 0
-local currentOpenLocation = nil
 
 local bagDataStorage = {}
 
@@ -36,6 +36,8 @@ local configDb
 local WeeklyQuestGain = 0
 local WeeklyQuestRequired = 0
 local searchbar = nil
+
+
 local UnselectedLocationTraits = {}
 local azeriteTraits = {}
 local traitRanks = {}
@@ -50,11 +52,7 @@ local AzeriteLocations = {["Head"] = ItemLocation:CreateFromEquipmentSlot(1),
 			[1] = "Head",
 			[3] = "Shoulder",
 			[5] = "Chest",}
-
-local locationIDs = {["Head"] =1,
-			["Shoulder"] = 3, 
-			["Chest"]= 5,}
-
+local locationIDs = {["Head"] = 1, ["Shoulder"] = 3, ["Chest"] = 5,}
 local AvailableAzeriteTraits = {["Shoulder"] = {}, ["Head"] = {}, ["Chest"]= {},}
 local SelectedAzeriteTraits = {["Shoulder"] = {}, ["Head"] = {}, ["Chest"]= {},}
 
@@ -209,7 +207,7 @@ local function getTraitRanking(traitID, locationID)
 
 	if #traitRanks[traitID] >0 then
 		rank = 0
-		local  _, stackedRank = AzeriteForge:FindStackedTraits(traitID, locationID, SelectedAzeriteTraits)
+		local  _, stackedRank = AF:FindStackedTraits(traitID, locationID, SelectedAzeriteTraits)
 		local maxRank = 1
 	 
 		for index, itemrank in pairs(traitRanks[traitID]) do
@@ -246,8 +244,7 @@ local function getTraitRanking(traitID, locationID)
 	return rank
 end
 
-local function BuildAzeriteTooltip(frame)
-
+function AF.BuildAzeriteInfoTooltip(frame)
 	local RespecCost = C_AzeriteEmpoweredItem.GetAzeriteEmpoweredItemRespecCost()
 
 	frame:AddLine(("Current Level: %s"):format(currentLevel),1.0, 1.0, 1.0);
@@ -260,19 +257,13 @@ end
 
 
 --Opens a location's Azerite trait page
-local function openLocation(itemLocation)
-	if ItemLocationMixin:IsEquipmentSlot(itemLocation) and not C_Item.DoesItemExist(itemLocation) then return end
-
+function AF.ShowEmpoweredItem(itemLocation)
+	if ItemLocationMixin:IsEquipmentSlot(itemLocation) or not C_Item.DoesItemExist(itemLocation) then return end
 		if C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItem(itemLocation) then
 			OpenAzeriteEmpoweredItemUIFromItemLocation(itemLocation);
-			currentOpenLocation = itemLocation
 		else
 			DEFAULT_CHAT_FRAME:AddMessage("Equipped item is not an Azerite item.");
-
 		end
-
-
-
 end
 
 
@@ -288,7 +279,13 @@ local options = {
 		handler = AzeriteForge,
 		type = "group",
 		args = {
+			header1 = {
+				type = "header",
+				name = L["Weight Data Options"],
+				order = 0,
+				},
 			debug = {
+
 				type = "execute",
 				name = "Debug",
 				hidden = true,
@@ -308,6 +305,7 @@ local options = {
 				type = "execute",
 				name = L["Reset Default Data with Stacking Data"],
 				order = 1,
+				width = "double",
 				func = function()
 					traitRanks = loadDefaultData("StackData")-- StackData
 					AzeriteForgeDB.SavedSpecData[specID] = traitRanks
@@ -317,6 +315,7 @@ local options = {
 				type = "execute",
 				name = L["Reset Default Data with iLevel Data"],
 				order = 2,
+				width = "double",
 				func = function()
 					traitRanks = loadDefaultData("iLevelData")-- StackData
 					AzeriteForgeDB.SavedSpecData[specID] = traitRanks
@@ -326,7 +325,8 @@ local options = {
 			clearData = {
 				type = "execute",
 				name = L["Clear all data"],
-				order = 2,
+				order = 3,
+				width = "double",
 				func = function()
 					wipe(traitRanks)
 					end,
@@ -335,7 +335,8 @@ local options = {
 			importData = {
 				type = "execute",
 				name = L["Import Data"],
-				order = 2,
+				order = 4,
+				width = "double",
 				func = function()
 					AzeriteForge.ImportWindow:Show()
 					end,
@@ -344,40 +345,47 @@ local options = {
 			exportData = {
 				type = "execute",
 				name = L["Export Data"],
-				order = 2,
-				func = function() AzeriteForge:ExportData() end,	
+				order = 5,
+				width = "double",
+				func = function() AF:ExportData() end,	
+				},
+			header2 = {
+				type = "header",
+				name = L["MiniMap Icon Settings"],
+				order = 5.99,
 				},
 			showMapicon = {
 				type = "toggle",
 				name = L["Show Minimap Icon"],
-				order = 3,
-				set = function(info,val) AzeriteForge.db.profile.showMapicon = val; private:Toggle(val)
+				order = 6,
+				width = "full",
+				set = function(info,val) AzeriteForge.db.profile.showMapicon = val; private.MiniMapIconToggle(val)
 				end,
 				get = function(info) return AzeriteForge.db.profile.showMapicon end,
 				},
 			tooltipHeader = {
 				type = "header",
 				name = L["Tooltip Settings"],
-				order = 4,
+				order =7,
 				},
 			enhancedTooltip = {
 				type = "toggle",
 				name = L["Enhanced Tooltips"],
-				order = 5,
+				order = 8,
 				set = function(info,val) AzeriteForge.db.profile.enhancedTooltip = val end,
 				get = function(info) return AzeriteForge.db.profile.enhancedTooltip end,
 				},
 			tooltipCurrentTraits = {
 				type = "toggle",
 				name = L["Show current spec traits"],
-				order = 6,
+				order =9,
 				set = function(info,val) AzeriteForge.db.profile.tooltipCurrentTraits = val end,
 				get = function(info) return AzeriteForge.db.profile.tooltipCurrentTraits end,
 				},
 			tooltipIconsOnly = {
 				type = "toggle",
 				name = L["Icons only"],
-				order = 7,
+				order = 10,
 				set = function(info,val) AzeriteForge.db.profile.tooltipIconsOnly = val end,
 				get = function(info) return AzeriteForge.db.profile.tooltipIconsOnly end,
 				},
@@ -485,8 +493,8 @@ local DB_DEFAULTS = {
 			hide = false,
 		--minimap = {},
 		},
-		tooltipCurrentTraits = true,
-		tooltipIconsOnly = true,
+		tooltipCurrentTraits = false,
+		tooltipIconsOnly = false,
 		enhancedTooltip = true,		
 	},
 	global = {
@@ -504,7 +512,7 @@ function AzeriteTooltip_GetSpellID(powerID)
 end
 
 
-function AzeriteForge:ChatCommand(input)
+function AF:ChatCommand(input)
     if not input or input:trim() == "" then
         LibStub("AceConfigDialog-3.0"):Open("AzeriteForge_Talents", widget, "stats")
 
@@ -515,7 +523,7 @@ end
 
 
 
-function AzeriteForge:GetAzeriteTraits()
+function AF:GetAzeriteTraits()
 	AvailableAzeriteTraits = {["Shoulder"] = {}, ["Head"] = {}, ["Chest"]= {},}
 	SelectedAzeriteTraits = {["Shoulder"] = {}, ["Head"] = {}, ["Chest"]= {},}
 
@@ -523,34 +531,54 @@ function AzeriteForge:GetAzeriteTraits()
 		buttons.shoulderSlotButton:Hide()
 	else
 		buttons.shoulderSlotButton:Show()
-		AzeriteForge:GetAzeriteLocationTraits("Shoulder")
-		AzeriteForge:UnselectTraits("Shoulder")
+		AF:GetAzeriteLocationTraits("Shoulder")
+		AF:UnselectTraits("Shoulder")
 	end
 
 	if not GetInventoryItemID("player", 1) then 
 		buttons.headSlotButton:Hide()
 	else
 		buttons.headSlotButton:Show()
-		AzeriteForge:GetAzeriteLocationTraits("Head")
-		AzeriteForge:UnselectTraits("Head")
+		AF:GetAzeriteLocationTraits("Head")
+		AF:UnselectTraits("Head")
 	end
 
 	if not GetInventoryItemID("player", 5) then 
 		buttons.chestSlotButton:Hide()
 	else
 		buttons.chestSlotButton:Show()
-		AzeriteForge:GetAzeriteLocationTraits("Chest")
-		AzeriteForge:UnselectTraits("Head")
+		AF:GetAzeriteLocationTraits("Chest")
+		AF:UnselectTraits("Head")
+
 	end
 
+	UnselectedPowersCount = AzeriteUtil.GetEquippedItemsUnselectedPowersCount()
+
+	updateInventoryLDB()
+end
+
+
+
+
+
+function updateInventoryLDB()
+	--Azerite Window Tabs
 	buttons.headSlotButton:SetNormalTexture(GetItemIcon(GetInventoryItemID("player", 1))  or "Interface\\Icons\\inv_boot_helm_draenordungeon_c_01")
 	buttons.shoulderSlotButton:SetNormalTexture(GetItemIcon(GetInventoryItemID("player", 3)) or "Interface\\Icons\\inv_misc_desecrated_clothshoulder")
 	buttons.chestSlotButton:SetNormalTexture(GetItemIcon(GetInventoryItemID("player", 5)) or "Interface\\Icons\\inv_chest_chain")
 	
-	UnselectedPowersCount = AzeriteUtil.GetEquippedItemsUnselectedPowersCount()
+	--LDB Icons
+	AF.setLDBItems("Head")
+	AF.setLDBItems("Shoulder")
+	AF.setLDBItems("Chest")
+
 	private.updateLDBShine()
 end
 
+
+function AF:updateInfoLDB()
+	AF.AzeriteForgeInfoLDB.text = string.format("L:%s  XP: %s/%s", currentLevel, currentXp, currentMaxXp)
+end
 
 local function UpdateWeeklyQuest()
 	local questID = C_IslandsQueue.GetIslandsWeeklyQuestID();
@@ -560,78 +588,14 @@ local function UpdateWeeklyQuest()
 	WeeklyQuestRequired = WeeklyRequired
 end
 
---LDB handlers
-local AzeriteForgeLDB = LibStub("LibDataBroker-1.1"):NewDataObject("AzeriteForge", {
-	type = "data source",
-	text = "AzeriteForge",
-	icon = azeriteIcon,
-	OnClick = function(self, button, down) 
-		if (button == "RightButton") then
-			LibStub("AceConfigDialog-3.0"):Open("AzeriteForge")
-		elseif (button == "LeftButton") then
-			openLocation(AzeriteLocations["Head"])
-		elseif (button == "MiddleButton") then
-
-		end
-	end,})
-
-local AzeriteForgeLDB2 = LibStub("LibDataBroker-1.1"):NewDataObject("AzeriteForge-Head", {
-	type = "data source",
-	text = "AzeriteForge-Items",
-	icon = azeriteIcon,
-	OnClick = function(self, button, down) 
-		if (button == "RightButton") then
-			LibStub("AceConfigDialog-3.0"):Open("AzeriteForge")
-		elseif (button == "LeftButton") then
-			openLocation(AzeriteLocations["Head"])
-		elseif (button == "MiddleButton") then
-
-		end
-	end,})
 
 
-function updateLDB()
-	AzeriteForgeLDB.text = string.format("L:%s  XP: %s/%s", currentLevel, currentXp, currentMaxXp)
-end
-
-function AzeriteForgeLDB:OnTooltipShow()
-	BuildAzeriteTooltip(self)
-end
-
-
-function AzeriteForgeLDB:OnEnter()
-	GameTooltip:SetOwner(self, "ANCHOR_NONE")
-	GameTooltip:SetPoint("TOPLEFT", self, "BOTTOMLEFT")
-	GameTooltip:ClearLines()
-	--BuildAzeriteTooltip(self)
-	AzeriteForgeLDB.OnTooltipShow(GameTooltip)
-	GameTooltip:Show()
-end
-
-function AzeriteForgeLDB:OnLeave()
-	GameTooltip:Hide()
-end
-
-function private:Toggle(value)
-		if value then
-			AzeriteForgeMiniMap:Show("AzeriteForgeMini")
-			Config.MMDB.hide = false;
-			--private.updateLDBShine()
-			--Config.showMiniMapIcon = true;
-		else
-			AzeriteForgeMiniMap:Hide("AzeriteForgeMini")
-			Config.MMDB.hide = true;
-			--Config.showMiniMapIcon = false;
-		end
-end
-
-
-function AzeriteForge:OnInitialize()
+function AF:OnInitialize()
 
 end
 
 
-function AzeriteForge:OnEnable()
+function AF:OnEnable()
 	self.db = LibStub("AceDB-3.0"):New("AzeriteForgeDB", DB_DEFAULTS, true)
 	LibStub("AceConfig-3.0"):RegisterOptionsTable("AzeriteForge_Talents", talent_options)
 	LibStub("AceConfig-3.0"):RegisterOptionsTable("AzeriteForge", options)
@@ -652,67 +616,67 @@ function AzeriteForge:OnEnable()
 	self:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
 	self:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
 
-	AzeriteForgeMiniMap:Register("AzeriteForgeMini", AzeriteForgeLDB, Config.MMDB)
+	AzeriteForgeMiniMap:Register("AzeriteForgeMini", AF.AzeriteForgeInfoLDB, Config.MMDB)
 	AzeriteForge.MinimapIcon = AzeriteForgeMiniMap:GetMinimapButton("AzeriteForgeMini")
 	spec = GetSpecialization()
 	specID = GetSpecializationInfo(spec) 
 	className, classFile, classID = UnitClass("player")
 
-	AzeriteForge:CreateFrames()
+	AF:CreateFrames()
 
-	AzeriteForge:BuildAzeriteDataTables()
-	AzeriteForge:GetAzeriteData()
-	AzeriteForge:GetAzeriteTraits()
-	AzeriteForge:LoadClassTraitRanks()
-	--AzeriteForge:CreateTraitMenu()
+	AF:BuildAzeriteDataTables()
+	AF:GetAzeriteData()
+	AF:GetAzeriteTraits()
+	AF:LoadClassTraitRanks()
+	--AF:CreateTraitMenu()
 	UpdateWeeklyQuest()
-	AzeriteForge:UpdateBagDataMenu()
-	updateLDB()
+	AF:UpdateBagDataMenu()
+	AF:updateInfoLDB()
 
-	AzeriteForge:SecureHookScript(GameTooltip,"OnTooltipSetItem")
-	AzeriteForge:SecureHookScript(ItemRefTooltip,"OnTooltipSetItem")
-	AzeriteForge:SecureHookScript(WorldMapTooltip,"OnTooltipSetItem")
+	AF:SecureHookScript(GameTooltip,"OnTooltipSetItem")
+	AF:SecureHookScript(ItemRefTooltip,"OnTooltipSetItem")
+	AF:SecureHookScript(WorldMapTooltip,"OnTooltipSetItem")
 
---AzeriteForge:RawHook(AzeriteEmpoweredItemPowerMixin,"OnEnter",true) 
+--AF:RawHook(AzeriteEmpoweredItemPowerMixin,"OnEnter",true) 
 end
 
 
-function AzeriteForge:OnDisable()
+function AF:OnDisable()
     -- Called when the addon is disabled
 end
 
 
-function AzeriteForge:PLAYER_EQUIPMENT_CHANGED(event, ...)
+function AF:PLAYER_EQUIPMENT_CHANGED(event, ...)
 	local InventorySlotId = ...
 	if InventorySlotId == 1 or InventorySlotId == 3 or InventorySlotId == 5 then
-		AzeriteForge:GetAzeriteTraits()
-		AzeriteForge:GetAzeriteData()
-	AzeriteForge:GetAzeriteTraits()
-	AzeriteForge:UpdateBagDataMenu()
-	updateLDB()
+		AF:GetAzeriteTraits()
+		AF:GetAzeriteData()
+	AF:GetAzeriteTraits()
+	AF:UpdateBagDataMenu()
+	AF:updateInfoLDB()
 	end
 end
 
 
-function AzeriteForge:PLAYER_SPECIALIZATION_CHANGED(event, ...)
+function AF:PLAYER_SPECIALIZATION_CHANGED(event, ...)
 	spec = GetSpecialization()
 	specID = GetSpecializationInfo(spec) 
-	AzeriteForge:BuildAzeriteDataTables()
+	AF:BuildAzeriteDataTables()
 
 
-	AzeriteForge:GetAzeriteData()
-	AzeriteForge:GetAzeriteTraits()
-	AzeriteForge:LoadClassTraitRanks()
-	updateLDB()
+	AF:GetAzeriteData()
+	AF:GetAzeriteTraits()
+	AF:LoadClassTraitRanks()
+	AF:updateInfoLDB()
 end
 
 
-function AzeriteForge:AZERITE_ITEM_EXPERIENCE_CHANGED(event, ...)
+function AF:AZERITE_ITEM_EXPERIENCE_CHANGED(event, ...)
 	local azeriteItemLocation, oldExperienceAmount, newExperienceAmount = ...
 	lastXpGain = newExperienceAmount - oldExperienceAmount
 	UpdateWeeklyQuest()
-	updateLDB()
-	AzeriteForge:GetAzeriteData()
+	AF:updateInfoLDB()
+	AF:GetAzeriteData()
   -- if it's not equal then we will defer the xp gain to the power level event
 	if GetPowerLevel(azeriteItemLocation) == currentLevel then 
     --self:GetAzeriteData()
@@ -723,30 +687,29 @@ end
 
 
 -- it is assumed that this event always happens AFTER a XP change event
-function AzeriteForge:AZERITE_ITEM_POWER_LEVEL_CHANGED(event, ...)
+function AF:AZERITE_ITEM_POWER_LEVEL_CHANGED(event, ...)
 	local azeriteItemLocation, oldPowerLevel, newPowerLevel, unlockedEmpoweredItemsInfo = ...
 	local lastLevelGain = newPowerLevel - oldPowerLevel
 	if lastLevelGain ~= 1 then
 		DebugPour("Unexpected Azerite Item level change of %d, please report as a bug", lastLevelGain)
 	end
-	updateLDB()
-	AzeriteForge:GetAzeriteData()
+	AF:updateInfoLDB()
+	AF:GetAzeriteData()
 end
 
 
-function AzeriteForge:UnselectTraits(location)
+function AF:UnselectTraits(location)
 	local locationData = AzeriteLocations[location]
 
 	if not C_Item.DoesItemExist(locationData) or not C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItem(locationData) then return false end
 
 	UnselectedLocationTraits[location] = C_AzeriteEmpoweredItem.HasAnyUnselectedPowers(locationData)
-	--print(UnselectedLocationTraits[location])
 	return UnselectedLocationTraits[location]
 end
 
 
 --Gets Azerite xp info
-function AzeriteForge:GetAzeriteData()
+function AF:GetAzeriteData()
 	if not HasActiveAzeriteItem() then
 		return
 	end
@@ -772,8 +735,7 @@ end
 
 
 --Looks to see if an Azerite ability is on other gear pieces
-function AzeriteForge:FindStackedTraits(powerID, locationID, traitList)
-
+function AF:FindStackedTraits(powerID, locationID, traitList)
 	local ItemLocation = AzeriteLocations[locationID] or AzeriteLocations[locationID.equipmentSlotIndex] or locationID
 	local foundLocations = nil
 	local count = 0
@@ -791,7 +753,7 @@ function AzeriteForge:FindStackedTraits(powerID, locationID, traitList)
 end
 
 
-function AzeriteForge:GetAzeriteLocationTraits(location)
+function AF:GetAzeriteLocationTraits(location)
 	local locationData = AzeriteLocations[location]
 	--if not C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItem(locationData) then return end
 	if not C_Item.DoesItemExist(locationData) or not C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItem(locationData) then return end
@@ -852,7 +814,7 @@ end
 
 
 --Cycles though the various azerite power ids and builds a database info from it
-function AzeriteForge:BuildAzeriteDataTables()
+function AF:BuildAzeriteDataTables()
 	wipe(azeriteTraits)
 	azeriteTraits = {}
 
@@ -867,14 +829,14 @@ function AzeriteForge:BuildAzeriteDataTables()
 		end
 	end
 
-	AzeriteForge:CreateTraitMenu()
+	AF:CreateTraitMenu()
 end
 
 
 --Imports text data into the traitsRanks Table
 --Data format is ["localized trait name" or trait id, Rank1, Rank2, Rank3],
 --Multiple traits can be imported if seperated by commas and only one Rank is needed
-function AzeriteForge:ImportData(data)
+function AF:ImportData(data)
 	if not data then return end
 	wipe(traitRanks)
 	ClearDebugger()
@@ -895,7 +857,7 @@ end
 
 
 --Parses Trait data and dumps it to a window
-function AzeriteForge:ExportData()
+function AF:ExportData()
 	local text = "AZFORGE^"
 	for id, data in pairs(traitRanks) do
 		text = text.."["..id.."]"
@@ -912,7 +874,7 @@ end
 
 
 
-function AzeriteForge:TextGetter(traitID)
+function AF:TextGetter(traitID)
 	local text = ""
 		for i,d in pairs(traitRanks[traitID]) do
 			text = text.."["..tostring(i).."]:"..tostring(d)..","
@@ -920,7 +882,7 @@ function AzeriteForge:TextGetter(traitID)
 	return text 
 end
 
-function AzeriteForge:ParseText(traitID, val)
+function AF:ParseText(traitID, val)
 	local text = {string.split(",",val)}
 
 	if string.find(text[1], "%[") then
@@ -953,7 +915,7 @@ end
 
 
 --loads defaults into saved variables table
-function AzeriteForge:LoadClassTraitRanks(DB)
+function AF:LoadClassTraitRanks(DB)
 	traitRanks = AzeriteForgeDB.SavedSpecData[specID] or loadDefaultData("StackData")
 	AzeriteForgeDB.SavedSpecData[specID] = traitRanks
 end
@@ -1017,7 +979,9 @@ function getItemsLocation(link)
 end
 
 
-function AzeriteForge:UpdateBagDataMenu()
+function AF:UpdateBagDataMenu(filter, filterLocation)
+	filterLocation = filterLocation or ""
+	local filterText = filter or ""
 	local count = 0
 	local sortTable = {}
 	local guiMenu = talent_options.args.bagData.args
@@ -1025,17 +989,39 @@ function AzeriteForge:UpdateBagDataMenu()
 	AceGUI:Release(BagScrollFrame)
 
 	local scroll = AceGUI:Create("ScrollFrame")
-	scroll:SetLayout("List")
+	scroll:SetLayout("Flow")
 	AzeriteForge.Bag.widget:AddChild(scroll)
+
+	local searchBar = AceGUI:Create("EditBox")
+	searchBar:SetRelativeWidth(.7)
+	searchBar:SetText(filterText)
+	--searchBar:SetCallback("OnTextChanged", function(self) TextChanged(self) end)
+	searchBar:SetCallback("OnEnterPressed", function(self) 	
+		filterText = string.lower(self:GetText())
+		AF:UpdateBagDataMenu(filterText) 
+	end)
+	BagScrollFrame:AddChild(searchBar)
+
+	local resetButton = AceGUI:Create("Button")
+	resetButton:SetRelativeWidth(.3)
+	resetButton:SetText(L["Reset"])
+	resetButton:SetCallback("OnClick", function(self)
+		filterText = string.lower("")
+		AF:UpdateBagDataMenu()
+	 end)
+
+	BagScrollFrame:AddChild(resetButton)
+	resetButton:SetPoint("LEFT",BagScrollFrame.searchBar,"RIGHT" )
+
 	bagScan()
 	
 	local breakCounter = 0
 	for link in pairs(itemDB) do
 
 		local item = AceGUI:Create("AzeriteForgeItem")
-		BagScrollFrame:AddChild(item)
+		local itemName, itemLink, itemRarity, itemLevel, _, _, _, _,itemEquipLoc, itemIcon = GetItemInfo(link)
+		local itemEquipLocID = _G[string.gsub(itemEquipLoc,"INVTYPE", "INVSLOT")]
 
-		local itemName, itemLink, itemRarity, itemLevel, _, _, _, _,_, itemIcon = GetItemInfo(link)
 		count = count + 1
 		local traitText = ""
 		local allTierInfo = C_AzeriteEmpoweredItem.GetAllTierInfoByItemID(itemLink)
@@ -1050,17 +1036,22 @@ function AzeriteForge:UpdateBagDataMenu()
 
 		if not allTierInfo[1]["azeritePowerIDs"][1] then return end
 
-		traitText = AzeriteForge:BuildTraitText(link, GameTooltip, itemName, true)
+		traitText = AF:BuildTraitText(link, GameTooltip, itemName, true)
 
 		item.traits:SetText(traitText)
 		item.traits:SetJustifyH("LEFT")
-	end
 
+		if string.find(string.lower(traitText), filterText) or string.find(string.lower(itemName), filterText) or string.find(string.lower(_G[itemEquipLoc]), filterText) then --or itemEquipLocID == filterLocation then 
+		BagScrollFrame:AddChild(item) 
+		else
+		AceGUI:Release(item)
+		end
+	end
 end
 
 
 --
-function AzeriteForge:CreateTraitMenu()
+function AF:CreateTraitMenu()
 	local count = 0
 	local sortTable = {}
 	for id, data in pairs(azeriteTraits) do
@@ -1118,9 +1109,9 @@ function AzeriteForge:CreateTraitMenu()
 			hidden = function() local search = nil; if searchbar then search = not string.match(string.lower(azeriteTraits[traitID].name), string.lower(searchbar))end; return search or not azeriteTraits[traitID].valid end,
 			get = function(info)  
 				if not traitRanks[traitID] then  return "" end
-				return AzeriteForge:TextGetter(traitID)
+				return AF:TextGetter(traitID)
 				end,
-			set = function(info,val) traitRanks[traitID] = {}; return AzeriteForge:ParseText(traitID,val) end,
+			set = function(info,val) traitRanks[traitID] = {}; return AF:ParseText(traitID,val) end,
 			}
 			
 
@@ -1155,11 +1146,14 @@ local function addFramesToAzeriteEmpoweredItemUI()
 	f:SetScript("OnEnter", function()
 
 		GameTooltip:SetOwner(f, "ANCHOR_RIGHT");
-		BuildAzeriteTooltip(GameTooltip)
+		AF.BuildAzeriteInfoTooltip(GameTooltip)
 		GameTooltip:Show();
 	end)
 
 	f:SetScript("OnLeave", function()GameTooltip:Hide() end)
+
+--todo  ADD ITEM RANK INFO/DATA
+
 end
 
 
@@ -1262,7 +1256,7 @@ local function CreateGenericFrame()
 end
 
 
-function AzeriteForge:CreateImportFrame()
+function AF:CreateImportFrame()
 	local window = CreateGenericFrame()
 	window.title:SetText("AzeriteForge "..L["Import"])
 
@@ -1301,13 +1295,16 @@ function AzeriteForge:CreateImportFrame()
 
 end
 
-
+--AzeriteEmpoweredItemUI
 local function CreateBagInfoFrame()
-	local window = CreateGenericFrame()
-	window:SetParent(AzeriteEmpoweredItemUI)
+	local window = CreateGenericFrame(AzeriteEmpoweredItemUI)
+	
 	window:ClearAllPoints()
 	window:SetPoint("TOPLEFT", AzeriteEmpoweredItemUI, "TOPLEFT",-5,-20)
-	window:SetPoint("BOTTOMRIGHT")
+	window:SetPoint("BOTTOMRIGHT", AzeriteEmpoweredItemUI,"BOTTOMRIGHT")
+	--AF:HookScript(CharacterFrame, "OnShow", function()  f:Show() end)
+	window:SetParent(UIParent)
+	AF:HookScript(AzeriteEmpoweredItemUI, "OnHide", function() window:Hide() end)
 	window.title:SetText(L["Azerite Gear"])
 
 	local content = CreateFrame("Frame",nil, window)
@@ -1337,118 +1334,6 @@ local function CreateBagInfoFrame()
 end
 
 
-do
-
-	local Type = "AzeriteForgeItem"
-	local Version = 1
-
-	local function OnAcquire(self)
-		self:SetDisabled(false)
-		self.showbutton = true
-	end
-	
-	local function OnRelease(self)
-		self.frame:ClearAllPoints()
-		self.frame:Hide()
-		self:SetDisabled(false)
-	end
-	
-	local function Control_OnEnter(this)
-		this.obj:Fire("OnEnter")
-	end
-	
-	local function Control_OnLeave(this)
-		this.obj:Fire("OnLeave")
-	end
-	
-	
-	local function SetDisabled(self, disabled)
-		self.disabled = disabled
-		if disabled then
-		end
-	end
-	
-	local function SetWidth(self, width)
-		self.frame:SetWidth(width)
-	end
-	
-	local function Constructor()
-		local num  = AceGUI:GetNextWidgetNum(Type)
-
-		local frame = CreateFrame("Frame","AceGUI-3.0NumberEditBox"..num,UIParent)
-		frame:SetSize(50,50)
-
-		local description = frame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-		description:ClearAllPoints()
-		description:SetPoint("TOPLEFT", frame, "TOPLEFT")
-		description:SetTextColor(1, 1, 1, 1)
-		frame.description = text
-
-		local item = CreateFrame("Button", _ ,frame,"ItemButtonTemplate")
-		item:SetSize(35,35)
-		item:SetPoint("TOPLEFT", description, "BOTTOMLEFT", 0,-5)
-		item.icon:SetTexture(azeriteIcon)
-		item:SetScript("OnEnter", function(self)
-			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-			GameTooltip:SetHyperlink(frame.itemLink)
-			GameTooltip:Show()
-
-		end)
-
-		item:SetScript("OnClick", function(self, button, down) 
-			if button == "RightButton" then
-				--HideUIPanel(AzeriteEmpoweredItem)
-				openLocation(AzeriteLocations["Head"])
-				EquipItemByName(frame.itemLink)
-				openLocation(getItemsLocation(frame.itemLink))
-			else
-				openLocation(frame.location)
-				AzeriteForge.Bag:Hide()
-			end
-		end)
-		
-		item:SetScript("OnLeave", function(self) GameTooltip:Hide() end)
-
-		local traits = frame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-		traits:ClearAllPoints()
-		traits:SetPoint("TOPLEFT", item, "TOPRIGHT",5, 25)
-		traits:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT")
-		traits:SetTextColor(1, 1, 1, 1)
-		frame.traits = text
-
-		local self = {}
-		self.type = Type
-		self.num = num
-		self.location = location
-		self.itemLink = frame.itemLink
-
-		self.OnRelease = OnRelease
-		self.OnAcquire = OnAcquire
-
-		self.SetDisabled = SetDisabled
-		self.SetText = SetText
-		self.SetWidth = SetWidth
-		
-		self.frame = frame
-		frame.obj = self
-		self.item = item
-		item.obj = self
-		self.description = description
-		description.obj = self
-		self.traits = traits
-		traits.obj = self
-
-		self.alignoffset = 30
-		
-		frame:SetHeight(109)
-		frame:SetWidth(500)
-
-		AceGUI:RegisterAsWidget(self)
-		return self
-	end
-	
-	AceGUI:RegisterWidgetType(Type,Constructor,Version)
-end
 
 
 local function CreateCharacterFrameTabs()
@@ -1467,8 +1352,8 @@ local function CreateCharacterFrameTabs()
 	t:SetScript("OnClick", function()return end)
 	t:SetText("Azerite")
 
-	AzeriteForge:HookScript(CharacterFrame, "OnShow", function()  f:Show() end)
-	AzeriteForge:HookScript(CharacterFrame, "OnHide", function() f:Hide() end)
+	AF:HookScript(CharacterFrame, "OnShow", function()  f:Show() end)
+	AF:HookScript(CharacterFrame, "OnHide", function() f:Hide() end)
 	PanelTemplates_SetNumTabs(t, 1);
 	PanelTemplates_DeselectTab(t, 1);
 
@@ -1476,13 +1361,17 @@ local function CreateCharacterFrameTabs()
 		for equipSlotIndex, itemLocation in AzeriteUtil.EnumerateEquipedAzeriteEmpoweredItems() do
 			if C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItem(itemLocation) then
 				--Open first azerite item
-				openLocation(itemLocation)
+				AF.ShowEmpoweredItem(itemLocation)
+
+				if CharacterFrame:IsShown() then
+					HideUIPanel(CharacterFrame)
+				end
+			else
+				DEFAULT_CHAT_FRAME:AddMessage(L["No Empowered items equipped"])
 			end
 		end
 
-		if CharacterFrame:IsShown() then
-			HideUIPanel(CharacterFrame)
-		end
+
 	end)
 
 	t:SetScript("OnEnter",
@@ -1557,26 +1446,20 @@ if Config.MMDB.hide then return end
 	for location in pairs(UnselectedPowers) do
 			if UnselectedPowers[location] and not AzeriteForge.MinimapIcon.shine then 
 				ToggleShine(AzeriteForge.MinimapIcon, true)
-				--ToggleShine(AzeriteForgeLDB.icon, true)
+				--ToggleShine(AzeriteForgeInfoLDB.icon, true)
 
 				
 			elseif not UnselectedPowers[location] and AzeriteForge.MinimapIcon.shine then
 				ToggleShine(AzeriteForge.MinimapIcon, false)
-				--ToggleShine(AzeriteForgeLDB, false)
+				--ToggleShine(AzeriteForgeInfoLDB, false)
 			end
 	end
 end
 
-function bob()
-local button = AzeriteForgeMiniMap:GetMinimapButton("AzeriteForgeMini")
-ToggleShine(AzeriteForgeMiniMap:GetMinimapButton("AzeriteForgeMini"), true)
-end
 
 local headTraitsAvailable = false
 local chestTraitsAvailable = false
 local shoulderTraitsAvalable = false
-
-
 
 --Builds Trait Ranking Window
 --------
@@ -1637,7 +1520,6 @@ local function CreateAzeriteDataFrame()
 		end	
 
 	f:SetScript("OnShow", function(self)
-		--LowerFrameLevel(CharacterFrame)
 		LibStub("AceConfigDialog-3.0"):Open("AzeriteForge_Talents", widget, "stats")
 		f:Show()
 		f:SetToplevel(true)
@@ -1700,7 +1582,7 @@ local function CreateAzeriteDataFrame()
 		end)
 
 	headSlotButton:SetScript("OnClick", function(self, button, down)
-		openLocation(AzeriteLocations["Head"])
+		AF.ShowEmpoweredItem(AzeriteLocations["Head"])
 
 		end)
 
@@ -1722,7 +1604,7 @@ local function CreateAzeriteDataFrame()
 	shoulderSlotButton:SetWidth(45)
 	shoulderSlotButton:SetHeight(45)
 	shoulderSlotButton:SetScript("OnClick", function(self, button, down)
-		openLocation(AzeriteLocations["Shoulder"])
+		AF.ShowEmpoweredItem(AzeriteLocations["Shoulder"])
 
 	end)
 
@@ -1751,7 +1633,7 @@ local function CreateAzeriteDataFrame()
 	chestSlotButton:SetWidth(45)
 	chestSlotButton:SetHeight(45)
 	chestSlotButton:SetScript("OnClick", function(self, button, down)
-		openLocation(AzeriteLocations["Chest"])
+		AF.ShowEmpoweredItem(AzeriteLocations["Chest"])
 	end)
 
 	chestSlotButton:SetScript("OnEnter", function(self)
@@ -1819,9 +1701,9 @@ end
 
 
 --Creates all needed frames
-function AzeriteForge:CreateFrames()
+function AF:CreateFrames()
 	addFramesToAzeriteEmpoweredItemUI()
-	AzeriteForge:CreateImportFrame()
+	AF:CreateImportFrame()
 	CreateCharacterFrameTabs()
 	CreateAzeriteDataFrame()
 	CreateBagInfoFrame()
@@ -1829,7 +1711,7 @@ end
 
 --###########################
 --Tooltip stuff
-function AzeriteForge:BuildTraitText(itemLink, tooltip, name, force)
+function AF:BuildTraitText(itemLink, tooltip, name, force)
 	if not Config.enhancedTooltip then return end
 	
 
@@ -1930,12 +1812,12 @@ function AzeriteForge:BuildTraitText(itemLink, tooltip, name, force)
 end
 
 
-function AzeriteForge:OnTooltipSetItem(self,...)
+function AF:OnTooltipSetItem(self,...)
 	local name, link = self:GetItem()
   	if not name then return end
 
   	if C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItemByID(link) then
-    		AzeriteForge:BuildTraitText(link, self, name)
+    		AF:BuildTraitText(link, self, name)
 	end
 end
 
@@ -1944,77 +1826,22 @@ end
 --Modified blizzard plugins
 
 LoadAddOn("Blizzard_AzeriteUI")
+function AzeriteEmpoweredItemPowerMixin_OnEnter(self,...)
+	local location = self.azeriteItemDataSource:GetItemLocation()
+	local duplicateLocations = AF:FindStackedTraits(self:GetAzeritePowerID(),location,SelectedAzeriteTraits)
 
-function AzeriteEmpoweredItemPowerMixin:OnEnter()
-	self:CancelItemLoadCallback();
-	if self.SwirlContainer:IsShown() then
-		return;
+	if duplicateLocations then
+		GameTooltip_AddColoredLine(GameTooltip, ("Found on :%s"):format(duplicateLocations), RED_FONT_COLOR);
 	end
 
-	local item = self.azeriteItemDataSource:GetItem();
-
-	self.itemDataLoadedCancelFunc = item:ContinueWithCancelOnItemLoad(function()
-		GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-		local itemID = item:GetItemID();
-		local itemLevel = item:GetCurrentItemLevel();
-		local itemLink = item:GetItemLink();
-		local location = self.azeriteItemDataSource:GetItemLocation()
-		local duplicateLocations = AzeriteForge:FindStackedTraits(self:GetAzeritePowerID(),location,SelectedAzeriteTraits)
-		GameTooltip:SetAzeritePower(itemID, itemLevel, self:GetAzeritePowerID(), itemLink);
-
-		if self:CanBeSelected() then
-			GameTooltip:AddLine(" ");
-			GameTooltip_AddInstructionLine(GameTooltip, AZERITE_CLICK_TO_SELECT, GREEN_FONT_COLOR);
-		else
-			local showUnlockReq = not self:MeetsPowerLevelRequirement() and not self:DoesTierHaveAnyPowersSelected();
-			if showUnlockReq then
-				GameTooltip:AddLine(" ");
-				GameTooltip_AddColoredLine(GameTooltip, REQUIRES_AZERITE_LEVEL_TOOLTIP:format(self.unlockLevel), RED_FONT_COLOR);
-			end
-
-			if not self:IsSpecAllowed() then
-				local specTooltipLine = AzeriteUtil.GenerateRequiredSpecTooltipLine(self:GetAzeritePowerID());
-				if specTooltipLine then
-					if not showUnlockReq then
-						GameTooltip:AddLine(" ");
-					end
-					GameTooltip_AddColoredLine(GameTooltip, specTooltipLine, RED_FONT_COLOR);
-				end
-			end
-		end
-
-		if duplicateLocations then
-			GameTooltip_AddColoredLine(GameTooltip, ("Found on :%s"):format(duplicateLocations), RED_FONT_COLOR);
-		end
-
-		GameTooltip:Show();
-		self.UpdateTooltip = self.OnEnter;
-	end);
+	GameTooltip:Show();
 end
 
-function AzeriteEmpoweredItemPowerMixin:Setup(owningTierFrame, azeriteItemDataSource, azeritePowerID, baseAngle)
-	self:CancelItemLoadCallback();
+AF:SecureHook(AzeriteEmpoweredItemPowerMixin,"OnEnter", AzeriteEmpoweredItemPowerMixin_OnEnter)
 
-	self.owningTierFrame = owningTierFrame;
-	self.azeriteItemDataSource = azeriteItemDataSource;
-	self.azeritePowerID = azeritePowerID;
-	self.baseAngle = baseAngle;
 
-	self:Update();
 
-	self.canBeSelected = nil;
-	self.transitionStateInitialized = false;
-
-	if self:IsFinalPower() then
-		self.IconOn:SetAtlas("Azerite-CenterTrait-On", true);
-		self.IconOff:SetAtlas("Azerite-CenterTrait-Off", true);
-		self.IconDesaturated:SetAtlas("Azerite-CenterTrait-On", true);
-	else
-		local spellTexture = GetSpellTexture(self:GetSpellID()); 
-		self.IconOn:SetTexture(spellTexture);
-		self.IconOff:SetTexture(spellTexture);
-		self.IconDesaturated:SetTexture(spellTexture);
-	end
+function AzeriteEmpoweredItemPowerMixin_Setup(self,...)
 
 	local f = self:CreateFontString(nil, "DIALOG", "GameFontNormalHuge3Outline")
 	f:SetTextColor(HIGHLIGHT_FONT_COLOR:GetRGB())
@@ -2029,73 +1856,22 @@ function AzeriteEmpoweredItemPowerMixin:Setup(owningTierFrame, azeriteItemDataSo
 	f:SetPoint("CENTER",0,-20)
 	f:Hide()
 	self.TraitRank = f
-
-	self:SetupModelScene();
 end
 
-function AzeriteEmpoweredItemPowerMixin:Reset()
-	self.CanSelectGlowAnim:Stop();
-	self.CanSelectArrowAnim:Stop();
-	self.TransitionAnimation:Stop();
-	self.SwirlContainer.SelectedAnim:Stop();
-	self.SwirlContainer.RevealAnim:Stop();
-	self.SwirlContainer:Hide();
-	self.needsBuffAvailableSoundPlayed = nil;
+AF:SecureHook(AzeriteEmpoweredItemPowerMixin,"Setup", AzeriteEmpoweredItemPowerMixin_Setup)
 
+
+function AzeriteEmpoweredItemPowerMixin_Reset(self)
 	if self.AdditionalTraits then
 		self.AdditionalTraits:Hide()
 		self.TraitRank:Hide()
 	end
 end
+AF:SecureHook(AzeriteEmpoweredItemPowerMixin,"Reset", AzeriteEmpoweredItemPowerMixin_Reset)
 
 
-function AzeriteEmpoweredItemPowerMixin:OnShow()
-	self:RegisterEvent("UI_MODEL_SCENE_INFO_UPDATED");
-	if self.azeriteItemDataSource then 
 
-		local location = self.azeriteItemDataSource:GetItemLocation()
-		local HasAnyUnselectedPowers = C_AzeriteEmpoweredItem.HasAnyUnselectedPowers(location)
-		local DB = SelectedAzeriteTraits
-
-		local _, duplicateTraits = AzeriteForge:FindStackedTraits(self:GetAzeritePowerID(),location, DB)
-
-
-		if HasAnyUnselectedPowers then
-			DB = AvailableAzeriteTraits
-		end
-
-		local traitRank = getTraitRanking(self:GetAzeritePowerID(),location, DB)
-
-
-		maxValue[location] = maxValue[location] or {}
-		maxValue[location][self] = traitRank or 0
-
-		AzeriteForge:UpdateValues(location)
-
-		if traitRank and self.TraitRank then --and HasAnyUnselectedPowers then 
-			self.AdditionalTraits:SetPoint("CENTER",0,20)
-			if string.find(traitRank, "-") then 
-				self.TraitRank:SetText(("%s"):format(traitRank))
-				self.TraitRank:SetTextColor(RED_FONT_COLOR:GetRGB())
-			else
-				self.TraitRank:SetText(("+%s"):format(traitRank))
-			end
-			self.TraitRank:Show()
-		else
-			self.TraitRank:Hide()
-			self.AdditionalTraits:SetPoint("CENTER",0,0)
-		end
-
-		if self.AdditionalTraits and duplicateTraits > 0 then 
-			self.AdditionalTraits:SetText(("%sX"):format(duplicateTraits+1))
-			self.AdditionalTraits:Show()
-		else
-			self.AdditionalTraits:Hide()
-		end
-	end
-end
-
-function AzeriteForge:UpdateValues(location)
+local function UpdateValues(location)
 	local max = 0
 	for id, rank in pairs(maxValue[location]) do
 
@@ -2119,11 +1895,47 @@ function AzeriteForge:UpdateValues(location)
 end
 
 
+function AzeriteEmpoweredItemPowerMixin_OnShow(self,...)
+	if self.azeriteItemDataSource then 
+		local location = self.azeriteItemDataSource:GetItemLocation()
+		local HasAnyUnselectedPowers = C_AzeriteEmpoweredItem.HasAnyUnselectedPowers(location)
+		local DB = SelectedAzeriteTraits
 
-local AF_Tooltip = CreateFrame("GameTooltip", "AF_Tooltip", UIParent, "GameTooltipTemplate")
+		local _, duplicateTraits = AF:FindStackedTraits(self:GetAzeritePowerID(),location, DB)
 
 
+		if HasAnyUnselectedPowers then
+			DB = AvailableAzeriteTraits
+		end
+
+		local traitRank = getTraitRanking(self:GetAzeritePowerID(),location, DB)
 
 
+		maxValue[location] = maxValue[location] or {}
+		maxValue[location][self] = traitRank or 0
 
----++++++++++++++++++
+		UpdateValues(location)
+
+		if traitRank and self.TraitRank then --and HasAnyUnselectedPowers then 
+			self.AdditionalTraits:SetPoint("CENTER",0,20)
+			if string.find(traitRank, "-") then 
+				self.TraitRank:SetText(("%s"):format(traitRank))
+				self.TraitRank:SetTextColor(RED_FONT_COLOR:GetRGB())
+			else
+				self.TraitRank:SetText(("+%s"):format(traitRank))
+			end
+			self.TraitRank:Show()
+		else
+			self.TraitRank:Hide()
+			self.AdditionalTraits:SetPoint("CENTER",0,0)
+		end
+
+		if self.AdditionalTraits and duplicateTraits > 0 then 
+			self.AdditionalTraits:SetText(("%sX"):format(duplicateTraits+1))
+			self.AdditionalTraits:Show()
+		else
+			self.AdditionalTraits:Hide()
+		end
+	end
+end
+AF:SecureHook(AzeriteEmpoweredItemPowerMixin,"OnShow", AzeriteEmpoweredItemPowerMixin_OnShow)

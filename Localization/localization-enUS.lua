@@ -28,6 +28,11 @@ L["Export Data"] = true
 L["Import"] = true
 L["Azerite Gear"] = true
 L["Available Azerite Powers:"] = true
+L["Reset"] = true
+L["No Empowered %s item equipped"] = true
+L["No Empowered items equipped"] = true
+L["MiniMap Icon Settings"] = true
+L["Weight Data Options"] = true
 --@end-do-not-package@
 
 

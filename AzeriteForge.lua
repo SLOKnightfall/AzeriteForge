@@ -15,6 +15,11 @@ AzeriteForgeMiniMap = LibStub("LibDBIcon-1.0")
 local AceGUI = LibStub("AceGUI-3.0")
 local AF = AzeriteForge
 
+BINDING_HEADER_AZERITEFORGE = "AzeriteForge"
+BINDING_NAME_AZERITEFORGE_OPEN_HEAD = L["Head Powers"]
+BINDING_NAME_AZERITEFORGE_OPEN_CHEST = L["Shoulder Powers"]
+BINDING_NAME_AZERITEFORGE_OPEN_SHOULDER = L["Chest Powers"]
+
 local BagScrollFrame
 AF.BagScrollFrame = BagScrollFrame
 local currentXp, currentMaxXp, startXp =  0, 0 , 0 
@@ -28,6 +33,7 @@ local spec = 0
 local specID  = 0
 local className, classFile, classID
 local UnselectedPowersCount = 0
+local powerLocationButtonIDs = {}
 
 local bagDataStorage = {}
 
@@ -258,9 +264,19 @@ end
 
 --Opens a location's Azerite trait page
 function AF.ShowEmpoweredItem(itemLocation)
+	local equipmentSlotID = itemLocation:GetEquipmentSlot()
+
 	if ItemLocationMixin:IsEquipmentSlot(itemLocation) or not C_Item.DoesItemExist(itemLocation) then return end
 		if C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItem(itemLocation) then
 			OpenAzeriteEmpoweredItemUIFromItemLocation(itemLocation);
+
+			for i in pairs (powerLocationButtonIDs) do
+				if i == equipmentSlotID then 
+					powerLocationButtonIDs[i]:LockHighlight()
+				else
+					powerLocationButtonIDs[i]:UnlockHighlight()
+				end
+			end
 		else
 			DEFAULT_CHAT_FRAME:AddMessage("Equipped item is not an Azerite item.");
 		end
@@ -1414,8 +1430,21 @@ local function CreateBagInfoFrame()
 	window:SetPoint("BOTTOMRIGHT", AzeriteEmpoweredItemUI,"BOTTOMRIGHT")
 	--AF:HookScript(CharacterFrame, "OnShow", function()  f:Show() end)
 	window:SetParent(UIParent)
-	AF:HookScript(AzeriteEmpoweredItemUI, "OnHide", function() window:Hide() end)
+	--AF:HookScript(AzeriteEmpoweredItemUI, "OnHide", function() window:Hide() end)
 	window.title:SetText(L["Azerite Gear"])
+	window:SetScript("OnShow", function(self)
+		buttons.inventoryButton:LockHighlight()
+		end)
+
+	window:SetScript("OnHide", function(self)
+	buttons.inventoryButton:UnlockHighlight()
+		--f:Hide()
+		--RestoreUIPanelArea("CharacterFrame")
+		end)
+
+
+
+
 
 	local content = CreateFrame("Frame",nil, window)
 	content:SetPoint("TOPLEFT",15,-35)
@@ -1462,8 +1491,13 @@ local function CreateCharacterFrameTabs()
 	t:SetScript("OnClick", function()return end)
 	t:SetText("Azerite")
 
-	AF:HookScript(CharacterFrame, "OnShow", function()  f:Show() end)
-	AF:HookScript(CharacterFrame, "OnHide", function() f:Hide() end)
+
+
+
+
+	AF:HookScript(CharacterFrame, "OnShow", function()  f:Show(); buttons.characterButton:LockHighlight() end)
+	AF:HookScript(CharacterFrame, "OnHide", function() f:Hide(); buttons.characterButton:UnlockHighlight() end)
+
 	PanelTemplates_SetNumTabs(t, 1);
 	PanelTemplates_DeselectTab(t, 1);
 
@@ -1575,7 +1609,8 @@ local shoulderTraitsAvalable = false
 --------
 local function CreateAzeriteDataFrame()
 ---------
-	local f = CreateFrame('Frame', "AzeriteForge_menu", AzeriteEmpoweredItemUI)
+--Powers Window
+	local f = CreateFrame('Frame', "AzeriteForge_PowersList", UIParent)
 	f:SetClampedToScreen(true)
 	f:SetSize(250, 160)
 	f:SetPoint("TOPLEFT",AzeriteEmpoweredItemUI,"TOPRIGHT")
@@ -1585,6 +1620,8 @@ local function CreateAzeriteDataFrame()
 	f:SetFrameStrata('DIALOG')
 	f:SetMovable(false)
 	f:SetToplevel(true)
+
+
 
 	f.border = f:CreateTexture()
 	f.border:SetAllPoints()
@@ -1612,7 +1649,7 @@ local function CreateAzeriteDataFrame()
 
 	f.close = close_
 
-	f:Show()
+	--f:Show()
 
 	local content = CreateFrame("Frame",nil, f)
 	content:SetPoint("TOPLEFT",15,-15)
@@ -1631,54 +1668,39 @@ local function CreateAzeriteDataFrame()
 
 	f:SetScript("OnShow", function(self)
 		LibStub("AceConfigDialog-3.0"):Open("AzeriteForge_Talents", widget, "stats")
-		f:Show()
+		buttons.powerWindowButton:LockHighlight()
 		f:SetToplevel(true)
 		end)
 
 	f:SetScript("OnHide", function(self)
-		f:Hide()
+	buttons.powerWindowButton:UnlockHighlight()
+		--f:Hide()
 		--RestoreUIPanelArea("CharacterFrame")
 		end)
 
 	LibStub("AceGUI-3.0"):RegisterAsContainer(widget)
 
-	local powerWindowButton = CreateFrame("Button", nil , AzeriteEmpoweredItemUI)
-	powerWindowButton:SetNormalTexture(azeriteIcon)
-	--powerWindowButton:SetPushedTexture("Interface\\Buttons\\UI-MicroButton-Mounts-Down")
-	powerWindowButton:SetPoint("BOTTOMRIGHT", AzeriteEmpoweredItemUI, "BOTTOMRIGHT", 0, 0)
-	powerWindowButton:SetWidth(45)
-	powerWindowButton:SetHeight(45)
-	powerWindowButton.view = "skills"
-	powerWindowButton:SetScript("OnHide", function() powerWindowButton.view = "skills" end)
-	powerWindowButton:SetScript("OnClick", function(self, button, down)
-		local Shift = IsShiftKeyDown()
-		if Shift then
-			LibStub("AceConfigDialog-3.0"):Open("AzeriteForge", "weights")
 
-		else
-			if f:IsShown() then
-				f:Hide()	
-			else
-				LibStub("AceConfigDialog-3.0"):Open("AzeriteForge_Talents", widget, "stats")
-				f:Show()
-			end
-		end
+--Overlay
+	local overlay = CreateFrame('Frame', "AzeriteForge_Overlay", UIParent)
+	overlay:SetClampedToScreen(true)
+	overlay:SetSize(250, 160)
+	overlay:SetPoint("TOPLEFT",AzeriteEmpoweredItemUI,"TOPLEFT")
+	overlay:SetPoint("BOTTOMRIGHT",AzeriteEmpoweredItemUI,"BOTTOMRIGHT")
+	overlay:EnableMouse(true)
+	overlay:SetFrameStrata('LOW')
+	overlay:SetMovable(false)
+	overlay:SetToplevel(true)
 
-		end)
+	AF:HookScript(AzeriteEmpoweredItemUI, "OnShow", function()  f:Show(); overlay:Show() end)
+	AF:HookScript(AzeriteEmpoweredItemUI, "OnHide", function() f:Hide(); overlay:Hide(); AzeriteForge.Bag:Hide() end)
 
-	powerWindowButton:SetScript("OnEnter", function(self)
-			GameTooltip:SetOwner (self, "ANCHOR_RIGHT")
-			--GameTooltip:SetText(L.GOGOMOUNT_BUTTON_TOOLTIP, 1, 1, 1)
-			GameTooltip:Show()
-		end)
-
-	powerWindowButton:SetScript("OnLeave", function()
-			GameTooltip:Hide()
-		end)
-
-	local headSlotButton = CreateFrame("Button", "AZ_HeadSlotButton" , AzeriteEmpoweredItemUI)
+	local headSlotButton = CreateFrame("Button", "AZ_HeadSlotButton" , overlay)
 	buttons.headSlotButton = headSlotButton
+	powerLocationButtonIDs[1] = headSlotButton
 	headSlotButton:SetNormalTexture("Interface\\Icons\\inv_boot_helm_draenordungeon_c_01")
+	headSlotButton:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
+
 	headSlotButton:SetPoint("TOPLEFT", AzeriteEmpoweredItemUI, "BOTTOMLEFT", 0, 0)
 	headSlotButton:SetWidth(45)
 	headSlotButton:SetHeight(45)
@@ -1699,7 +1721,7 @@ local function CreateAzeriteDataFrame()
 
 	headSlotButton:SetScript("OnEnter", function(self)
 			GameTooltip:SetOwner (self, "ANCHOR_RIGHT")
-			GameTooltip:SetText(L["Toggle Head Azerite Panel"], 1, 1, 1)
+			GameTooltip:SetText(L["Head Azerite Powers"], 1, 1, 1)
 			GameTooltip:Show()
 
 		end)
@@ -1708,9 +1730,11 @@ local function CreateAzeriteDataFrame()
 			GameTooltip:Hide()
 		end)
 
-	local shoulderSlotButton = CreateFrame("Button", nil , AzeriteEmpoweredItemUI)
+	local shoulderSlotButton = CreateFrame("Button", nil , overlay)
 	buttons.shoulderSlotButton = shoulderSlotButton
+	powerLocationButtonIDs[3] = shoulderSlotButton
 	shoulderSlotButton:SetNormalTexture("Interface\\Icons\\inv_misc_desecrated_clothshoulder")
+	shoulderSlotButton:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
 	shoulderSlotButton:SetPoint("LEFT", headSlotButton, "RIGHT", 0, 0)
 	shoulderSlotButton:SetWidth(45)
 	shoulderSlotButton:SetHeight(45)
@@ -1738,9 +1762,11 @@ local function CreateAzeriteDataFrame()
 			GameTooltip:Hide()
 		end)
 
-	local chestSlotButton = CreateFrame("Button", nil , AzeriteEmpoweredItemUI, MainMenuBarMicroButton)
+	local chestSlotButton = CreateFrame("Button", nil , overlay, MainMenuBarMicroButton)
 	buttons.chestSlotButton = chestSlotButton
+	powerLocationButtonIDs[5] = chestSlotButton
 	chestSlotButton:SetNormalTexture("Interface\\Icons\\inv_chest_chain")
+	chestSlotButton:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
 	chestSlotButton:SetPoint("LEFT", shoulderSlotButton, "RIGHT", 0, 0)
 	chestSlotButton:SetWidth(45)
 	chestSlotButton:SetHeight(45)
@@ -1765,14 +1791,54 @@ local function CreateAzeriteDataFrame()
 		end
 	end)
 
-	local characterButton = CreateFrame("Button", nil , AzeriteEmpoweredItemUI,MainMenuBarMicroButton)
+	local powerWindowButton = CreateFrame("Button", nil , overlay)
+	buttons.powerWindowButton = powerWindowButton
+	powerWindowButton:SetNormalTexture(azeriteIcon)
+	powerWindowButton:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
+	powerWindowButton:SetPoint("LEFT", chestSlotButton, "RIGHT", 0, 0)
+	powerWindowButton:SetWidth(45)
+	powerWindowButton:SetHeight(45)
+	powerWindowButton:SetFrameStrata('DIALOG')
+	powerWindowButton:SetToplevel(true)
+	powerWindowButton.view = "skills"
+	powerWindowButton:SetScript("OnHide", function() powerWindowButton.view = "skills" end)
+
+	powerWindowButton:SetScript("OnClick", function(self, button, down)
+		local Shift = IsShiftKeyDown()
+		if Shift then
+			LibStub("AceConfigDialog-3.0"):Open("AzeriteForge", "weights")
+
+		else
+			if f:IsShown() then
+				f:Hide()	
+			else
+				LibStub("AceConfigDialog-3.0"):Open("AzeriteForge_Talents", widget, "stats")
+				f:Show()
+			end
+		end
+
+		end)
+
+	powerWindowButton:SetScript("OnEnter", function(self)
+			GameTooltip:SetOwner (self, "ANCHOR_RIGHT")
+			GameTooltip:SetText(L["Selected Power List"], 1, 1, 1)
+			GameTooltip:Show()
+		end)
+
+	powerWindowButton:SetScript("OnLeave", function()
+			GameTooltip:Hide()
+		end)
+
+	local characterButton = CreateFrame("Button", nil , overlay,MainMenuBarMicroButton)
 	buttons.characterButton = characterButton
 	characterButton:SetNormalTexture(azeriteIcon)
 	characterButton.texture = characterButton:CreateTexture("AZF_CharacterButton_Texture", "OVERLAY")
+	characterButton:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
 	characterButton.texture:SetAllPoints()
 	characterButton.texture:SetColorTexture(1, 1, 1, 0.5)
 	SetPortraitTexture(characterButton.texture, "player")
-	characterButton:SetPoint("LEFT", chestSlotButton, "RIGHT", 0, 0)
+
+	characterButton:SetPoint("LEFT", powerWindowButton, "RIGHT", 0, 0)
 	characterButton:SetWidth(45)
 	characterButton:SetHeight(45)
 	characterButton:SetScript("OnClick", function(self, button, down)
@@ -1787,9 +1853,10 @@ local function CreateAzeriteDataFrame()
 			GameTooltip:Hide()
 		end)
 	
-	local inventoryButton = CreateFrame("Button", nil , AzeriteEmpoweredItemUI)
+	local inventoryButton = CreateFrame("Button", nil , overlay)
 	buttons.inventoryButton = inventoryButton
 	inventoryButton:SetNormalTexture("Interface\\Icons\\inv_tailoring_hexweavebag")
+	inventoryButton:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
 	inventoryButton:SetPoint("LEFT", characterButton, "RIGHT", 0, 0)
 	inventoryButton:SetWidth(45)
 	inventoryButton:SetHeight(45)
@@ -1944,7 +2011,7 @@ local function AzeriteEmpoweredItemPowerMixin_OnEnter(self,...)
 	local duplicateLocations = AF:FindStackedTraits(self:GetAzeritePowerID(),location,SelectedAzeriteTraits)
 
 	if duplicateLocations then
-		GameTooltip_AddColoredLine(GameTooltip, ("Found on :%s"):format(duplicateLocations), RED_FONT_COLOR);
+		GameTooltip_AddColoredLine(GameTooltip, (L["Found on: %s"]):format(duplicateLocations), RED_FONT_COLOR);
 	end
 
 	GameTooltip:Show();

@@ -7,7 +7,7 @@ if not L then return end
 
 --@do-not-package@ 
 L["Toggle Character Info"] = true
-L["Toggle Head Azerite Panel"] = true
+L["Head Azerite Powers"] = true
 L["Toggle Shoulder Azerite Panel"] = true
 L["Toggle Chest Azerite Panel"] = true
 L["Azerite Items in Bag"] = true
@@ -33,9 +33,8 @@ L["No Empowered %s item equipped"] = true
 L["No Empowered items equipped"] = true
 L["MiniMap Icon Settings"] = true
 L["Weight Data Options"] = true
+L["Selected Power List"]  = true
+L["Found on: %s"] = true
 --@end-do-not-package@
-
-
-
 
 --@localization(locale="enUS", format="lua_additive_table")@

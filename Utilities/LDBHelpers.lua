@@ -159,7 +159,7 @@ function AF.setLDBItems(location)
 		end
 	end
 
-	if HasAnyUnselectedPowers then itemName = "*"..itemName.."*" end
+	if itemName and HasAnyUnselectedPowers then itemName = "*"..itemName.."*" end
 
 	LDB_Location[location].icon = (itemIcon  or azeriteIcon)
 	LDB_Location[location].itemLink = itemLink

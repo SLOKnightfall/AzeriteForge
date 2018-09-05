@@ -37,4 +37,5 @@ L["Selected Power List"]  = true
 L["Found on: %s"] = true
 --@end-do-not-package@
 
+
 --@localization(locale="enUS", format="lua_additive_table")@

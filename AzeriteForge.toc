@@ -40,10 +40,13 @@ Localization\localization-zhCN.lua
 Localization\localization-zhTW.lua
 
 #Templates
-Templates\AceGUIWidgets.lua
+Utilities\AceGUIWidgets.lua
+Utilities\Frames.lua
 
 
 #Core
 TraitData.lua
 AzeriteForge.lua
-Templates\LDBHelpers.lua
+Utilities\LDBHelpers.lua
+Utilities\import_export.lua
+Utilities\Mixins.lua

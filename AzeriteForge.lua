@@ -607,20 +607,24 @@ end
 
 
 function AF:OnInitialize()
-	self.db = LibStub("AceDB-3.0"):New("AzeriteForgeDB", DB_DEFAULTS, true)
-	LibStub("AceConfig-3.0"):RegisterOptionsTable("AzeriteForge_Talents", talent_options)
-	LibStub("AceConfig-3.0"):RegisterOptionsTable("AzeriteForge", options)
-	self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("AzeriteForge", "AzeriteForge")
-	globalDb = self.db.global
-	configDb = self.db.profile
-	Config = self.db.profile
-	AzeriteForgeDB.SavedSpecData = AzeriteForgeDB.SavedSpecData or {}
-	AzeriteForgeDB.SavedSpecData[specID] = traitRanks
+
+
+
 
 end
 
 
 function AF:OnEnable()
+	self.db = LibStub("AceDB-3.0"):New("AzeriteForgeDB", DB_DEFAULTS, true)
+		AzeriteForgeDB.SavedSpecData = AzeriteForgeDB.SavedSpecData or {}
+	AzeriteForgeDB.SavedSpecData[specID] = traitRanks
+	LibStub("AceConfig-3.0"):RegisterOptionsTable("AzeriteForge_Talents", talent_options)
+	LibStub("AceConfig-3.0"):RegisterOptionsTable("AzeriteForge", options)
+	self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("AzeriteForge", "AzeriteForge")
+
+	globalDb = self.db.global
+	configDb = self.db.profile
+	Config = self.db.profile
 	self:RegisterChatCommand("az", "ChatCommand")
 	self:RegisterChatCommand("azeriteforge", "ChatCommand")
 
@@ -644,7 +648,7 @@ function AF:OnEnable()
 	AF:LoadClassTraitRanks()
 	--AF:CreateTraitMenu()
 	UpdateWeeklyQuest()
-	AF:UpdateBagDataMenu("")
+	--AF:UpdateBagDataMenu()
 	AF:updateInfoLDB()
 
 	AF:SecureHookScript(GameTooltip,"OnTooltipSetItem")
@@ -655,6 +659,8 @@ function AF:OnEnable()
 end
 
 function AF:PLAYER_ENTERING_WORLD()
+
+
 end
 
 
@@ -1165,7 +1171,7 @@ function AF:UpdateBagDataMenu(filter, filterLocation)
 		item.traits:SetText(traitText)
 		item.traits:SetJustifyH("LEFT")
 
-		if string.find(string.lower(traitText), filterText) or string.find(string.lower(itemName), filterText) or string.find(string.lower(_G[itemEquipLoc]), filterText) then --or itemEquipLocID == filterLocation then 
+		if string.find(string.lower(traitText), filterText)  or string.find(string.lower(itemName), filterText) or string.find(string.lower(_G[itemEquipLoc]), filterText) then --or itemEquipLocID == filterLocation then 
 		BagScrollFrame:AddChild(item) 
 		else
 		AceGUI:Release(item)
@@ -1434,6 +1440,8 @@ local function CreateBagInfoFrame()
 	window.title:SetText(L["Azerite Gear"])
 	window:SetScript("OnShow", function(self)
 		buttons.inventoryButton:LockHighlight()
+			AF:UpdateBagDataMenu("")
+
 		end)
 
 	window:SetScript("OnHide", function(self)
@@ -1889,12 +1897,13 @@ function AF:CreateFrames()
 	CreateBagInfoFrame()
 end
 
+
+local tooltipCatcher = CreateFrame("GameTooltip",nil, UIParent)
 --###########################
 --Tooltip stuff
 function AF:BuildTraitText(itemLink, tooltip, name, force)
-	if not Config.enhancedTooltip then return end
+	if force then tooltip = tooltipCatcher end
 	
-
 	-- Current Azerite Level
 	local azeriteItemLocation = C_AzeriteItem.FindActiveAzeriteItem()
 	if azeriteItemLocation then
@@ -1977,7 +1986,7 @@ function AF:BuildTraitText(itemLink, tooltip, name, force)
 				
 				--iconText = (rank  and iconText..rank.." ") or iconText
 				
-				local traitText = not Config.tooltipIconsOnly and fontColor..azeritePowerName or ""
+				local traitText = (force or not Config.tooltipIconsOnly) and fontColor..azeritePowerName or ""
 				if rank then traitText = traitText.. " ("..rank..") " end
 				traitText = traitText..textBreak
 				azeriteTooltipText = ((force or not Config.tooltipCurrentTraits or (Config.tooltipCurrentTraits and C_AzeriteEmpoweredItem.IsPowerAvailableForSpec(azeritePowerID, specID))) and azeriteTooltipText.."  "..azeriteIcon.."  "..traitText) or azeriteTooltipText
@@ -1996,7 +2005,7 @@ function AF:OnTooltipSetItem(self,...)
 	local name, link = self:GetItem()
   	if not name then return end
 
-  	if C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItemByID(link) then
+  	if C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItemByID(link)  then
     		AF:BuildTraitText(link, self, name)
 	end
 end

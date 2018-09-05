@@ -410,6 +410,25 @@ local options = {
 				set = function(info,val) AzeriteForge.db.profile.tooltipIconsOnly = val end,
 				get = function(info) return AzeriteForge.db.profile.tooltipIconsOnly end,
 				},
+			misctipHeader = {
+				type = "header",
+				name =L["Misc Options"],
+				order =11,
+				},
+			unavailableAlert = {
+				type = "toggle",
+				name = L["Alert user if equiped item has un-useable trait"],
+				order = 10,
+				set = function(info,val) AzeriteForge.db.profile.unavailableAlert = val end,
+				get = function(info) return AzeriteForge.db.profile.unavailableAlert end,
+				},
+			unavailableAlertSound = {
+				type = "toggle",
+				name = L["Play Alert Sound when triggered"],
+				order = 10,
+				set = function(info,val) AzeriteForge.db.profile.unavailableAlertsound = val end,
+				get = function(info) return AzeriteForge.db.profile.unavailableAlertsound end,
+				},
 			},
 		},
 	weights = {
@@ -516,7 +535,9 @@ local DB_DEFAULTS = {
 		},
 		tooltipCurrentTraits = false,
 		tooltipIconsOnly = false,
-		enhancedTooltip = true,		
+		enhancedTooltip = true,	
+		unavailableAlert = true,
+		unavailableAlertsound = true, 
 	},
 	global = {
 	},
@@ -535,7 +556,7 @@ end
 
 function AF:ChatCommand(input)
     if not input or input:trim() == "" then
-        LibStub("AceConfigDialog-3.0"):Open("AzeriteForge_Talents", widget, "stats")
+        --LibStub("AceConfigDialog-3.0"):Open("AzeriteForge_Talents", widget, "stats")
 
     else
         LibStub("AceConfigCmd-3.0"):HandleCommand("az", "AzeriteForge", input)
@@ -548,13 +569,23 @@ function AF:GetAzeriteTraits()
 	AvailableAzeriteTraits = {["Shoulder"] = {}, ["Head"] = {}, ["Chest"]= {},}
 	SelectedAzeriteTraits = {["Shoulder"] = {}, ["Head"] = {}, ["Chest"]= {},}
 
-	if not GetInventoryItemID("player", 3) then --or C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItem(itemLocation) then 
-		buttons.shoulderSlotButton:Hide()
-	else
-		buttons.shoulderSlotButton:Show()
-		AF:GetAzeriteLocationTraits("Shoulder")
-		AF:UnselectTraits("Shoulder")
-	end
+	--AF.PowerSummaryFrame
+	AceGUI:Release(AF.PowerSummaryFrame.scrollFrame)
+
+	local scroll = AceGUI:Create("ScrollFrame")
+	scroll:SetLayout("Flow")
+	AF.PowerSummaryFrame:AddChild(scroll)
+	AF.PowerSummaryFrame.scrollFrame = scroll
+
+	local AF_Header = AceGUI:Create("Heading")
+	AF_Header:SetText(L["AzeriteForge"])
+	AF_Header:SetRelativeWidth(1)
+	scroll:AddChild(AF_Header)
+
+	local headPower_Header = AceGUI:Create("Heading")
+	headPower_Header:SetText(L["Head Powers"])
+	headPower_Header:SetRelativeWidth(1)
+	scroll:AddChild(headPower_Header)
 
 	if not GetInventoryItemID("player", 1) then 
 		buttons.headSlotButton:Hide()
@@ -564,6 +595,23 @@ function AF:GetAzeriteTraits()
 		AF:UnselectTraits("Head")
 	end
 
+	local chestPower_Header = AceGUI:Create("Heading")
+	chestPower_Header:SetText(L["Chest Powers"])
+	chestPower_Header:SetRelativeWidth(1)
+	scroll:AddChild(chestPower_Header)
+
+	if not GetInventoryItemID("player", 3) then --or C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItem(itemLocation) then 
+		buttons.shoulderSlotButton:Hide()
+	else
+		buttons.shoulderSlotButton:Show()
+		AF:GetAzeriteLocationTraits("Shoulder")
+		AF:UnselectTraits("Shoulder")
+	end
+
+	local shoulderPower_Header = AceGUI:Create("Heading")
+	shoulderPower_Header:SetText(L["Shoulder Powers"])
+	shoulderPower_Header:SetRelativeWidth(1)
+	scroll:AddChild(shoulderPower_Header)
 	if not GetInventoryItemID("player", 5) then 
 		buttons.chestSlotButton:Hide()
 	else
@@ -677,9 +725,8 @@ function AF:PLAYER_EQUIPMENT_CHANGED(event, ...)
 	if InventorySlotId == INVSLOT_HEAD or InventorySlotId == 3 or InventorySlotId == 5 then
 		AF:GetAzeriteTraits()
 		AF:GetAzeriteData()
-	AF:GetAzeriteTraits()
-	AF:UpdateBagDataMenu("")
-	AF:updateInfoLDB()
+		AF:UpdateBagDataMenu("")
+		AF:updateInfoLDB()
 	end
 end
 
@@ -803,12 +850,44 @@ function AF:GetAzeriteLocationTraits(location)
 			local azeriteSpellID = AzeriteTooltip_GetSpellID(azeritePowerIDs)				
 			local azeritePowerName, _, icon = GetSpellInfo(azeriteSpellID)
 			local isSelected = C_AzeriteEmpoweredItem.IsPowerSelected(locationData, azeritePowerIDs)
+			local isAvailable = C_AzeriteEmpoweredItem.IsPowerAvailableForSpec(azeritePowerIDs, specID)
 
 			if isSelected then
 				SelectedAzeriteTraits[location][j] = SelectedAzeriteTraits[location][j] or {}
 				SelectedAzeriteTraits[location][j]["azeritePowerIDs"] = SelectedAzeriteTraits[location][j]["azeritePowerIDs"] or {}
 				SelectedAzeriteTraits[location][j]["azeritePowerIDs"][index] = azeritePowerIDs
 
+				local item = AceGUI:Create("AzeriteForgeItem")
+				item.item.icon:SetTexture(azeriteIcon)
+				AF.PowerSummaryFrame.scrollFrame:AddChild(item)
+
+				item.item.icon:SetTexture(icon)
+				item.item:SetPoint("TOPLEFT", item.frame, "TOPLEFT")
+				item.description:Hide()
+				item.item:SetScript("OnEnter", nil)
+				item.item:SetScript("OnClick", nil)
+
+				item.traits:ClearAllPoints()
+				item.traits:SetPoint("TOPLEFT", item.item, "TOPRIGHT", 5, 0)
+				item.traits:SetWidth(165)
+
+				if not isAvailable then 
+					item.traits:SetTextColor(RED_FONT_COLOR.r,RED_FONT_COLOR.g,RED_FONT_COLOR.b)
+					if AzeriteForge.db.profile.unavailableAlert then 
+					print((L[RED_FONT_COLOR_CODE.."%s item has traits unuseable in current spec"]):format(location))
+						if AzeriteForge.db.profile.unavailableAlertsound then 
+							PlaySound(6595)
+						end
+					end
+				end
+
+				item.traits:SetText(azeritePowerName.."\n"..GetSpellDescription(azeriteSpellID))
+				item.traits:SetJustifyH("LEFT")
+
+
+				item.frame:SetHeight(item.traits:GetHeight()+5)
+
+--[[
 				talent_options.args.stats.args[location..j]  = {
 					name = azeritePowerName.."\n"..GetSpellDescription(azeriteSpellID),
 					type = "description",
@@ -821,7 +900,7 @@ function AF:GetAzeriteLocationTraits(location)
 					fontSize  = "medium",
 					order = locationIDs[location]+tonumber("."..j),
 				}
-	
+	]]--
 			end
 
 			Debug(("Trait Level: %s"):format(j))
@@ -911,6 +990,7 @@ function AF:LoadClassTraitRanks(DB)
 	AF.traitRanks = AzeriteForgeDB.SavedSpecData[specID] or AF.loadDefaultData("StackData")
 	AzeriteForgeDB.SavedSpecData[specID] = AF.traitRanks
 end
+
 
 
 function AF:CreateTraitMenu()

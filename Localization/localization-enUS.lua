@@ -6,6 +6,7 @@ local L = LibStub("AceLocale-3.0"):NewLocale("AzeriteForge", "enUS", true)
 if not L then return end
 
 --@do-not-package@ 
+L["AzeriteForge"] = true
 L["Toggle Character Info"] = true
 L["Head Azerite Powers"] = true
 L["Toggle Shoulder Azerite Panel"] = true
@@ -35,6 +36,10 @@ L["MiniMap Icon Settings"] = true
 L["Weight Data Options"] = true
 L["Selected Power List"]  = true
 L["Found on: %s"] = true
+L["Misc Options"] =  true
+L["Alert user if equiped item has un-useable trait"] = true
+ L["Play Alert Sound when triggered"] = true
+ L[RED_FONT_COLOR_CODE.."%s item has traits unuseable in current spec" ] = true
 --@end-do-not-package@
 
 

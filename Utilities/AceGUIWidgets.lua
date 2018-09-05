@@ -61,7 +61,7 @@ do
 		description:SetTextColor(1, 1, 1, 1)
 		frame.description = text
 
-		local item = CreateFrame("Button", _ ,frame,"ItemButtonTemplate")
+		local item = CreateFrame("Button", "AzeriteForgeItem"..num.."item" ,frame,"ItemButtonTemplate")
 		item:SetSize(35,35)
 		item:SetPoint("TOPLEFT", description, "BOTTOMLEFT", 0,-5)
 		item.icon:SetTexture(azeriteIcon)
@@ -76,7 +76,7 @@ do
 			if button == "RightButton" then
 				AF.ShowEmpoweredItem(AzeriteLocations["Head"])
 				EquipItemByName(frame.itemLink)
-				AF.ShowEmpoweredItem(getItemsLocation(frame.itemLink))
+				AF.ShowEmpoweredItem(AF.createItemLocation(frame.itemLink))
 			else
 			if (frame.location)then 
 				AF.ShowEmpoweredItem(frame.location)

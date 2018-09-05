@@ -429,7 +429,7 @@ local function CreateAzeriteDataFrame()
 
 	local content = CreateFrame("Frame",nil, f)
 	content:SetPoint("TOPLEFT",15,-15)
-	content:SetPoint("BOTTOMRIGHT",-15,15)
+	content:SetPoint("BOTTOMRIGHT",-15,25)
 	--This creats a cusomt AceGUI container which lets us imbed a AceGUI menu into our frame.
 	local widget = {
 		frame     = f,
@@ -443,7 +443,7 @@ local function CreateAzeriteDataFrame()
 		end	
 
 	f:SetScript("OnShow", function(self)
-		LibStub("AceConfigDialog-3.0"):Open("AzeriteForge_Talents", widget, "stats")
+		--LibStub("AceConfigDialog-3.0"):Open("AzeriteForge_Talents", widget, "stats")
 		buttons.powerWindowButton:LockHighlight()
 		f:SetToplevel(true)
 		end)
@@ -455,6 +455,21 @@ local function CreateAzeriteDataFrame()
 		end)
 
 	LibStub("AceGUI-3.0"):RegisterAsContainer(widget)
+
+	widget:SetLayout("Fill")
+
+
+	AceGUI:RegisterAsContainer(widget)
+	widget:SetLayout("Fill")
+	--AzeriteForge.Bag.widget= widget
+	local scroll = AceGUI:Create("ScrollFrame")
+	scroll:SetLayout("List")
+	widget:AddChild(scroll)
+	AF.PowerSummaryFrame = widget
+	AF.PowerSummaryFrame.scrollFrame = scroll
+
+
+
 
 
 --Overlay
@@ -497,7 +512,7 @@ local function CreateAzeriteDataFrame()
 
 	headSlotButton:SetScript("OnEnter", function(self)
 			GameTooltip:SetOwner (self, "ANCHOR_RIGHT")
-			GameTooltip:SetText(L["Head Azerite Powers"], 1, 1, 1)
+			GameTooltip:SetText(L["Head Powers"], 1, 1, 1)
 			GameTooltip:Show()
 
 		end)
@@ -530,7 +545,7 @@ local function CreateAzeriteDataFrame()
 
 	shoulderSlotButton:SetScript("OnEnter", function(self)
 			GameTooltip:SetOwner (self, "ANCHOR_RIGHT")
-			GameTooltip:SetText(L["Toggle Shoulder Azerite Panel"], 1, 1, 1)
+			GameTooltip:SetText(L["Shoulder Powers"], 1, 1, 1)
 			GameTooltip:Show()
 		end)
 
@@ -553,7 +568,7 @@ local function CreateAzeriteDataFrame()
 
 	chestSlotButton:SetScript("OnEnter", function(self)
 			GameTooltip:SetOwner (self, "ANCHOR_RIGHT")
-			GameTooltip:SetText(L["Toggle Chest Azerite Panel"], 1, 1, 1)
+			GameTooltip:SetText(L["Chest Powers"], 1, 1, 1)
 			GameTooltip:Show()
 		end)
 	chestSlotButton:SetScript("OnLeave", function()
@@ -588,7 +603,7 @@ local function CreateAzeriteDataFrame()
 			if f:IsShown() then
 				f:Hide()	
 			else
-				LibStub("AceConfigDialog-3.0"):Open("AzeriteForge_Talents", widget, "stats")
+				--LibStub("AceConfigDialog-3.0"):Open("AzeriteForge_Talents", widget, "stats")
 				f:Show()
 			end
 		end

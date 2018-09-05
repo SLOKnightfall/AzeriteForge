@@ -1,0 +1,11 @@
+<Bindings>
+ <Binding name= "AZERITEFORGE_OPEN_HEAD" header="AZERITEFORGE" category="ADDONS">
+    AzeriteForge.ShowEmpoweredItem(ItemLocation:CreateFromEquipmentSlot(1));
+ </Binding>
+  <Binding name= "AZERITEFORGE_OPEN_CHEST" category="ADDONS">
+   AzeriteForge.ShowEmpoweredItem(ItemLocation:CreateFromEquipmentSlot(3));
+ </Binding>
+   <Binding name= "AZERITEFORGE_OPEN_SHOULDER" category="ADDONS">
+   AzeriteForge.ShowEmpoweredItem(ItemLocation:CreateFromEquipmentSlot(5));
+ </Binding>
+</Bindings>

@@ -80,7 +80,7 @@ end
 --Processes AzeritePowerWeights export strings
 local function AzeritePowerWeightsImport(data)
 		local player_spec = GetSpecialization()
-		local player_specID = GetSpecializationInfo(spec)
+		local player_specID = GetSpecializationInfo(player_spec)
 		local startPos, endPos, stringVersion, scaleName, classID, specID, powerWeights = strfind(data, APW_template)
 
 		powerWeights = powerWeights or ""

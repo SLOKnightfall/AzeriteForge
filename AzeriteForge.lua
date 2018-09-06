@@ -536,8 +536,8 @@ local DB_DEFAULTS = {
 		tooltipCurrentTraits = false,
 		tooltipIconsOnly = false,
 		enhancedTooltip = true,	
-		unavailableAlert = true,
-		unavailableAlertsound = true, 
+		unavailableAlert = false,
+		unavailableAlertsound = false, 
 	},
 	global = {
 	},

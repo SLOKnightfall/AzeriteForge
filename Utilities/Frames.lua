@@ -59,8 +59,8 @@ local function addFramesToAzeriteEmpoweredItemUI()
 end
 
 
-local function CreateGenericFrame()
-	local window = CreateFrame("Frame", nil, UIParent)
+local function CreateGenericFrame(name, parent)
+	local window = CreateFrame("Frame", (name or nil), (parent or UIParent), "InsetFrameTemplate")
 	window:Hide()
 
 	window:SetFrameStrata("DIALOG")
@@ -79,7 +79,7 @@ local function CreateGenericFrame()
 	end)
 
 	local titlebg = window:CreateTexture(nil, "BORDER")
-	titlebg:SetTexture(251966) --"Interface\\PaperDollInfoFrame\\UI-GearManager-Title-Background"
+	titlebg:SetTexture("Interface\\PaperDollInfoFrame\\UI-GearManager-Title-Background") --
 	titlebg:SetPoint("TOPLEFT", 9, -6)
 	titlebg:SetPoint("BOTTOMRIGHT", window, "TOPRIGHT", -28, -24)
 
@@ -88,71 +88,12 @@ local function CreateGenericFrame()
 	title:SetTextColor(1, 1, 1, 1)
 	window.title = title
 
-	local dialogbg = window:CreateTexture(nil, "BACKGROUND")
-	dialogbg:SetTexture(136548) --"Interface\\PaperDollInfoFrame\\UI-Character-CharacterTab-L1"
-	dialogbg:SetPoint("TOPLEFT", 8, -12)
-	dialogbg:SetPoint("BOTTOMRIGHT", -6, 8)
-	dialogbg:SetTexCoord(0.255, 1, 0.29, 1)
-
-	local topleft = window:CreateTexture(nil, "BORDER")
-	topleft:SetTexture(251963) --"Interface\\PaperDollInfoFrame\\UI-GearManager-Border"
-	topleft:SetWidth(64)
-	topleft:SetHeight(64)
-	topleft:SetPoint("TOPLEFT")
-	topleft:SetTexCoord(0.501953125, 0.625, 0, 1)
-
-	local topright = window:CreateTexture(nil, "BORDER")
-	topright:SetTexture(251963) --"Interface\\PaperDollInfoFrame\\UI-GearManager-Border"
-	topright:SetWidth(64)
-	topright:SetHeight(64)
-	topright:SetPoint("TOPRIGHT")
-	topright:SetTexCoord(0.625, 0.75, 0, 1)
-
-	local top = window:CreateTexture(nil, "BORDER")
-	top:SetTexture(251963) --"Interface\\PaperDollInfoFrame\\UI-GearManager-Border"
-	top:SetHeight(64)
-	top:SetPoint("TOPLEFT", topleft, "TOPRIGHT")
-	top:SetPoint("TOPRIGHT", topright, "TOPLEFT")
-	top:SetTexCoord(0.25, 0.369140625, 0, 1)
-
-	local bottomleft = window:CreateTexture(nil, "BORDER")
-	bottomleft:SetTexture(251963) --"Interface\\PaperDollInfoFrame\\UI-GearManager-Border"
-	bottomleft:SetWidth(64)
-	bottomleft:SetHeight(64)
-	bottomleft:SetPoint("BOTTOMLEFT")
-	bottomleft:SetTexCoord(0.751953125, 0.875, 0, 1)
-
-	local bottomright = window:CreateTexture(nil, "BORDER")
-	bottomright:SetTexture(251963) --"Interface\\PaperDollInfoFrame\\UI-GearManager-Border"
-	bottomright:SetWidth(64)
-	bottomright:SetHeight(64)
-	bottomright:SetPoint("BOTTOMRIGHT")
-	bottomright:SetTexCoord(0.875, 1, 0, 1)
-
-	local bottom = window:CreateTexture(nil, "BORDER")
-	bottom:SetTexture(251963) --"Interface\\PaperDollInfoFrame\\UI-GearManager-Border"
-	bottom:SetHeight(64)
-	bottom:SetPoint("BOTTOMLEFT", bottomleft, "BOTTOMRIGHT")
-	bottom:SetPoint("BOTTOMRIGHT", bottomright, "BOTTOMLEFT")
-	bottom:SetTexCoord(0.376953125, 0.498046875, 0, 1)
-
-	local left = window:CreateTexture(nil, "BORDER")
-	left:SetTexture(251963) --"Interface\\PaperDollInfoFrame\\UI-GearManager-Border"
-	left:SetWidth(64)
-	left:SetPoint("TOPLEFT", topleft, "BOTTOMLEFT")
-	left:SetPoint("BOTTOMLEFT", bottomleft, "TOPLEFT")
-	left:SetTexCoord(0.001953125, 0.125, 0, 1)
-
-	local right = window:CreateTexture(nil, "BORDER")
-	right:SetTexture(251963) --"Interface\\PaperDollInfoFrame\\UI-GearManager-Border"
-	right:SetWidth(64)
-	right:SetPoint("TOPRIGHT", topright, "BOTTOMRIGHT")
-	right:SetPoint("BOTTOMRIGHT", bottomright, "TOPRIGHT")
-	right:SetTexCoord(0.1171875, 0.2421875, 0, 1)
+	
 
 	local close = CreateFrame("Button", nil, window, "UIPanelCloseButton")
 	close:SetPoint("TOPRIGHT", 2, 1)
 	close:SetScript("OnClick", function() window:Hide() end)
+	window.close = close
 
 	return window
 end
@@ -201,14 +142,12 @@ end
 
 --AzeriteEmpoweredItemUI
 local function CreateBagInfoFrame()
-	local window = CreateGenericFrame(AzeriteEmpoweredItemUI)
+	local window = CreateGenericFrame ("AzeriteForgeItemFrame", AzeriteEmpoweredItemUI)
 	
 	window:ClearAllPoints()
 	window:SetPoint("TOPLEFT", AzeriteEmpoweredItemUI, "TOPLEFT",-5,-20)
 	window:SetPoint("BOTTOMRIGHT", AzeriteEmpoweredItemUI,"BOTTOMRIGHT")
-	--AF:HookScript(CharacterFrame, "OnShow", function()  f:Show() end)
 	window:SetParent(UIParent)
-	--AF:HookScript(AzeriteEmpoweredItemUI, "OnHide", function() window:Hide() end)
 	window.title:SetText(L["Azerite Gear"])
 	window:SetScript("OnShow", function(self)
 		buttons.inventoryButton:LockHighlight()
@@ -217,9 +156,7 @@ local function CreateBagInfoFrame()
 		end)
 
 	window:SetScript("OnHide", function(self)
-	buttons.inventoryButton:UnlockHighlight()
-		--f:Hide()
-		--RestoreUIPanelArea("CharacterFrame")
+		buttons.inventoryButton:UnlockHighlight()
 		end)
 
 	local content = CreateFrame("Frame",nil, window)
@@ -248,36 +185,25 @@ local function CreateBagInfoFrame()
 	BagScrollFrame = scroll
 end
 
-
-
-
 local function CreateCharacterFrameTabs()
---Tabs have issues if the frame parent is set to CharacterFrame.  
-	local f = CreateFrame('Frame', "AzeriteCharacterPanel", UIPARENT)
-	f:SetSize(1, 5)
-	f:ClearAllPoints()
-	f:SetPoint("TOPLEFT",CharacterFrameTab3,"TOPRIGHT", -15 ,0)
 
-	local t = CreateFrame("Button", "AzeriteCharacterPanelTab1", f, "CharacterFrameTabButtonTemplate")
-	t:SetPoint("TOPLEFT", f, "TOPLEFT", 0, 0)
-	t.id = 1
-	t:SetScript("OnLoad", nil)
-	t:SetScript("OnShow", function()return end)
-	t:SetScript("OnEvent", function()return end)
-	t:SetScript("OnClick", function()return end)
-	t:SetText("Azerite")
+	local powerWindowButton = CreateFrame("Button", "AF_CharacterPage_Icon" , CharacterFrame, "UIPanelButtonTemplate")
 
+	buttons.powerWindowButton2 = powerWindowButton2
+	powerWindowButton2= powerWindowButton
+	powerWindowButton:SetNormalTexture(azeriteIcon)
+	powerWindowButton:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
+	powerWindowButton:SetPoint("TOPLEFT",CharacterFrameTab3, "TOPRIGHT", 0, 0)
+	powerWindowButton:SetWidth(27)
+	powerWindowButton:SetHeight(27)
+	powerWindowButton:SetToplevel(true)
+	powerWindowButton.view = "skills"
+	powerWindowButton:Hide()
 
+	powerWindowButton:SetFrameLevel(CharacterFrame:GetFrameLevel())
+	powerWindowButton:Lower()
 
-
-
-	AF:HookScript(CharacterFrame, "OnShow", function()  f:Show(); buttons.characterButton:LockHighlight() end)
-	AF:HookScript(CharacterFrame, "OnHide", function() f:Hide(); buttons.characterButton:UnlockHighlight() end)
-
-	PanelTemplates_SetNumTabs(t, 1);
-	PanelTemplates_DeselectTab(t, 1);
-
-	t:SetScript("OnClick", function(self, button, down)
+	powerWindowButton:SetScript("OnClick", function(self, button, down)
 		for equipSlotIndex, itemLocation in AzeriteUtil.EnumerateEquipedAzeriteEmpoweredItems() do
 			if C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItem(itemLocation) then
 				--Open first azerite item
@@ -290,23 +216,18 @@ local function CreateCharacterFrameTabs()
 				DEFAULT_CHAT_FRAME:AddMessage(L["No Empowered items equipped"])
 			end
 		end
-
-
 	end)
 
-	t:SetScript("OnEnter",
-		function(self)
-			GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-			GameTooltip:SetText("Azerite", 1.0,1.0,1.0 );
-					
-		end
-	)
+	powerWindowButton:SetScript("OnEnter", function(self)
+			GameTooltip:SetOwner (self, "ANCHOR_RIGHT")
+			GameTooltip:SetText(L["Azerite Power List"], 1, 1, 1)
+			GameTooltip:Show()
+		end)
 
-	t:SetScript("OnLeave",
-		function()
+	powerWindowButton:SetScript("OnLeave", function()
 			GameTooltip:Hide()
-		end
-	)
+		end)
+
 end
 
 
@@ -386,7 +307,7 @@ local shoulderTraitsAvalable = false
 local function CreateAzeriteDataFrame()
 ---------
 --Powers Window
-	local f = CreateFrame('Frame', "AzeriteForge_PowersList", UIParent)
+	local f = CreateFrame('Frame', "AzeriteForge_PowersList", UIParent, "InsetFrameTemplate")
 	f:SetClampedToScreen(true)
 	f:SetSize(250, 160)
 	f:SetPoint("TOPLEFT",AzeriteEmpoweredItemUI,"TOPRIGHT")
@@ -396,21 +317,6 @@ local function CreateAzeriteDataFrame()
 	f:SetFrameStrata('DIALOG')
 	f:SetMovable(false)
 	f:SetToplevel(true)
-
-
-
-	f.border = f:CreateTexture()
-	f.border:SetAllPoints()
-	f.border:SetColorTexture(0,0,0,1)
-	f.border:SetTexture([[Interface\Tooltips\UI-Tooltip-Background]])
-	f.border:SetDrawLayer('BORDER')
-
-	f.background = f:CreateTexture()
-	f.background:SetPoint('TOPLEFT', f, 'TOPLEFT', 1, -1)
-	f.background:SetPoint('BOTTOMRIGHT', f, 'BOTTOMRIGHT', 65, 1)
-	--f.background:SetColorTexture(0.1,0.1,0.1,1)
-	f.background:SetTexture("Interface\\PetBattles\\MountJournal-BG")
-	f.background:SetDrawLayer('ARTWORK')
 
 	local close_ = CreateFrame("Button", nil, f)
 	close_:SetNormalTexture("Interface\\Buttons\\UI-Panel-MinimizeButton-Up")
@@ -461,14 +367,11 @@ local function CreateAzeriteDataFrame()
 
 	AceGUI:RegisterAsContainer(widget)
 	widget:SetLayout("Fill")
-	--AzeriteForge.Bag.widget= widget
 	local scroll = AceGUI:Create("ScrollFrame")
 	scroll:SetLayout("List")
 	widget:AddChild(scroll)
 	AF.PowerSummaryFrame = widget
 	AF.PowerSummaryFrame.scrollFrame = scroll
-
-
 
 
 
@@ -483,7 +386,7 @@ local function CreateAzeriteDataFrame()
 	overlay:SetMovable(false)
 	overlay:SetToplevel(true)
 
-	AF:HookScript(AzeriteEmpoweredItemUI, "OnShow", function()  f:Show(); overlay:Show() end)
+	AF:HookScript(AzeriteEmpoweredItemUI, "OnShow", function()  C_Timer.NewTimer(.2, function()f:Show(); overlay:Show() end) end)
 	AF:HookScript(AzeriteEmpoweredItemUI, "OnHide", function() f:Hide(); overlay:Hide(); AzeriteForge.Bag:Hide() end)
 
 	local headSlotButton = CreateFrame("Button", "AZ_HeadSlotButton" , overlay)
@@ -612,7 +515,7 @@ local function CreateAzeriteDataFrame()
 
 	powerWindowButton:SetScript("OnEnter", function(self)
 			GameTooltip:SetOwner (self, "ANCHOR_RIGHT")
-			GameTooltip:SetText(L["Selected Power List"], 1, 1, 1)
+			GameTooltip:SetText(L["Azerite Power List"], 1, 1, 1)
 			GameTooltip:Show()
 		end)
 
@@ -804,4 +707,31 @@ function AF:UpdateBagDataMenu(filter, filterLocation)
 		AceGUI:Release(item)
 		end
 	end
+end
+
+--Aurora Skinning 
+function AF.Aurora()
+if not IsAddOnLoaded("Aurora") then return end
+--Powers Window
+	Aurora.Skin.InsetFrameTemplate(AzeriteForge_PowersList)
+	Aurora.Skin.UIPanelCloseButton(AzeriteForge_PowersList.close)
+	local Background = AzeriteForge_PowersListBg
+	
+	Background:SetDesaturated(true)
+	Background:SetAlpha(0.8)
+	Background:Show()
+
+
+		--
+--Bag Window
+	Aurora.Skin.InsetFrameTemplate(_G.AzeriteForgeItemFrame)
+	Aurora.Skin.UIPanelCloseButton(_G.AzeriteForgeItemFrame.close)
+
+	local Background = AzeriteForgeItemFrameBg
+	
+	Background:SetDesaturated(true)
+	Background:SetAlpha(0.9)
+	Background:Show()
+
+	Aurora.Skin.UIPanelButtonTemplate(powerWindowButton2)
 end

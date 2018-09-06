@@ -34,12 +34,13 @@ L["No Empowered %s item equipped"] = true
 L["No Empowered items equipped"] = true
 L["MiniMap Icon Settings"] = true
 L["Weight Data Options"] = true
-L["Selected Power List"]  = true
+L["Azerite Power List"]  = true
 L["Found on: %s"] = true
 L["Misc Options"] =  true
 L["Alert user if equiped item has un-useable trait"] = true
  L["Play Alert Sound when triggered"] = true
  L[RED_FONT_COLOR_CODE.."%s item has traits unuseable in current spec" ] = true
+  L["Display Azerite Power Icon on Character Sheet"] = true
 
 
 

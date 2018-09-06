@@ -255,6 +255,17 @@ function AF.getTraitRanking(traitID, locationID)
 	return rank
 end
 
+local function toggleAF_CharacterPage_Icon(toggle)
+	if toggle then 
+		AF_CharacterPage_Icon:Show()
+	else
+		AF_CharacterPage_Icon:Hide()
+	end
+
+
+
+end
+
 function AF.BuildAzeriteInfoTooltip(frame)
 	local RespecCost = C_AzeriteEmpoweredItem.GetAzeriteEmpoweredItemRespecCost()
 
@@ -415,21 +426,35 @@ local options = {
 				name =L["Misc Options"],
 				order =11,
 				},
+			showCharacterPageIcon = {
+				type = "toggle",
+				name = L["Display Azerite Power Icon on Character Sheet"],
+				order = 12,
+				set = function(info,val) AzeriteForge.db.profile.showCharacterPageIcon = val; toggleAF_CharacterPage_Icon(val) end,
+				get = function(info) return AzeriteForge.db.profile.showCharacterPageIcon end,
+				width = "full",
+				},
 			unavailableAlert = {
 				type = "toggle",
 				name = L["Alert user if equiped item has un-useable trait"],
-				order = 10,
+				order = 13,
 				set = function(info,val) AzeriteForge.db.profile.unavailableAlert = val end,
 				get = function(info) return AzeriteForge.db.profile.unavailableAlert end,
+				width = "full",
 				},
 			unavailableAlertSound = {
 				type = "toggle",
 				name = L["Play Alert Sound when triggered"],
-				order = 10,
+				order = 14,
 				set = function(info,val) AzeriteForge.db.profile.unavailableAlertsound = val end,
 				get = function(info) return AzeriteForge.db.profile.unavailableAlertsound end,
+				width = "full",
 				},
+
+
 			},
+
+			
 		},
 	weights = {
 		    name = "Trait Weights",
@@ -538,6 +563,7 @@ local DB_DEFAULTS = {
 		enhancedTooltip = true,	
 		unavailableAlert = false,
 		unavailableAlertsound = false, 
+		showCharacterPageIcon = true,
 	},
 	global = {
 	},
@@ -711,6 +737,10 @@ function AF:PLAYER_ENTERING_WORLD()
 	AF:LoadClassTraitRanks()
 	UpdateWeeklyQuest()
 	AF:updateInfoLDB()
+	toggleAF_CharacterPage_Icon(AzeriteForge.db.profile.showCharacterPageIcon) 
+
+
+AF:Aurora()
 
 end
 
@@ -1169,6 +1199,7 @@ end
 
 
 function AF:OnTooltipSetItem(self,...)
+if true then return end
 	local name, link = self:GetItem()
   	if not name then return end
 

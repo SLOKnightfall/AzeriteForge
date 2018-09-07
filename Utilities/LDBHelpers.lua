@@ -51,7 +51,7 @@ local AzeriteForgeInfoLDB = LibStub("LibDataBroker-1.1"):NewDataObject("AzeriteF
 	icon = azeriteIcon,
 	OnClick = function(self, button, down) 
 		if (button == "RightButton") then
-			LibStub("AceConfigDialog-3.0"):Open("AzeriteForge")
+			--LibStub("AceConfigDialog-3.0"):Open("AzeriteForge")
 		elseif (button == "LeftButton") then
 			--AF.ShowEmpoweredItem(AzeriteLocations["Head"])
 			OpenToBestEmpoweredLocation()

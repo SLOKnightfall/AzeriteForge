@@ -39,7 +39,17 @@ function AF.GetUserProfile()
 
 
  function AF.SetUserProfile(profile)
-	AF.db.char.weightProfile = profile
+ 	local spec = GetSpecialization()
+	local specID, specName = GetSpecializationInfo(spec) 
+	--AF.db.char.weightProfile[profile] = profile
+	AF.db.char.weightProfile = AF.db.char.weightProfile or {}
+
+	AF.db.char.weightProfile[specID] = AF.db.char.weightProfile[specID] or {}
+
+		AF.db.char.weightProfile[specID] = profile
+
+
+	--AF.db.char.selectedProfle[specID] = profile
   -- print(AF.db.char.weightProfile)
  end
 
@@ -49,6 +59,8 @@ function AF.OldDataConvert()
 	local specID, specName = GetSpecializationInfo(spec) 
 	local className, classFile, classID = UnitClass("player")
 	local defaultProfile = ("Recovered profile: %s - %s"):format(className, specName)
+
+if not AzeriteForgeDB.SavedSpecData then return end
 
 	local oldWeights = AzeriteForgeDB.SavedSpecData[specID]
 	--AF.db.global.userWeightLists[userProfile]
@@ -60,17 +72,18 @@ function AF.OldDataConvert()
 
 		AF.db.global.userWeightLists[defaultProfile] = CopyTable(oldWeights)
 		AF.db.global.userWeightLists[defaultProfile]["specID"] = specID
-AF.db.global.userWeightLists[defaultProfile]["classID"] = classID
-
+		AF.db.global.userWeightLists[defaultProfile]["classID"] = classID
 
 		AzeriteForgeDB.SavedSpecData[specID] = nil
+		
 	
 	--AF.db.char.selectedProfle or ("Default: %s-%s")format(class, spec)
 
 	else
 
 	--print("clear")
-		--AF.db.global.userWeightLists[defaultProfile]["specID"] = nil
+		
+
 		--AF.db.global.userWeightLists[defaultProfile]["specID"] = specID
 	end
 
@@ -82,28 +95,18 @@ end
 
 
 
-
-
-AF.TestData = {["userProfile"] = "testprofile",
-["profileSpec"] = "Beast", ["profileClass"] = "hunter"}
-
-
-
---AF.db.userWeightLists = {}
-
 local counter = 1
 
 
 
 
 function AF.renameProfile(orig, new)
-if AF.duplicateNameCheck(new) then return false end
-
-AF.db.global.userWeightLists[new] = AF.db.global.userWeightLists[orig]
-AF.db.global.userWeightLists[orig] = nil
-AF.BuildWeightedProfileList()
-return true
-
+if not new or new == "" then print("Name Can Not Be Blank") end
+	if AF.duplicateNameCheck(new) then return false end
+		AF.db.global.userWeightLists[new] = AF.db.global.userWeightLists[orig]
+		AF.db.global.userWeightLists[orig] = nil
+		AF.BuildWeightedProfileList()
+	return true
 end
 
 
@@ -115,15 +118,13 @@ end
 	local specID = GetSpecializationInfo(spec) 
 	local className, classFile, classID = UnitClass("player")
 
-
-
 	local profile_specID = AF.db.global.userWeightLists[profile].specID
 	if specID ~= profile_specID then 
 	print("Wrong Spec")
 	return false
 	end
 
-	AF.db.char.weightProfile = profile
+	AF.db.char.weightProfile[specID] = profile
 
 	AF.traitRanksProfileUpdate(profile)
  end
@@ -140,6 +141,8 @@ end
 
 
 function AF.BuildWeightedProfileList()
+	local spec = GetSpecialization()
+	local specID = GetSpecializationInfo(spec)
 
 	for x in pairs(AF.options.args.weights.args) do
 		if string.find(x ,"build_")  then
@@ -148,7 +151,7 @@ function AF.BuildWeightedProfileList()
 	end
  
 	for name, data in pairs(AF.db.global.userWeightLists) do
-
+	local profileSpecID = AF.db.global.userWeightLists[name]["specID"] or 0
 	local data = {}
 	local 	defaultList = {
 			name = "List",
@@ -173,21 +176,31 @@ function AF.BuildWeightedProfileList()
 				disabled = true, 
 				},
 
-
 			profileDescription = {
-				name = function() return ("Class: %s, Spec: %s"):format(AF.TestData.profileClass, AF.TestData.profileSpec) end,
-				type = "description",
-				width = "full",
-				order = .04,
+				name = function() 
+				
+					if not AF.db.global.userWeightLists[data.name] then return end
+					local profileSpecID = AF.db.global.userWeightLists[data.name]["specID"] or 0
+					local _, name, _,icon, _, class = GetSpecializationInfoByID(profileSpecID)
+
+					if icon then 
+						icon = "|T"..icon..(":25:25:|t")
+					else
+						icon = ""
+					end
+					return ("%sClass: %s, Spec: %s"):format(icon or "",class or "", name or"") end,
+					type = "description",
+					width = "full",
+					order = .04,
 				},
 			setProfile = {
 				type = "execute",
-				name = L["Set as active profile"],
+				name = function () return L["Set as active profile"] end,
 				order = .05,
 				--width = "double",
-				func = function(info, val) AF.LoadSelectedProfile(data.name)
+				func = function(info, val) AF.LoadSelectedProfile(data.name); AF.BuildWeightedProfileList()
 					end,
-				disabled = function() return data.name == AF.db.char.weightProfile end,
+				disabled = function() return data.name == AF.db.char.weightProfile[specID] end,
 					},
 			deleteProfile = {
 				type = "execute",
@@ -196,7 +209,7 @@ function AF.BuildWeightedProfileList()
 				--width = ",
 				func = function(info) deleteProfile(data.name)
 					end,	
-				disabled = function() return data.name == AF.db.char.weightProfile    end,
+				disabled = function() return data.name == AF.db.char.weightProfile[specID]    end,
 				},
 			copyProfile = {
 				type = "execute",
@@ -227,11 +240,27 @@ function AF.BuildWeightedProfileList()
 			}
 
 	counter = counter + 1
+
+	local fontColor = ""
+	local _, _, _,icon= GetSpecializationInfoByID(profileSpecID)
+	local iconText = ""
+
+
+	if AF.db.char.weightProfile[specID] == name then 
+		fontColor = GREEN_FONT_COLOR_CODE
+	else 
+	
+		fontColor = NORMAL_FONT_COLOR_CODE    
+	end
+
+	if icon then 
+		iconText = "|T"..icon..(":25:25:|t")
+	end
+
 	AF:CreateTraitMenu(defaultList.args , true, AF.db.global.userWeightLists[name] )
 	local tablename = ("build_%s,%s"):format(name, counter)
 
-
-	defaultList.name = name
+	defaultList.name = fontColor..iconText..name
 	data.name = name
 
 	defaultList.args.profileHeader.name = name

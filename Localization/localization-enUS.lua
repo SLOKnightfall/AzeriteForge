@@ -49,4 +49,5 @@ L["Profile Name"] = true
 L["Create New Profile"] = true
 L["Create Profile"] = true
 L["Weight Profiles"] = true
+L["Show Ranks Totals in Tooltip"] = true
 --@localization(locale="enUS", format="lua_additive_table")@

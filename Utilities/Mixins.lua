@@ -56,9 +56,9 @@ AF:SecureHook(AzeriteEmpoweredItemPowerMixin,"Reset", AzeriteEmpoweredItemPowerM
 
 
 
-local function UpdateValues(location)
+local function UpdateValues(location, tierIndex)
 	local max = 0
-	for id, rank in pairs(maxValue[location]) do
+	for id, rank in pairs(maxValue[location][tierIndex]) do
 
 		if rank >= max then
 			max = rank
@@ -66,7 +66,7 @@ local function UpdateValues(location)
 		end
 	end
 
-	for id, rank in pairs(maxValue[location]) do
+	for id, rank in pairs(maxValue[location][tierIndex]) do
 		if rank >= max then
 			id.TraitRank:SetTextColor(GREEN_FONT_COLOR:GetRGB())
 		else 
@@ -94,12 +94,13 @@ local function AzeriteEmpoweredItemPowerMixin_OnShow(self,...)
 		end
 
 		local traitRank = AF.getTraitRanking(self:GetAzeritePowerID(),location, DB)
-
+		local tierIndex = self:GetTierIndex()
 		
 		maxValue[location] = maxValue[location] or {}
-		maxValue[location][self] = traitRank or 0
+		maxValue[location][tierIndex] = maxValue[location][tierIndex] or {}
+		maxValue[location][tierIndex][self] = traitRank or 0
 
-		UpdateValues(location)
+		UpdateValues(location, tierIndex)
 
 		if traitRank and self.TraitRank then --and HasAnyUnselectedPowers then 
 			self.AdditionalTraits:SetPoint("CENTER",0,20)

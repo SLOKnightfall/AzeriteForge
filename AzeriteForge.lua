@@ -30,6 +30,7 @@ local azeriteItemIcon = azeriteIcon
 local COLOR_GREEN  = CreateColor(0.1, 0.8, 0.1, 1)
 local spec = 0
 local specID  = 0
+local specName
 local className, classFile, classID
 local UnselectedPowersCount = 0
 
@@ -324,12 +325,13 @@ local function createNewProfile(profileName)
 	if AF.duplicateNameCheck(profileName) then return  end
 
 	spec = GetSpecialization()
-	specID = GetSpecializationInfo(spec) 
+	specID, specName = GetSpecializationInfo(spec) 
 	className, classFile, classID = UnitClass("player")
 
 	AF.db.global.userWeightLists[profileName] = {}
 	AF.db.global.userWeightLists[profileName]["specID"] = specID
-	AF.db.global.userWeightLists[profileName]["classID"] = AF.db.global.userWeightLists[profileName]
+	AF.db.global.userWeightLists[profileName]["classID"] = classID
+	--AF.db.global.userWeightLists[profileName]
 
 	print(("%s - Profile Created"):format(profileName))
 	newProfileName = ""
@@ -392,6 +394,14 @@ local options = {
 				set = function(info,val) AzeriteForge.db.profile.tooltipIconsOnly = val end,
 				get = function(info) return AzeriteForge.db.profile.tooltipIconsOnly end,
 				},
+			showRankTotal = {
+				type = "toggle",
+				name = L["Show Ranks Totals in Tooltip"],
+				order = 10.1,
+				set = function(info,val) AzeriteForge.db.profile.showRankTotal = val end,
+				get = function(info) return AzeriteForge.db.profile.showRankTotal end,
+				width = "full",
+				},
 			misctipHeader = {
 				type = "header",
 				name =L["Misc Options"],
@@ -423,6 +433,11 @@ local options = {
 				},
 
 
+
+
+				
+
+
 			},
 
 			
@@ -443,11 +458,22 @@ local options = {
 				type = "input",
 				width = "full",
 				order = .02,
-				set = function(info,val)  AF.renameProfile(AF.db.char.weightProfile, val);AF.db.char.weightProfile = val  end,
-				get = function(info) return AF.db.char.weightProfile  end
+				set = function(info,val)  AF.renameProfile(AF.db.char.weightProfile[specID], val);AF.db.char.weightProfile[specID] = val  end,
+				get = function(info) return AF.db.char.weightProfile[specID]  end
 				},
 			profileDescription = {
-				name = function() return ("Class: %s, Spec: %s"):format(AF.TestData.profileClass, AF.TestData.profileSpec) end,
+				name = function() 
+				local profile =  AF.db.char.weightProfile[specID]
+				--print(specID)
+				if not AF.db.global.userWeightLists[profile] then return end
+				local profileSpecID = AF.db.global.userWeightLists[profile]["specID"] or 0
+				local _, name, _,icon, _, class = GetSpecializationInfoByID(profileSpecID)
+				if icon then 
+					icon = "|T"..icon..(":25:25:|t")
+				else
+					icon = ""
+				end
+				return ("%sClass: %s, Spec: %s"):format(icon or "",class or "", name or"") end,
 				type = "description",
 				width = "full",
 				order = .03,
@@ -459,7 +485,7 @@ local options = {
 				order = 1,
 				width = "double",
 				func = function() local data = AF.loadDefaultData("StackData")
-					local profile = AF.db.char.weightProfile
+					local profile = AF.db.char.weightProfile[specID]
 					wipe(AF.traitRanks)
 					AF.traitRanks = CopyTable(data)
 					AF.traitRanks["specID"] = specID
@@ -473,7 +499,7 @@ local options = {
 				order = 2,
 				width = "double",
 				func = function() local data = AF.loadDefaultData("iLevelData")
-					local profile = AF.db.char.weightProfile
+					local profile = AF.db.char.weightProfile[specID]
 					wipe(AF.traitRanks)
 					AF.traitRanks = CopyTable(data)
 					AF.traitRanks["specID"] = specID
@@ -488,7 +514,7 @@ local options = {
 				order = 3,
 				width = "double",
 				func = function()
-					local profile = AF.db.char.weightProfile
+					local profile = AF.db.char.weightProfile[specID]
 					--local DB = AF.db.global.userWeightLists[weightProfile]
 					wipe(AF.traitRanks)
 					AF.traitRanks["specID"] = specID
@@ -647,6 +673,7 @@ local DB_DEFAULTS = {
 		unavailableAlert = false,
 		unavailableAlertsound = false, 
 		showCharacterPageIcon = true,
+		showRankTotal = true
 	},
 	global = {
 		userWeightLists = {}
@@ -810,19 +837,16 @@ function AF:OnEnable()
 	AF:SecureHookScript(GameTooltip,"OnTooltipSetItem")
 	AF:SecureHookScript(ItemRefTooltip,"OnTooltipSetItem")
 	AF:SecureHookScript(WorldMapTooltip,"OnTooltipSetItem")
+	AF:CreateFrames()
+	AF.OldDataConvert()
 
 --AF:RawHook(AzeriteEmpoweredItemPowerMixin,"OnEnter",true) 
 end
 
 function AF:PLAYER_ENTERING_WORLD()
 	spec = GetSpecialization()
-	specID = GetSpecializationInfo(spec) 
+	specID, specName = GetSpecializationInfo(spec)
 	className, classFile, classID = UnitClass("player")
-
-
-
-	AF:CreateFrames()
-	AF.OldDataConvert()
 
 	AF:BuildAzeriteDataTables()
 	AF.BuildWeightedProfileList()
@@ -834,11 +858,7 @@ function AF:PLAYER_ENTERING_WORLD()
 	AF:updateInfoLDB()
 	toggleAF_CharacterPage_Icon(AzeriteForge.db.profile.showCharacterPageIcon) 
 
-
-AF:Aurora()
-
-
-
+	AF:Aurora()
 end
 
 
@@ -860,24 +880,50 @@ end
 
 function AF:PLAYER_SPECIALIZATION_CHANGED(event, ...)
 	spec = GetSpecialization()
-	specID = GetSpecializationInfo(spec) 
+	specID, specName = GetSpecializationInfo(spec) 
 	AF:BuildAzeriteDataTables()
-
+	AF.BuildWeightedProfileList()
 
 	AF:GetAzeriteData()
 	AF:GetAzeriteTraits()
 	--AF:LoadClassTraitRanks()
+
+	AF:updateInfoLDB()
 	AF.loadWeightProfile()
+	AF.BuildWeightedProfileList()
+
 	AF:updateInfoLDB()
 end
 
 
 
 function AF.loadWeightProfile()
-	local userProfile = AF.db.char.weightProfile or ""
-	local profileData = AF.db.global.userWeightLists[userProfile] or AF.loadDefaultData("StackData")
+	AF.db.char.weightProfile = AF.db.char.weightProfile or {}
+	--AF.db.char.weightProfile[specID] = AF.db.char.weightProfile[specID] or {}
+	 local userProfile = AF.db.char.weightProfile[specID]
+	  local _, specName = GetSpecializationInfoByID(specID)
 
-	AF.traitRanks = CopyTable(profileData)
+	local profileData = {}
+	if not userProfile then 
+		userProfile =  "[Default] - "..className.." "..specName
+		profileData = AF.loadDefaultData("StackData")
+		AF.db.global.userWeightLists[userProfile] =  profileData
+		AF.db.global.userWeightLists[userProfile]["specID"] = specID
+		AF.db.global.userWeightLists[userProfile]["classID"] = classID
+		AF.db.char.weightProfile[specID] = userProfile
+		AF.traitRanks = profileData
+		AF.BuildWeightedProfileList()
+		
+	else
+
+	--local userProfile = AF.db.char.weightProfile[specID] or ""
+		profileData = AF.db.global.userWeightLists[userProfile]
+		AF.traitRanks = profileData
+	end
+
+	
+	AF.db.global.userWeightLists[userProfile] = AF.traitRanks 
+	
 --return profileData
 end
 
@@ -1119,7 +1165,7 @@ end
 
 function AF.loadDefaultData(DB)
 	local traitRanks = {}
-	spec = GetSpecialization()
+	specID, specName = GetSpecializationInfo(spec)
 	specID = GetSpecializationInfo(spec)
 
 	if not AzeriteForge[DB][specID] then
@@ -1144,7 +1190,6 @@ end
 
 AF.options = options
 
-
 function AF:CreateTraitMenu(aceTable,disable, profile)
 	local count = 10
 	local sortTable = {}
@@ -1156,7 +1201,6 @@ function AF:CreateTraitMenu(aceTable,disable, profile)
 	for x in pairs(aceTable) do
 		if x== "Topheader" or x=="search" or x == "filler1" then
 		else
-
 		end
 	end
 
@@ -1178,10 +1222,11 @@ function AF:CreateTraitMenu(aceTable,disable, profile)
 			name = name,
 			width = "full",
 			order = count,
-			hidden = function() local search = nil; if AF.searchbar then search = not string.match(string.lower(azeriteTraits[traitID].name), string.lower(AF.searchbar))end; return search or not azeriteTraits[traitID].valid end,
+			hidden = function() local search = nil; if AF.searchbar then 
+			search = not string.match(string.lower(azeriteTraits[traitID].name), string.lower(AF.searchbar))end;
+			return search or (azeriteTraits[traitID] and not azeriteTraits[traitID].valid) or false end,
 			disabled = disable,
 			}
-
 
 			aceTable[name.."1"] = {
 			name = function() return name end,
@@ -1192,7 +1237,10 @@ function AF:CreateTraitMenu(aceTable,disable, profile)
 			icon = icon,
 			order = count+.1,
 			disabled = disable,
-			hidden = function() local search = nil; if AF.searchbar then search = not string.match(string.lower(azeriteTraits[traitID].name), string.lower(AF.searchbar))end; return search or not azeriteTraits[traitID].valid end,
+			hidden = function() local search = nil; if AF.searchbar then 
+			search = not string.match(string.lower(azeriteTraits[traitID].name), string.lower(AF.searchbar))end;
+			return search or (azeriteTraits[traitID] and not azeriteTraits[traitID].valid) or false end,
+			disabled = disable,
 			}
 
 			aceTable[name.."2"] = {
@@ -1204,7 +1252,10 @@ function AF:CreateTraitMenu(aceTable,disable, profile)
 			icon = icon,
 			order = count+.2,
 			disabled = disable,
-			hidden = function() local search = nil; if AF.searchbar then search = not string.match(string.lower(azeriteTraits[traitID].name), string.lower(AF.searchbar))end; return search or not azeriteTraits[traitID].valid end,
+			hidden = function() local search = nil; if AF.searchbar then 
+			search = not string.match(string.lower(azeriteTraits[traitID].name), string.lower(AF.searchbar))end;
+			return search or (azeriteTraits[traitID] and not azeriteTraits[traitID].valid) or false end,
+			disabled = disable,
 			get = function(info)  
 				--if not AF.traitRanks[traitID] then  return "" end
 				return AF:TextGetter(traitID,profile)
@@ -1220,8 +1271,7 @@ function AF:CreateTraitMenu(aceTable,disable, profile)
 	end
 end
 
-
-
+local rankTotals = ""
 
 local tooltipCatcher = CreateFrame("GameTooltip",nil, UIParent)
 --###########################
@@ -1229,10 +1279,13 @@ local tooltipCatcher = CreateFrame("GameTooltip",nil, UIParent)
 function AF:BuildTraitText(itemLink, tooltip, name, force)
 	if force then tooltip = tooltipCatcher end
 	
-	-- Current Azerite Level
-	local azeriteItemLocation = C_AzeriteItem.FindActiveAzeriteItem()
+	-- Current Azerite LevelcreateItemLocation
+	local azeriteItemLocation = AF.createItemLocation(itemLink)
+
+	rankTotals = ""
+
 	if azeriteItemLocation then
-		currentLevel = C_AzeriteItem.GetPowerLevel(azeriteItemLocation)
+		currentLevel = C_AzeriteItem.GetPowerLevel(C_AzeriteItem.FindActiveAzeriteItem())
 	end
 
 	local specID = GetSpecializationInfo(GetSpecialization())
@@ -1243,6 +1296,8 @@ function AF:BuildTraitText(itemLink, tooltip, name, force)
 	local iconSize = 15
 	local iconShade = 255
 	local fullText = ""
+	local maxRankTotal = 0
+	local totalSelected = 0
 
 	tooltip:AddLine("\n"..L["Available Azerite Powers:"])
 
@@ -1262,6 +1317,9 @@ function AF:BuildTraitText(itemLink, tooltip, name, force)
 			end
 			local textBreakCounter = 0 
 			local empoweredLocation = AF.createItemLocation(itemLink)
+			local tierRankTotal = 0
+		
+
 			for i, _ in pairs(allTierInfo[j]["azeritePowerIDs"]) do
 				local azeritePowerID = allTierInfo[j]["azeritePowerIDs"][i]
 				local azeriteSpellID = AzeriteTooltip_GetSpellID(azeritePowerID)
@@ -1271,6 +1329,7 @@ function AF:BuildTraitText(itemLink, tooltip, name, force)
 				local fontColor = GREEN_FONT_COLOR_CODE
 				local textBreak = ""
 				local rank = AF.getTraitRanking(azeritePowerID, azeriteItemLocation)
+				tierRankTotal = max(tierRankTotal, rank or 0)
 				local isSelected
 				local selectedText = ">>%s<<"
 
@@ -1312,17 +1371,42 @@ function AF:BuildTraitText(itemLink, tooltip, name, force)
 				--iconText = (rank  and iconText..rank.." ") or iconText
 				
 				local traitText = (force or not Config.tooltipIconsOnly) and fontColor..azeritePowerName or ""
-				if rank then traitText = traitText.. " ("..rank..") " end
-				traitText = traitText..textBreak
+				if rank then traitText = ("%s (%s) "):format(traitText, rank) end
+
+				
+				if rank and isSelected then 
+					rankTotals = ("%s Tier%s: %s"):format(rankTotals,j, rank )
+					totalSelected = rank + totalSelected
+				elseif not rank and isSelected then 
+					rankTotals = ("%s Tier%s: %s"):format(rankTotals,j, 0 )
+				end
+
+				traitText = ("%s%s"):format(traitText,textBreak)
 				azeriteTooltipText = ((force or not Config.tooltipCurrentTraits or (Config.tooltipCurrentTraits and C_AzeriteEmpoweredItem.IsPowerAvailableForSpec(azeritePowerID, specID))) and azeriteTooltipText.."  "..azeriteIcon.."  "..traitText) or azeriteTooltipText
 
 			end
+			maxRankTotal = maxRankTotal + tierRankTotal
 
-			tooltip:AddLine(azeriteTooltipText)
-			fullText = fullText.. azeriteTooltipText
-			
+			--rankTotals = ("%s %s"):format(rankTotals,"/" )
+
+			if Config.enhancedTooltip then 
+				tooltip:AddLine(azeriteTooltipText)
+			end
+			fullText = fullText.. azeriteTooltipText		
 	end
+
+	if Config.showRankTotal  then 
+		rankTotals = ("%s [%s/%s}"):format(rankTotals, totalSelected, maxRankTotal )
+		tooltip:AddLine(rankTotals)
+	end
+
 	return  fullText
+end
+
+function DisplayRankTotals()
+
+
+
 end
 
 

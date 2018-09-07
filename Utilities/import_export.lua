@@ -50,7 +50,7 @@ local function AZForgeImport(data)
 	end
 	AF.traitRanks["specID"] = specID
 	AF.traitRanks["classID"] = classID
-	local profile = AF.db.char.weightProfile
+	local profile = AF.db.char.weightProfile[specID]
 	AF.db.global.userWeightLists[profile] = AF.traitRanks
 
 	print("Importing AzeriteForge data")
@@ -86,7 +86,7 @@ local function insertCustomScalesData(classIndex, specID, powerData) -- Inser in
 		end
 			AF.traitRanks["specID"] = specID
 			AF.traitRanks["classID"] = classIndex
-			local profile = AF.db.char.weightProfile
+			local profile = AF.db.char.weightProfile[specID]
 			AF.db.global.userWeightLists[profile] = AF.traitRanks
 	end
 

@@ -257,6 +257,11 @@ function AF.getTraitRanking(traitID, locationID)
 end
 
 local function toggleAF_CharacterPage_Icon(toggle)
+
+	local _, _, _, _, _, _, _, _, _, _, _, _, wasEarnedByMe = GetAchievementInfo(12918)
+
+	if not wasEarnedByMe then AF_CharacterPage_Icon:Hide(); return end
+
 	if toggle then 
 		AF_CharacterPage_Icon:Show()
 	else

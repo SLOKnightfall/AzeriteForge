@@ -31,6 +31,13 @@ local pvpPairs = { -- Used for Exporting/Importing. These powers have same effec
 local function AZForgeImport(data)
 	wipe(AF.traitRanks)
 	ClearDebugger()
+	local classID, specID
+	
+	for class, spec in string.gmatch(data , "AZFORGE:(%w+):(%w+)") do
+		classID = class
+		specID = spec
+
+	end
 	local traits = {string.split("^",data )}
 
 	for i, traitData in ipairs(traits) do
@@ -41,6 +48,11 @@ local function AZForgeImport(data)
 			end
 		end
 	end
+	AF.traitRanks["specID"] = specID
+	AF.traitRanks["classID"] = classID
+	local profile = AF.db.char.weightProfile
+	AF.db.global.userWeightLists[profile] = AF.traitRanks
+
 	print("Importing AzeriteForge data")
 end
 
@@ -72,6 +84,10 @@ local function insertCustomScalesData(classIndex, specID, powerData) -- Inser in
 				end
 			end
 		end
+			AF.traitRanks["specID"] = specID
+			AF.traitRanks["classID"] = classIndex
+			local profile = AF.db.char.weightProfile
+			AF.db.global.userWeightLists[profile] = AF.traitRanks
 	end
 
 end
@@ -136,14 +152,21 @@ end
 --Parses Trait data and dumps it to a window
 function AF:ExportData()
 	local text = "AZFORGE^"
-	for id, data in pairs(AF.traitRanks) do
-		text = text.."["..id.."]"
+	local spec = AF.traitRanks["specID"]
+	local class = AF.traitRanks["classID"]
+	local text = ("AZFORGE:%s:%s^"):format(class,spec)
 
-		
-		for i,d in pairs(data) do
-			text = text..tostring(i)..":"..tostring(d)..","
+	for id, data in pairs(AF.traitRanks) do
+		if not string.find(id, "specID") and not string.find(id, "classID") then 
+			text = text.."["..id.."]"
+
+			for i,d in pairs(data) do
+				text = text..tostring(i)..":"..tostring(d)..","
+			end
+
+			text = text.."^"
+
 		end
-		text = text.."^"
 	end
 
 	return Export(text)	 

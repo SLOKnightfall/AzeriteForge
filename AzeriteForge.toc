@@ -50,3 +50,4 @@ AzeriteForge.lua
 Utilities\LDBHelpers.lua
 Utilities\import_export.lua
 Utilities\Mixins.lua
+Utilities\WeightProfiles.lua

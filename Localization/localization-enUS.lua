@@ -42,6 +42,11 @@ L["Alert user if equiped item has un-useable trait"] = true
  L[RED_FONT_COLOR_CODE.."%s item has traits unuseable in current spec" ] = true
   L["Display Azerite Power Icon on Character Sheet"] = true
 
-
-
+ L["Set as active profile"] = true
+ L["Delete Profile"] = true
+L["Copy Profile"] = true
+L["Profile Name"] = true
+L["Create New Profile"] = true
+L["Create Profile"] = true
+L["Weight Profiles"] = true
 --@localization(locale="enUS", format="lua_additive_table")@

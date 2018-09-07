@@ -101,6 +101,8 @@ end
 
 function AF:CreateImportFrame()
 	local window = CreateGenericFrame()
+	window:SetFrameStrata('FULLSCREEN_DIALOG')	
+	window:SetToplevel(true)
 	window.title:SetText("AzeriteForge "..L["Import"])
 
 	local content = CreateFrame("Frame",nil, window)
@@ -735,3 +737,5 @@ if not IsAddOnLoaded("Aurora") then return end
 
 	Aurora.Skin.UIPanelButtonTemplate(powerWindowButton2)
 end
+
+

@@ -41,7 +41,7 @@ local globalDb
 local configDb 
 local WeeklyQuestGain = 0
 local WeeklyQuestRequired = 0
-local searchbar = nil
+AF.searchbar = nil
 
 
 local UnselectedLocationTraits = {}
@@ -298,6 +298,47 @@ function AF.ShowEmpoweredItem(itemLocation)
 		end
 end
 
+local newProfileName = ""
+
+
+
+function AF.duplicateNameCheck(profileName)
+
+	for name in pairs(AF.db.global.userWeightLists) do
+		if string.find(tostring(name), tostring(profileName)) then
+			print("Duplicate Name Found. Choose another name")
+			return true
+		else
+			
+		end
+
+	end
+	return false
+end
+
+
+local function createNewProfile(profileName)
+
+	if not profileName or profileName == "" then print("Please enter a name"); return false end
+
+	if AF.duplicateNameCheck(profileName) then return  end
+
+	spec = GetSpecialization()
+	specID = GetSpecializationInfo(spec) 
+	className, classFile, classID = UnitClass("player")
+
+	AF.db.global.userWeightLists[profileName] = {}
+	AF.db.global.userWeightLists[profileName]["specID"] = specID
+	AF.db.global.userWeightLists[profileName]["classID"] = AF.db.global.userWeightLists[profileName]
+
+	print(("%s - Profile Created"):format(profileName))
+	newProfileName = ""
+
+	AF.BuildWeightedProfileList()
+	return true
+end
+
+
 
 ---------
 --options.args.weights.args
@@ -311,76 +352,6 @@ local options = {
 		handler = AzeriteForge,
 		type = "group",
 		args = {
-			header1 = {
-				type = "header",
-				name = L["Weight Data Options"],
-				order = 0,
-				},
-			debug = {
-
-				type = "execute",
-				name = "Debug",
-				hidden = true,
-				func = function()
-					local debugger = GetDebugger()
-
-					if debugger:Lines() == 0 then
-						debugger:AddLine("Nothing to report.")
-						debugger:Display()
-						debugger:Clear()
-						return
-					end
-					debugger:Display()
-					end,
-				},
-			resetStacking = {
-				type = "execute",
-				name = L["Reset Default Data with Stacking Data"],
-				order = 1,
-				width = "double",
-				func = function()
-					AF.traitRanks = AF.loadDefaultData("StackData")-- StackData
-					AzeriteForgeDB.SavedSpecData[specID] = AF.traitRanks
-					end,	
-				},
-			resetIlevel = {
-				type = "execute",
-				name = L["Reset Default Data with iLevel Data"],
-				order = 2,
-				width = "double",
-				func = function()
-					AF.traitRanks = AF.loadDefaultData("iLevelData")-- StackData
-					AzeriteForgeDB.SavedSpecData[specID] = AF.traitRanks
-					end,
-					
-				},
-			clearData = {
-				type = "execute",
-				name = L["Clear all data"],
-				order = 3,
-				width = "double",
-				func = function()
-					wipe(AF.traitRanks)
-					end,
-					
-				},
-			importData = {
-				type = "execute",
-				name = L["Import Data"],
-				order = 4,
-				width = "double",
-				func = function()
-					AzeriteForge.ImportWindow:Show()
-					end,
-					
-				},
-			exportData = {
-				type = "execute",
-				name = L["Export Data"],
-				order = 5,
-				width = "double",
-				func = function() AF:ExportData() end,	
-				},
 			header2 = {
 				type = "header",
 				name = L["MiniMap Icon Settings"],
@@ -457,17 +428,129 @@ local options = {
 			
 		},
 	weights = {
-		    name = "Trait Weights",
+		    name = L["Weight Profiles"],
 		    handler = AzeriteForge,
 		    type = "group",
 		    args = {
-		    	search = {
-				name = "",
-				type = "input",
+		    	profileHeader = {
+				name = "Selected Profile",
+				type = "header",
 				width = "full",
 				order = .01,
-				set = function(info,val) searchbar = val end,
-				get = function(info) return searchbar end
+				},
+		    	userDefinedName = {
+				name = "Profile Name",
+				type = "input",
+				width = "full",
+				order = .02,
+				set = function(info,val)  AF.renameProfile(AF.db.char.weightProfile, val);AF.db.char.weightProfile = val  end,
+				get = function(info) return AF.db.char.weightProfile  end
+				},
+			profileDescription = {
+				name = function() return ("Class: %s, Spec: %s"):format(AF.TestData.profileClass, AF.TestData.profileSpec) end,
+				type = "description",
+				width = "full",
+				order = .03,
+				},
+
+			resetStacking = {
+				type = "execute",
+				name = L["Reset Default Data with Stacking Data"],
+				order = 1,
+				width = "double",
+				func = function() local data = AF.loadDefaultData("StackData")
+					local profile = AF.db.char.weightProfile
+					wipe(AF.traitRanks)
+					AF.traitRanks = CopyTable(data)
+					AF.traitRanks["specID"] = specID
+					AF.traitRanks["classID"] = classID
+					AF.db.global.userWeightLists[profile] = AF.traitRanks
+					end,	
+				},
+			resetIlevel = {
+				type = "execute",
+				name = L["Reset Default Data with iLevel Data"],
+				order = 2,
+				width = "double",
+				func = function() local data = AF.loadDefaultData("iLevelData")
+					local profile = AF.db.char.weightProfile
+					wipe(AF.traitRanks)
+					AF.traitRanks = CopyTable(data)
+					AF.traitRanks["specID"] = specID
+					AF.traitRanks["classID"] = classID
+					AF.db.global.userWeightLists[profile] = AF.traitRanks
+					end,
+					
+				},
+			clearData = {
+				type = "execute",
+				name = L["Clear all data"],
+				order = 3,
+				width = "double",
+				func = function()
+					local profile = AF.db.char.weightProfile
+					--local DB = AF.db.global.userWeightLists[weightProfile]
+					wipe(AF.traitRanks)
+					AF.traitRanks["specID"] = specID
+					AF.traitRanks["classID"] = classID
+					AF.db.global.userWeightLists[profile] = AF.traitRanks
+
+					end,
+					
+				},
+			importData = {
+				type = "execute",
+				name = L["Import Data"],
+				order = 4,
+				width = "double",
+				func = function()
+					AzeriteForge.ImportWindow:Show()
+					end,
+					
+				},
+			exportData = {
+				type = "execute",
+				name = L["Export Data"],
+				order = 5,
+				width = "double",
+				func = function() AF:ExportData() end,	
+				},
+
+			createNewProfile = {
+				name = L["Create New Profile"],
+				type = "group",
+				handler = AzeriteForge,
+				type = "group",
+				inline =false,
+				order = 1,
+				args = {
+				createProfileTextbox = {
+					name = "Profile Name",
+					type = "input",
+					width = "full",
+					order = .01,
+					set = function(info,val) newProfileName = val  end,
+					get = function(info)  return newProfileName end,
+						},
+				createProfilebutton = {
+				type = "execute",
+				name = L["Create Profile"],
+				order = 5,
+				width = "double",
+				func = function(info, val)  createNewProfile(newProfileName)end,	
+				},
+					},
+
+
+				},
+
+		    	search = {
+				name = "Search",
+				type = "input",
+				width = "full",
+				order = 7,
+				set = function(info,val) AF.searchbar = val end,
+				get = function(info) return AF.searchbar end
 				},
 			},
 		   },
@@ -506,8 +589,8 @@ local talent_options = {
 				type = "input",
 				width = "full",
 				order = .01,
-				set = function(info,val) searchbar = val end,
-				get = function(info) return searchbar end
+				set = function(info,val) AF.searchbar = val end,
+				get = function(info) return AF.searchbar end
 			},
 
 			filler1 = {
@@ -566,6 +649,7 @@ local DB_DEFAULTS = {
 		showCharacterPageIcon = true,
 	},
 	global = {
+		userWeightLists = {}
 	},
 
 }
@@ -694,9 +778,14 @@ end
 
 
 function AF:OnEnable()
+
+
 	self.db = LibStub("AceDB-3.0"):New("AzeriteForgeDB", DB_DEFAULTS, true)
-		AzeriteForgeDB.SavedSpecData = AzeriteForgeDB.SavedSpecData or {}
-	AzeriteForgeDB.SavedSpecData[specID] = AF.traitRanks
+		--AzeriteForgeDB.SavedSpecData = AzeriteForgeDB.SavedSpecData or {}
+	--AzeriteForgeDB.SavedSpecData[specID] = AF.traitRanks
+
+
+
 	LibStub("AceConfig-3.0"):RegisterOptionsTable("AzeriteForge_Talents", talent_options)
 	LibStub("AceConfig-3.0"):RegisterOptionsTable("AzeriteForge", options)
 	self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("AzeriteForge", "AzeriteForge")
@@ -730,17 +819,25 @@ function AF:PLAYER_ENTERING_WORLD()
 	specID = GetSpecializationInfo(spec) 
 	className, classFile, classID = UnitClass("player")
 
+
+
 	AF:CreateFrames()
+	AF.OldDataConvert()
+
 	AF:BuildAzeriteDataTables()
+	AF.BuildWeightedProfileList()
 	AF:GetAzeriteData()
 	AF:GetAzeriteTraits()
-	AF:LoadClassTraitRanks()
+	--AF:LoadClassTraitRanks()
+	AF.loadWeightProfile()
 	UpdateWeeklyQuest()
 	AF:updateInfoLDB()
 	toggleAF_CharacterPage_Icon(AzeriteForge.db.profile.showCharacterPageIcon) 
 
 
 AF:Aurora()
+
+
 
 end
 
@@ -769,9 +866,30 @@ function AF:PLAYER_SPECIALIZATION_CHANGED(event, ...)
 
 	AF:GetAzeriteData()
 	AF:GetAzeriteTraits()
-	AF:LoadClassTraitRanks()
+	--AF:LoadClassTraitRanks()
+	AF.loadWeightProfile()
 	AF:updateInfoLDB()
 end
+
+
+
+function AF.loadWeightProfile()
+	local userProfile = AF.db.char.weightProfile or ""
+	local profileData = AF.db.global.userWeightLists[userProfile] or AF.loadDefaultData("StackData")
+
+	AF.traitRanks = CopyTable(profileData)
+--return profileData
+end
+
+
+function AF.traitRanksProfileUpdate(userProfile)
+	--local userProfile = AF.db.char.weightProfile or ""
+	local profileData = AF.db.global.userWeightLists[userProfile] --or {}
+
+	AF.traitRanks = profileData
+--return profileData
+end
+
 
 
 function AF:AZERITE_ITEM_EXPERIENCE_CHANGED(event, ...)
@@ -951,7 +1069,7 @@ end
 --Cycles though the various azerite power ids and builds a database info from it
 function AF:BuildAzeriteDataTables()
 	wipe(azeriteTraits)
-	azeriteTraits = {}
+	--azeriteTraits = {}
 
 	for traitID, data in pairs(AzeriteForge.TraitData) do
 		if validTrait(traitID) then
@@ -964,15 +1082,18 @@ function AF:BuildAzeriteDataTables()
 		end
 	end
 
-	AF:CreateTraitMenu()
+	AF:CreateTraitMenu(options.args.weights.args)
 end
 
 
 
-function AF:TextGetter(traitID)
+function AF:TextGetter(traitID, profile)
 	local text = ""
-		for i,d in pairs(AF.traitRanks[traitID]) do
-			text = text.."["..tostring(i).."]:"..tostring(d)..","
+	local DB = profile or AF.traitRanks
+	if not DB[traitID] then return end
+		for i,d in pairs(DB[traitID]) do
+			text = ("%s[%s]:%s,"):format(text,i,d)
+			--text = text.."["..tostring(i).."]:"..tostring(d)..","
 		end
 	return text 
 end
@@ -991,7 +1112,7 @@ function AF:ParseText(traitID, val)
 		for i, data in ipairs(text) do
 			text[i] = tonumber(data)
 		end
-		AF.traitRanks[traitID] = text
+		AF.traitRanks[traitID] = CopyTable(text)
 	end
 end
 
@@ -1017,24 +1138,25 @@ end
 
 --loads defaults into saved variables table
 function AF:LoadClassTraitRanks(DB)
-	AF.traitRanks = AzeriteForgeDB.SavedSpecData[specID] or AF.loadDefaultData("StackData")
-	AzeriteForgeDB.SavedSpecData[specID] = AF.traitRanks
+	--AF.traitRanks = AzeriteForgeDB.SavedSpecData[specID] or AF.loadDefaultData("StackData")
+	--AzeriteForgeDB.SavedSpecData[specID] = AF.traitRanks
 end
 
+AF.options = options
 
 
-function AF:CreateTraitMenu()
-	local count = 0
+function AF:CreateTraitMenu(aceTable,disable, profile)
+	local count = 10
 	local sortTable = {}
 	for id, data in pairs(azeriteTraits) do
 		tinsert(sortTable, id)
 	end
 
 	--clear any previous data
-	for x in pairs(options.args.weights.args) do
+	for x in pairs(aceTable) do
 		if x== "Topheader" or x=="search" or x == "filler1" then
 		else
-			options.args.weights.args[x] = nil
+
 		end
 	end
 
@@ -1045,43 +1167,49 @@ function AF:CreateTraitMenu()
 	end
 
 	for index, traitID in pairs(sortTable) do
+
 		local name = azeriteTraits[traitID].name
 		local icon = azeriteTraits[traitID].icon
 		local spellID = azeriteTraits[traitID].spellID
-	
 		if name and azeriteTraits[traitID].valid then 
 		count = count + 1
-			options.args.weights.args[name] = {
+			aceTable[name] = {
 			type = "header",
 			name = name,
 			width = "full",
-			order = index,
-			hidden = function() local search = nil; if searchbar then search = not string.match(string.lower(azeriteTraits[traitID].name), string.lower(searchbar))end; return search or not azeriteTraits[traitID].valid end,
+			order = count,
+			hidden = function() local search = nil; if AF.searchbar then search = not string.match(string.lower(azeriteTraits[traitID].name), string.lower(AF.searchbar))end; return search or not azeriteTraits[traitID].valid end,
+			disabled = disable,
 			}
 
-			options.args.weights.args[name.."1"] = {
+
+			aceTable[name.."1"] = {
 			name = function() return name end,
 			type = "execute",
 			--desc  = function() return GetSpellDescription(azeriteTraits[traitID].spellId) end,
 			image = icon,
 			width = "normal",
 			icon = icon,
-			order = index+.1,
-			hidden = function() local search = nil; if searchbar then search = not string.match(string.lower(azeriteTraits[traitID].name), string.lower(searchbar))end; return search or not azeriteTraits[traitID].valid end,
+			order = count+.1,
+			disabled = disable,
+			hidden = function() local search = nil; if AF.searchbar then search = not string.match(string.lower(azeriteTraits[traitID].name), string.lower(AF.searchbar))end; return search or not azeriteTraits[traitID].valid end,
 			}
 
-			options.args.weights.args[name.."2"] = {
+			aceTable[name.."2"] = {
 			name = " ",
 			desc = function() return GetSpellDescription(azeriteTraits[traitID].spellId) end,
 			type = "input",
 			multiline  = 3,
 			width = "normal",
 			icon = icon,
-			order = index+.2,
-			hidden = function() local search = nil; if searchbar then search = not string.match(string.lower(azeriteTraits[traitID].name), string.lower(searchbar))end; return search or not azeriteTraits[traitID].valid end,
+			order = count+.2,
+			disabled = disable,
+			hidden = function() local search = nil; if AF.searchbar then search = not string.match(string.lower(azeriteTraits[traitID].name), string.lower(AF.searchbar))end; return search or not azeriteTraits[traitID].valid end,
 			get = function(info)  
-				if not AF.traitRanks[traitID] then  return "" end
-				return AF:TextGetter(traitID)
+				--if not AF.traitRanks[traitID] then  return "" end
+				return AF:TextGetter(traitID,profile)
+
+
 				end,
 			set = function(info,val) AF.traitRanks[traitID] = {}; return AF:ParseText(traitID,val) end,
 			}
@@ -1199,7 +1327,6 @@ end
 
 
 function AF:OnTooltipSetItem(self,...)
-if true then return end
 	local name, link = self:GetItem()
   	if not name then return end
 

@@ -853,12 +853,14 @@ function AF:PLAYER_ENTERING_WORLD()
 	specID, specName = GetSpecializationInfo(spec)
 	className, classFile, classID = UnitClass("player")
 
+	AF.loadWeightProfile()
+
 	AF:BuildAzeriteDataTables()
 	AF.BuildWeightedProfileList()
 	AF:GetAzeriteData()
 	AF:GetAzeriteTraits()
 	--AF:LoadClassTraitRanks()
-	AF.loadWeightProfile()
+	
 	UpdateWeeklyQuest()
 	AF:updateInfoLDB()
 	toggleAF_CharacterPage_Icon(AzeriteForge.db.profile.showCharacterPageIcon) 
@@ -886,6 +888,7 @@ end
 function AF:PLAYER_SPECIALIZATION_CHANGED(event, ...)
 	spec = GetSpecialization()
 	specID, specName = GetSpecializationInfo(spec) 
+	AF.loadWeightProfile()
 	AF:BuildAzeriteDataTables()
 	AF.BuildWeightedProfileList()
 
@@ -894,7 +897,7 @@ function AF:PLAYER_SPECIALIZATION_CHANGED(event, ...)
 	--AF:LoadClassTraitRanks()
 
 	AF:updateInfoLDB()
-	AF.loadWeightProfile()
+	
 	AF.BuildWeightedProfileList()
 
 	AF:updateInfoLDB()

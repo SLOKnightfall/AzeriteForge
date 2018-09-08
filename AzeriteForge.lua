@@ -853,12 +853,14 @@ function AF:PLAYER_ENTERING_WORLD()
 	specID, specName = GetSpecializationInfo(spec)
 	className, classFile, classID = UnitClass("player")
 
-	AF.loadWeightProfile()
+
 
 	AF:BuildAzeriteDataTables()
 	AF.BuildWeightedProfileList()
 	AF:GetAzeriteData()
 	AF:GetAzeriteTraits()
+
+	AF.loadWeightProfile()
 	--AF:LoadClassTraitRanks()
 	
 	UpdateWeeklyQuest()
@@ -910,14 +912,14 @@ function AF.loadWeightProfile()
 	--AF.db.char.weightProfile[specID] = AF.db.char.weightProfile[specID] or {}
 	 local userProfile = AF.db.char.weightProfile[specID]
 	  local _, specName = GetSpecializationInfoByID(specID)
+	 local weightProfile = AF.db.global.userWeightLists[userProfile]
 
 	local profileData = {}
-	if not userProfile then 
+	if not userProfile or not weightProfile  then 
 		userProfile =  "[Default] - "..className.." "..specName
 		profileData = AF.loadDefaultData("StackData")
 		AF.db.global.userWeightLists[userProfile] =  profileData
-		AF.db.global.userWeightLists[userProfile]["specID"] = specID
-		AF.db.global.userWeightLists[userProfile]["classID"] = classID
+
 		AF.db.char.weightProfile[specID] = userProfile
 		AF.traitRanks = profileData
 		AF.BuildWeightedProfileList()
@@ -1186,6 +1188,10 @@ function AF.loadDefaultData(DB)
 			traitRanks[AzeriteTraitsName_to_ID[name]] = data
 		 end
 	end
+
+	traitRanks["specID"] = specID
+	traitRanks["classID"] = classID
+
 	return traitRanks
 end
 

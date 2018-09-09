@@ -20,3 +20,5 @@ ignore:
     - README.md
     - Libs/test.txt
     - Libs/.gitignore
+    - .luacheckrc
+    - .travis.yml

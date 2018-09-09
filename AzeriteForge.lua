@@ -854,14 +854,12 @@ function AF:PLAYER_ENTERING_WORLD()
 	className, classFile, classID = UnitClass("player")
 
 	
-
-	AF:BuildAzeriteDataTables()
-	AF.BuildWeightedProfileList()
-	AF.loadWeightProfile()
-
 	AF:GetAzeriteData()
 	AF:GetAzeriteTraits()
+	AF:BuildAzeriteDataTables()
+	AF.loadWeightProfile()
 
+	AF.BuildWeightedProfileList()
 	
 	--AF:LoadClassTraitRanks()
 	

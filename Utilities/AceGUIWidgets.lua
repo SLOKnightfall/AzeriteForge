@@ -1,3 +1,6 @@
+--###########################################
+--ACE 3 GUI Constructors
+
 local FOLDER_NAME, private = ...
 AzeriteForge = LibStub("AceAddon-3.0"):NewAddon(private, "AzeriteForge", "AceConsole-3.0", "AceEvent-3.0", "AceHook-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("AzeriteForge")
@@ -94,6 +97,14 @@ do
 		traits:SetTextColor(1, 1, 1, 1)
 		frame.traits = text
 
+		local weights = frame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+		weights:ClearAllPoints()
+		weights:SetPoint("TOP", item, "BOTTOM",0, -7)
+		weights:SetText("DDDDDDDD")
+		--weights:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT")
+		weights:SetTextColor(1, 1, 1, 1)
+		frame.weights = text
+
 		local self = {}
 		self.type = Type
 		self.num = num
@@ -115,6 +126,8 @@ do
 		description.obj = self
 		self.traits = traits
 		traits.obj = self
+		self.weights = weights
+		weights.obj = self
 
 		self.alignoffset = 30
 

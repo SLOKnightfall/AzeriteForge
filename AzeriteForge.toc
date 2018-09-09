@@ -43,6 +43,7 @@ Localization\localization-zhTW.lua
 #Templates
 Utilities\AceGUIWidgets.lua
 Utilities\Frames.lua
+Utilities\Utilities.lua
 
 
 #Core

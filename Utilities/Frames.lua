@@ -2,32 +2,29 @@
 --Frame Generation
 
 
---AzeriteEmpoweredItemUI.BorderFrame.portrait
 local FOLDER_NAME, private = ...
-local TextDump = LibStub("LibTextDump-1.0")
-AzeriteForge = LibStub("AceAddon-3.0"):GetAddon("AzeriteForge")
+local AF = LibStub("AceAddon-3.0"):GetAddon("AzeriteForge")
 local L = LibStub("AceLocale-3.0"):GetLocale("AzeriteForge")
-AzeriteForgeMiniMap = LibStub("LibDBIcon-1.0")
-local AF = AzeriteForge
+
 AF.Buttons = {}
-local AceGUI = LibStub("AceGUI-3.0")
 local buttons = AF.Buttons
+local AceGUI = LibStub("AceGUI-3.0")
+
 AF.powerLocationButtonIDs = {}
 local powerLocationButtonIDs = AF.powerLocationButtonIDs
+
 AF.UnselectedPowers = {}
 local UnselectedPowers = AF.UnselectedPowers
-local BagScrollFrame
+
+AF.BagScrollFrame = {}
 local locationIDs = {["Head"] = 1, ["Shoulder"] = 3, ["Chest"] = 5,}
 local azeriteIcon = "Interface/Icons/Inv_smallazeriteshard"
-
 local AzeriteLocations = {["Head"] = ItemLocation:CreateFromEquipmentSlot(1),
 			["Shoulder"] = ItemLocation:CreateFromEquipmentSlot(3),
 			["Chest"]= ItemLocation:CreateFromEquipmentSlot(5),
 			[1] = "Head",
 			[3] = "Shoulder",
 			[5] = "Chest",}
-
-
 
 
 local function addFramesToAzeriteEmpoweredItemUI()
@@ -112,7 +109,7 @@ function AF:CreateImportFrame()
 	local widget = {
 		frame     = window,
 		content   = content,
-		type      = "AzForgeContainer"
+		type      = "AzForgeImportContainer"
 	}
 
 	widget["OnRelease"] = function(self)
@@ -171,7 +168,7 @@ local function CreateBagInfoFrame()
 	local widget = {
 		frame     = window,
 		content   = content,
-		type      = "AzForgeContainer"
+		type      = "AzForgeBagContainer"
 	}
 	widget["OnRelease"] = function(self)
 		self.status = nil
@@ -184,11 +181,11 @@ local function CreateBagInfoFrame()
 	scroll:SetLayout("List")
 	widget:AddChild(scroll)
 
-	BagScrollFrame = scroll
+	AF.BagScrollFrame = scroll
 end
 
-local function CreateCharacterFrameTabs()
 
+local function CreateCharacterFrameTabs()
 	local powerWindowButton = CreateFrame("Button", "AF_CharacterPage_Icon" , CharacterFrame, "UIPanelButtonTemplate")
 
 	buttons.powerWindowButton2 = powerWindowButton2
@@ -342,7 +339,7 @@ local function CreateAzeriteDataFrame()
 	local widget = {
 		frame     = f,
 		content   = content,
-		type      = "AzForgeContainer"
+		type      = "AzForgeDataContainer"
 	}
 
 	widget["OnRelease"] = function(self)
@@ -374,8 +371,6 @@ local function CreateAzeriteDataFrame()
 	widget:AddChild(scroll)
 	AF.PowerSummaryFrame = widget
 	AF.PowerSummaryFrame.scrollFrame = scroll
-
-
 
 --Overlay
 	local overlay = CreateFrame('Frame', "AzeriteForge_Overlay", UIParent)
@@ -624,7 +619,6 @@ end
 
 
 local itemDB={}
-
 local function bagScan()
 	wipe(itemDB)
 	for i = 0, NUM_BAG_SLOTS do
@@ -633,7 +627,7 @@ local function bagScan()
 			--print(link)
 			local itemName = GetItemInfo(link or "")
 			if itemName and C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItemByID(itemName) then
-			itemDB[link] = itemName
+				itemDB[link] = itemName
 			end
 		end
 	end
@@ -646,13 +640,12 @@ function AF:UpdateBagDataMenu(filter, filterLocation)
 	local filterText = filter or ""
 	local count = 0
 	local sortTable = {}
-	--local guiMenu = talent_options.args.bagData.args
-	--wipe(guiMenu)
-	AceGUI:Release(BagScrollFrame)
+	AceGUI:Release(AF.BagScrollFrame)
 
 	local scroll = AceGUI:Create("ScrollFrame")
 	scroll:SetLayout("Flow")
 	AzeriteForge.Bag.widget:AddChild(scroll)
+	AF.BagScrollFrame = scroll
 
 	local searchBar = AceGUI:Create("EditBox")
 	searchBar:SetRelativeWidth(.7)
@@ -662,7 +655,7 @@ function AF:UpdateBagDataMenu(filter, filterLocation)
 		filterText = string.lower(self:GetText())
 		AF:UpdateBagDataMenu(filterText)
 	end)
-	BagScrollFrame:AddChild(searchBar)
+	scroll:AddChild(searchBar)
 
 	local resetButton = AceGUI:Create("Button")
 	resetButton:SetRelativeWidth(.3)
@@ -672,8 +665,8 @@ function AF:UpdateBagDataMenu(filter, filterLocation)
 		AF:UpdateBagDataMenu("")
 	 end)
 
-	BagScrollFrame:AddChild(resetButton)
-	resetButton:SetPoint("LEFT",BagScrollFrame.searchBar,"RIGHT" )
+	scroll:AddChild(resetButton)
+	resetButton:SetPoint("LEFT",AF.BagScrollFrame.searchBar,"RIGHT" )
 
 	bagScan()
 
@@ -688,32 +681,40 @@ function AF:UpdateBagDataMenu(filter, filterLocation)
 		local traitText = ""
 		local allTierInfo = C_AzeriteEmpoweredItem.GetAllTierInfoByItemID(itemLink)
 		local location = createItemLocation(link)
+		local maxRankTotal,totalSelected  = 0,0
+
+		traitText,maxRankTotal,totalSelected = AF:BuildTraitText(link, GameTooltip, itemName, true)
 
 		item.item.icon:SetTexture(itemIcon)
 		item.frame.itemLink = link
-		item.description:SetText(itemName.." iLevel:"..itemLevel)
+		item.description:SetText(itemName.." iLevel:"..itemLevel.." ["..totalSelected .."/"..maxRankTotal.."]")
 		item.description:SetTextColor(ITEM_QUALITY_COLORS[itemRarity].r,ITEM_QUALITY_COLORS[itemRarity].g,ITEM_QUALITY_COLORS[itemRarity].b)
 		item.description:SetJustifyH("LEFT")
 		item.frame.location = location
 
 		if not allTierInfo[1]["azeritePowerIDs"][1] then return end
 
-		traitText = AF:BuildTraitText(link, GameTooltip, itemName, true)
-
 		item.traits:SetText(traitText)
 		item.traits:SetJustifyH("LEFT")
 
+		if item.frame:GetHeight() < item.traits:GetHeight() then
+			item.frame:SetHeight(item.traits:GetHeight()-8)
+		else
+			item.frame:SetHeight(item.traits:GetHeight())
+		end
+
 		if string.find(string.lower(traitText), filterText)  or string.find(string.lower(itemName), filterText) or string.find(string.lower(_G[itemEquipLoc]), filterText) then --or itemEquipLocID == filterLocation then
-		BagScrollFrame:AddChild(item)
+		scroll:AddChild(item)
 		else
 		AceGUI:Release(item)
 		end
 	end
 end
 
+
 --Aurora Skinning
 function AF.Aurora()
-if not IsAddOnLoaded("Aurora") then return end
+	if not IsAddOnLoaded("Aurora") then return end
 --Powers Window
 	Aurora.Skin.InsetFrameTemplate(AzeriteForge_PowersList)
 	Aurora.Skin.UIPanelCloseButton(AzeriteForge_PowersList.close)
@@ -723,8 +724,6 @@ if not IsAddOnLoaded("Aurora") then return end
 	Background:SetAlpha(0.8)
 	Background:Show()
 
-
-		--
 --Bag Window
 	Aurora.Skin.InsetFrameTemplate(_G.AzeriteForgeItemFrame)
 	Aurora.Skin.UIPanelCloseButton(_G.AzeriteForgeItemFrame.close)
@@ -737,5 +736,3 @@ if not IsAddOnLoaded("Aurora") then return end
 
 	Aurora.Skin.UIPanelButtonTemplate(powerWindowButton2)
 end
-
-

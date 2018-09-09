@@ -1,9 +1,12 @@
+--###########################################
+--Import/Export Handlers
+
 local FOLDER_NAME, private = ...
 local TextDump = LibStub("LibTextDump-1.0")
-AzeriteForge = LibStub("AceAddon-3.0"):GetAddon("AzeriteForge")
+local AF = LibStub("AceAddon-3.0"):GetAddon("AzeriteForge")
 local L = LibStub("AceLocale-3.0"):GetLocale("AzeriteForge")
-AzeriteForgeMiniMap = LibStub("LibDBIcon-1.0")
-local AF = AzeriteForge
+local Utilities = AF.Utilities
+local Profiles = AF.Profiles
 
 
 local APW_template = "^%s*%(%s*AzeritePowerWeights%s*:%s*(%d+)%s*:%s*\"([^\"]+)\"%s*:%s*(%d+)%s*:%s*(%d+)%s*:%s*(.+)%s*%)%s*$"
@@ -33,11 +36,11 @@ local function AZForgeImport(data)
 	ClearDebugger()
 	local classID, specID
 
-	for class, spec in string.gmatch(data , "AZFORGE:(%w+):(%w+)") do
-		classID = class
-		specID = spec
-
+	for importClassID, importSpecID in string.gmatch(data , "AZFORGE:(%w+):(%w+)") do
+		classID = importClassID
+		specID = importSpecID
 	end
+
 	local traits = {string.split("^",data )}
 
 	for i, traitData in ipairs(traits) do
@@ -55,10 +58,6 @@ local function AZForgeImport(data)
 
 	print("Importing AzeriteForge data")
 end
-
-
-
---modified code from AzeritePowerWeights
 
 
 --Inserts data from AzeritePowerWeights export strings
@@ -95,8 +94,7 @@ end
 
 --Processes AzeritePowerWeights export strings
 local function AzeritePowerWeightsImport(data)
-		local player_spec = GetSpecialization()
-		local player_specID = GetSpecializationInfo(player_spec)
+		local player_specID =  Utilities.RefreshClassInfo()
 		local startPos, endPos, stringVersion, scaleName, classID, specID, powerWeights = strfind(data, APW_template)
 
 		powerWeights = powerWeights or ""
@@ -109,12 +107,11 @@ local function AzeritePowerWeightsImport(data)
 		end
 
 		if type(classID) ~= "number" or classID < 1 or type(specID) ~= "number" or specID < 1 then -- No class or no spec, this really shouldn't happen ever
-			--Print(L.ImportPopup_Error_MalformedString)
-		else -- Everything seems to be OK
+		else
 			local result = insertCustomScalesData(classID, specID, powerWeights)
 			print("Importing AzeritePowerWeights data")
+			return true
 		end
-
 end
 
 
@@ -157,7 +154,8 @@ function AF:ExportData()
 	local text = ("AZFORGE:%s:%s^"):format(class,spec)
 
 	for id, data in pairs(AF.traitRanks) do
-		if not string.find(id, "specID") and not string.find(id, "classID") then
+		if not string.find(id, "specID") and not string.find(id, "classID") and type(data) == "table" then
+
 			text = text.."["..id.."]"
 
 			for i,d in pairs(data) do
@@ -169,11 +167,5 @@ function AF:ExportData()
 		end
 	end
 
-	return Export(text)
+	return Utilities.Export(text)
 end
-
-
-
-
-
-

@@ -1,10 +1,10 @@
+--###########################################
+--Minimap & LDB handlers
+
 local FOLDER_NAME, private = ...
-local TextDump = LibStub("LibTextDump-1.0")
-AzeriteForge = LibStub("AceAddon-3.0"):GetAddon("AzeriteForge")
+local AF = LibStub("AceAddon-3.0"):GetAddon("AzeriteForge")
 local L = LibStub("AceLocale-3.0"):GetLocale("AzeriteForge")
 AzeriteForgeMiniMap = LibStub("LibDBIcon-1.0")
-local AF = AzeriteForge
-
 local azeriteIcon = "Interface/Icons/Inv_smallazeriteshard"
 local AzeriteLocations = {["Head"] = ItemLocation:CreateFromEquipmentSlot(1),
 			["Shoulder"] = ItemLocation:CreateFromEquipmentSlot(3),
@@ -14,6 +14,8 @@ local AzeriteLocations = {["Head"] = ItemLocation:CreateFromEquipmentSlot(1),
 			[5] = "Chest",}
 local locationIDs = {["Head"] = 1, ["Shoulder"] = 3, ["Chest"] = 5,}
 local AceGUI = LibStub("AceGUI-3.0")
+local Utilities = AF.Utilities
+local Profiles = AF.Profiles
 
 
 --looks at equpment slots to find an empowered item to open to, giving priority to items with selectable powers
@@ -44,6 +46,7 @@ local function OpenToBestEmpoweredLocation()
 	end
 end
 
+
 --LDB handlers
 local AzeriteForgeInfoLDB = LibStub("LibDataBroker-1.1"):NewDataObject("AzeriteForge", {
 	type = "data source",
@@ -59,6 +62,7 @@ local AzeriteForgeInfoLDB = LibStub("LibDataBroker-1.1"):NewDataObject("AzeriteF
 	end,})
 
 AF.AzeriteForgeInfoLDB = AzeriteForgeInfoLDB
+
 
 function AzeriteForgeInfoLDB:OnTooltipShow()
 	AF.BuildAzeriteInfoTooltip(self)
@@ -90,6 +94,7 @@ local function LDBItemOnEnter(self, location)
 	GameTooltip:SetHyperlink(itemLink)
 	GameTooltip:Show()
 end
+
 
 local function LDBItemOnClick(self, button, location)
 
@@ -123,7 +128,6 @@ local AzeriteForgeHeadLDB = LibStub("LibDataBroker-1.1"):NewDataObject("AzeriteF
 AF.AzeriteForgeHeadLDB = AzeriteForgeHeadLDB
 
 
-
 local AzeriteForgeChestLDB = LibStub("LibDataBroker-1.1"):NewDataObject("AzeriteForge-Chest", {
 	type = "data source",
 	text = "AzeriteForge-Head",
@@ -132,6 +136,7 @@ local AzeriteForgeChestLDB = LibStub("LibDataBroker-1.1"):NewDataObject("Azerite
 	OnEnter = function(self) LDBItemOnEnter(self, 5) end,
 	})
 AF.AzeriteForgeChestLDB = AzeriteForgeChestLDB
+
 
 local AzeriteForgeShoulderLDB = LibStub("LibDataBroker-1.1"):NewDataObject("AzeriteForge-Shoulder", {
 	type = "data source",

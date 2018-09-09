@@ -9,6 +9,7 @@
 ## X-Gatherer-Plugin-Name: AzeriteForge
 ## X-Gatherer-Plugin-Type: 
 ## SavedVariables: AzeriteForgeDB
+## X-Curse-Project-ID: 302043
 
 #Libraries
 Libs\LibStub-1.0\LibStub.lua

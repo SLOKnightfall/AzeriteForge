@@ -7,7 +7,7 @@ local AF = AzeriteForge
 
 local azeriteIcon = "Interface/Icons/Inv_smallazeriteshard"
 local AzeriteLocations = {["Head"] = ItemLocation:CreateFromEquipmentSlot(1),
-			["Shoulder"] = ItemLocation:CreateFromEquipmentSlot(3), 
+			["Shoulder"] = ItemLocation:CreateFromEquipmentSlot(3),
 			["Chest"]= ItemLocation:CreateFromEquipmentSlot(5),
 			[1] = "Head",
 			[3] = "Shoulder",
@@ -28,7 +28,7 @@ local function OpenToBestEmpoweredLocation()
 		end
 	end
 
-	if availableTraits or firstFound then 
+	if availableTraits or firstFound then
 
 		AF.ShowEmpoweredItem(availableTraits or firstFound)
 
@@ -37,7 +37,7 @@ local function OpenToBestEmpoweredLocation()
 		end
 		return  true
 	end
-			
+
 	if not itemFound then
 		DEFAULT_CHAT_FRAME:AddMessage(L["No Empowered items equipped"])
 		return false
@@ -49,7 +49,7 @@ local AzeriteForgeInfoLDB = LibStub("LibDataBroker-1.1"):NewDataObject("AzeriteF
 	type = "data source",
 	text = "AzeriteForge",
 	icon = azeriteIcon,
-	OnClick = function(self, button, down) 
+	OnClick = function(self, button, down)
 		if (button == "RightButton") then
 			--LibStub("AceConfigDialog-3.0"):Open("AzeriteForge")
 		elseif (button == "LeftButton") then
@@ -150,11 +150,11 @@ function AF.setLDBItems(location)
 	local itemID =  GetInventoryItemID("player", locationID)
 	local HasAnyUnselectedPowers = false
 	local azeriteLocation = ItemLocation:CreateFromEquipmentSlot(locationID)
-	
-	if itemID then 
+
+	if itemID then
 		local isAzeriteItem = C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItem(azeriteLocation)
 		itemName, itemLink, _, _, _, _, _, _,_, itemIcon  = GetItemInfo(itemID)
-		if isAzeriteItem then 
+		if isAzeriteItem then
 			HasAnyUnselectedPowers = C_AzeriteEmpoweredItem.HasAnyUnselectedPowers(azeriteLocation)
 		end
 	end

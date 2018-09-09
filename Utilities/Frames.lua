@@ -21,7 +21,7 @@ local locationIDs = {["Head"] = 1, ["Shoulder"] = 3, ["Chest"] = 5,}
 local azeriteIcon = "Interface/Icons/Inv_smallazeriteshard"
 
 local AzeriteLocations = {["Head"] = ItemLocation:CreateFromEquipmentSlot(1),
-			["Shoulder"] = ItemLocation:CreateFromEquipmentSlot(3), 
+			["Shoulder"] = ItemLocation:CreateFromEquipmentSlot(3),
 			["Chest"]= ItemLocation:CreateFromEquipmentSlot(5),
 			[1] = "Head",
 			[3] = "Shoulder",
@@ -88,7 +88,7 @@ local function CreateGenericFrame(name, parent)
 	title:SetTextColor(1, 1, 1, 1)
 	window.title = title
 
-	
+
 
 	local close = CreateFrame("Button", nil, window, "UIPanelCloseButton")
 	close:SetPoint("TOPRIGHT", 2, 1)
@@ -101,7 +101,7 @@ end
 
 function AF:CreateImportFrame()
 	local window = CreateGenericFrame()
-	window:SetFrameStrata('FULLSCREEN_DIALOG')	
+	window:SetFrameStrata('FULLSCREEN_DIALOG')
 	window:SetToplevel(true)
 	window.title:SetText("AzeriteForge "..L["Import"])
 
@@ -145,7 +145,7 @@ end
 --AzeriteEmpoweredItemUI
 local function CreateBagInfoFrame()
 	local window = CreateGenericFrame ("AzeriteForgeItemFrame", AzeriteEmpoweredItemUI)
-	
+
 	window:ClearAllPoints()
 	window:SetPoint("TOPLEFT", AzeriteEmpoweredItemUI, "TOPLEFT",-5,-20)
 	window:SetPoint("BOTTOMRIGHT", AzeriteEmpoweredItemUI,"BOTTOMRIGHT")
@@ -238,7 +238,7 @@ local maxShines = 4;
 local shineGet = {}
 local function GetShine (frame)
 	local shine = shineGet[1];
-	
+
 	if ( shine ) then
 		tremove(shineGet, 1);
 	else
@@ -265,7 +265,7 @@ local function ToggleShine(frame, toggle)
 
 	end
 
-	if toggle then 
+	if toggle then
 		frame.shine:Show()
 		frame.shine:SetParent(frame)
 		frame.shine:SetPoint("CENTER", frame, "CENTER")
@@ -287,11 +287,11 @@ function private.updateLDBShine()
 if Config.MMDB.hide then return end
 
 	for location in pairs(UnselectedPowers) do
-			if UnselectedPowers[location] and not AzeriteForge.MinimapIcon.shine then 
+			if UnselectedPowers[location] and not AzeriteForge.MinimapIcon.shine then
 				ToggleShine(AzeriteForge.MinimapIcon, true)
 				--ToggleShine(AzeriteForgeInfoLDB.icon, true)
 
-				
+
 			elseif not UnselectedPowers[location] and AzeriteForge.MinimapIcon.shine then
 				ToggleShine(AzeriteForge.MinimapIcon, false)
 				--ToggleShine(AzeriteForgeInfoLDB, false)
@@ -348,7 +348,7 @@ local function CreateAzeriteDataFrame()
 	widget["OnRelease"] = function(self)
 		self.status = nil
 		wipe(self.localstatus)
-		end	
+		end
 
 	f:SetScript("OnShow", function(self)
 		--LibStub("AceConfigDialog-3.0"):Open("AzeriteForge_Talents", widget, "stats")
@@ -401,7 +401,7 @@ local function CreateAzeriteDataFrame()
 	headSlotButton:SetWidth(45)
 	headSlotButton:SetHeight(45)
 	headSlotButton:SetScript("OnUpdate", function(self,...)
-		if UnselectedPowers["Head"] and not self.shine then 
+		if UnselectedPowers["Head"] and not self.shine then
 			ToggleShine(headSlotButton, true)
 		elseif not UnselectedPowers["Head"] and self.shine then
 			ToggleShine(headSlotButton, false)
@@ -441,7 +441,7 @@ local function CreateAzeriteDataFrame()
 	end)
 
 	shoulderSlotButton:SetScript("OnUpdate", function(self,...)
-		if UnselectedPowers["Shoulder"] and not self.shine then 
+		if UnselectedPowers["Shoulder"] and not self.shine then
 			ToggleShine(shoulderSlotButton, true)
 		elseif not UnselectedPowers["Shoulder"] and self.shine then
 			ToggleShine(shoulderSlotButton, false)
@@ -480,7 +480,7 @@ local function CreateAzeriteDataFrame()
 			GameTooltip:Hide()
 		end)
 	chestSlotButton:SetScript("OnUpdate", function(self,...)
-		if UnselectedPowers["Chest"] and not self.shine then 
+		if UnselectedPowers["Chest"] and not self.shine then
 			ToggleShine(chestSlotButton, true)
 		elseif not UnselectedPowers["Chest"] and self.shine then
 			ToggleShine(chestSlotButton, false)
@@ -506,7 +506,7 @@ local function CreateAzeriteDataFrame()
 
 		else
 			if f:IsShown() then
-				f:Hide()	
+				f:Hide()
 			else
 				--LibStub("AceConfigDialog-3.0"):Open("AzeriteForge_Talents", widget, "stats")
 				f:Show()
@@ -548,7 +548,7 @@ local function CreateAzeriteDataFrame()
 	characterButton:SetScript("OnLeave", function()
 			GameTooltip:Hide()
 		end)
-	
+
 	local inventoryButton = CreateFrame("Button", nil , overlay)
 	buttons.inventoryButton = inventoryButton
 	inventoryButton:SetNormalTexture("Interface\\Icons\\inv_tailoring_hexweavebag")
@@ -590,7 +590,7 @@ local function findInventoryLocation(itemLink)
 	for i = 0, NUM_BAG_SLOTS do
 		for j = 1, GetContainerNumSlots(i) do
 			local _, _, _, _, _, _, bagItemLink = GetContainerItemInfo(i, j);
-			if itemLink == bagItemLink then 
+			if itemLink == bagItemLink then
 				return i, j
 			end
 		end
@@ -602,14 +602,14 @@ end
 local function createItemLocation(itemLink)
 	local bag, slot = findInventoryLocation(itemLink)
 
-	if bag then 
+	if bag then
 		return ItemLocation:CreateFromBagAndSlot(bag, slot)
 
 	else
 		for x,y in pairs (locationIDs) do
 			local inventoryItemLink = GetInventoryItemLink("player", y)
-			if inventoryItemLink == itemLink then 
-			
+			if inventoryItemLink == itemLink then
+
 				return ItemLocation:CreateFromEquipmentSlot(y)
 			end
 		end
@@ -632,7 +632,7 @@ local function bagScan()
 			local _, _, _, _, _, _, link = GetContainerItemInfo(i, j);
 			--print(link)
 			local itemName = GetItemInfo(link or "")
-			if itemName and C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItemByID(itemName) then 
+			if itemName and C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItemByID(itemName) then
 			itemDB[link] = itemName
 			end
 		end
@@ -658,9 +658,9 @@ function AF:UpdateBagDataMenu(filter, filterLocation)
 	searchBar:SetRelativeWidth(.7)
 	searchBar:SetText(filterText)
 	--searchBar:SetCallback("OnTextChanged", function(self) TextChanged(self) end)
-	searchBar:SetCallback("OnEnterPressed", function(self) 	
+	searchBar:SetCallback("OnEnterPressed", function(self)
 		filterText = string.lower(self:GetText())
-		AF:UpdateBagDataMenu(filterText) 
+		AF:UpdateBagDataMenu(filterText)
 	end)
 	BagScrollFrame:AddChild(searchBar)
 
@@ -676,7 +676,7 @@ function AF:UpdateBagDataMenu(filter, filterLocation)
 	resetButton:SetPoint("LEFT",BagScrollFrame.searchBar,"RIGHT" )
 
 	bagScan()
-	
+
 	local breakCounter = 0
 	for link in pairs(itemDB) do
 
@@ -703,22 +703,22 @@ function AF:UpdateBagDataMenu(filter, filterLocation)
 		item.traits:SetText(traitText)
 		item.traits:SetJustifyH("LEFT")
 
-		if string.find(string.lower(traitText), filterText)  or string.find(string.lower(itemName), filterText) or string.find(string.lower(_G[itemEquipLoc]), filterText) then --or itemEquipLocID == filterLocation then 
-		BagScrollFrame:AddChild(item) 
+		if string.find(string.lower(traitText), filterText)  or string.find(string.lower(itemName), filterText) or string.find(string.lower(_G[itemEquipLoc]), filterText) then --or itemEquipLocID == filterLocation then
+		BagScrollFrame:AddChild(item)
 		else
 		AceGUI:Release(item)
 		end
 	end
 end
 
---Aurora Skinning 
+--Aurora Skinning
 function AF.Aurora()
 if not IsAddOnLoaded("Aurora") then return end
 --Powers Window
 	Aurora.Skin.InsetFrameTemplate(AzeriteForge_PowersList)
 	Aurora.Skin.UIPanelCloseButton(AzeriteForge_PowersList.close)
 	local Background = AzeriteForge_PowersListBg
-	
+
 	Background:SetDesaturated(true)
 	Background:SetAlpha(0.8)
 	Background:Show()
@@ -730,7 +730,7 @@ if not IsAddOnLoaded("Aurora") then return end
 	Aurora.Skin.UIPanelCloseButton(_G.AzeriteForgeItemFrame.close)
 
 	local Background = AzeriteForgeItemFrameBg
-	
+
 	Background:SetDesaturated(true)
 	Background:SetAlpha(0.9)
 	Background:Show()

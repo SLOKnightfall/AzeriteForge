@@ -32,7 +32,7 @@ local function AZForgeImport(data)
 	wipe(AF.traitRanks)
 	ClearDebugger()
 	local classID, specID
-	
+
 	for class, spec in string.gmatch(data , "AZFORGE:(%w+):(%w+)") do
 		classID = class
 		specID = spec
@@ -130,14 +130,14 @@ function AF:ImportData(data)
 	for _, addonName in ipairs(validAddons) do
 		local isfound = strfind(data, addonName)
 
-		if isfound then 
+		if isfound then
 			exportAddon = addonName
 		end
 	end
 
 	if not exportAddon then print("Not Valid Import Data"); return end
 
-	if exportAddon == "AZFORGE" then 
+	if exportAddon == "AZFORGE" then
 
 		AZForgeImport(data)
 
@@ -157,7 +157,7 @@ function AF:ExportData()
 	local text = ("AZFORGE:%s:%s^"):format(class,spec)
 
 	for id, data in pairs(AF.traitRanks) do
-		if not string.find(id, "specID") and not string.find(id, "classID") then 
+		if not string.find(id, "specID") and not string.find(id, "classID") then
 			text = text.."["..id.."]"
 
 			for i,d in pairs(data) do
@@ -169,7 +169,7 @@ function AF:ExportData()
 		end
 	end
 
-	return Export(text)	 
+	return Export(text)
 end
 
 

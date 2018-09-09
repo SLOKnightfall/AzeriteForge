@@ -40,7 +40,7 @@ function AF.GetUserProfile()
 
  function AF.SetUserProfile(profile)
  	local spec = GetSpecialization()
-	local specID, specName = GetSpecializationInfo(spec) 
+	local specID, specName = GetSpecializationInfo(spec)
 	--AF.db.char.weightProfile[profile] = profile
 	AF.db.char.weightProfile = AF.db.char.weightProfile or {}
 
@@ -56,7 +56,7 @@ function AF.GetUserProfile()
 
 function AF.OldDataConvert()
 	local spec = GetSpecialization()
-	local specID, specName = GetSpecializationInfo(spec) 
+	local specID, specName = GetSpecializationInfo(spec)
 	local className, classFile, classID = UnitClass("player")
 	local defaultProfile = ("Recovered profile: %s - %s"):format(className, specName)
 
@@ -65,7 +65,7 @@ if not AzeriteForgeDB.SavedSpecData then return end
 	local oldWeights = AzeriteForgeDB.SavedSpecData[specID]
 	--AF.db.global.userWeightLists[userProfile]
 
-	if oldWeights then 
+	if oldWeights then
 		print("Old Data")
 		--print(defaultProfile)
 		AF.SetUserProfile(defaultProfile)
@@ -75,14 +75,14 @@ if not AzeriteForgeDB.SavedSpecData then return end
 		AF.db.global.userWeightLists[defaultProfile]["classID"] = classID
 
 		AzeriteForgeDB.SavedSpecData[specID] = nil
-		
-	
+
+
 	--AF.db.char.selectedProfle or ("Default: %s-%s")format(class, spec)
 
 	else
 
 	--print("clear")
-		
+
 
 		--AF.db.global.userWeightLists[defaultProfile]["specID"] = specID
 	end
@@ -115,11 +115,11 @@ end
 
  function AF.LoadSelectedProfile(profile)
 	local spec = GetSpecialization()
-	local specID = GetSpecializationInfo(spec) 
+	local specID = GetSpecializationInfo(spec)
 	local className, classFile, classID = UnitClass("player")
 
 	local profile_specID = AF.db.global.userWeightLists[profile].specID
-	if specID ~= profile_specID then 
+	if specID ~= profile_specID then
 	print("Wrong Spec")
 	return false
 	end
@@ -146,10 +146,10 @@ function AF.BuildWeightedProfileList()
 
 	for x in pairs(AF.options.args.weights.args) do
 		if string.find(x ,"build_")  then
-			AF.options.args.weights.args[x] = nil	
+			AF.options.args.weights.args[x] = nil
 		end
 	end
- 
+
 	for name, data in pairs(AF.db.global.userWeightLists) do
 	local profileSpecID = AF.db.global.userWeightLists[name]["specID"] or 0
 	local data = {}
@@ -173,17 +173,17 @@ function AF.BuildWeightedProfileList()
 				order = .03,
 				set = function(info,val)  renameProfile(data.name,val) end,
 				get = function(info) return data.name end,
-				disabled = true, 
+				disabled = true,
 				},
 
 			profileDescription = {
-				name = function() 
-				
+				name = function()
+
 					if not AF.db.global.userWeightLists[data.name] then return end
 					local profileSpecID = AF.db.global.userWeightLists[data.name]["specID"] or 0
 					local _, name, _,icon, _, class = GetSpecializationInfoByID(profileSpecID)
 
-					if icon then 
+					if icon then
 						icon = "|T"..icon..(":25:25:|t")
 					else
 						icon = ""
@@ -208,7 +208,7 @@ function AF.BuildWeightedProfileList()
 				order = .06,
 				--width = ",
 				func = function(info) deleteProfile(data.name)
-					end,	
+					end,
 				disabled = function() return data.name == AF.db.char.weightProfile[specID]    end,
 				},
 			copyProfile = {
@@ -218,7 +218,7 @@ function AF.BuildWeightedProfileList()
 				--width = ",
 				hidden = true,
 				func = function()
-					end,	
+					end,
 				},
 			traitsHeader = {
 				name = "",
@@ -234,8 +234,8 @@ function AF.BuildWeightedProfileList()
 				set = function(info,val) AF.searchbar = val end,
 				get = function(info) return AF.searchbar end,
 				},
-				
-			
+
+
 				},
 			}
 
@@ -246,14 +246,14 @@ function AF.BuildWeightedProfileList()
 	local iconText = ""
 
 
-	if AF.db.char.weightProfile[specID] == name then 
+	if AF.db.char.weightProfile[specID] == name then
 		fontColor = GREEN_FONT_COLOR_CODE
-	else 
-	
-		fontColor = NORMAL_FONT_COLOR_CODE    
+	else
+
+		fontColor = NORMAL_FONT_COLOR_CODE
 	end
 
-	if icon then 
+	if icon then
 		iconText = "|T"..icon..(":25:25:|t")
 	end
 

@@ -5,7 +5,7 @@ local AceGUI = LibStub("AceGUI-3.0")
 local AF = AzeriteForge
 
 local AzeriteLocations = {["Head"] = ItemLocation:CreateFromEquipmentSlot(1),
-			["Shoulder"] = ItemLocation:CreateFromEquipmentSlot(3), 
+			["Shoulder"] = ItemLocation:CreateFromEquipmentSlot(3),
 			["Chest"]= ItemLocation:CreateFromEquipmentSlot(5),
 			[1] = "Head",
 			[3] = "Shoulder",
@@ -23,32 +23,32 @@ do
 		self:SetDisabled(false)
 		self.showbutton = true
 	end
-	
+
 	local function OnRelease(self)
 		self.frame:ClearAllPoints()
 		self.frame:Hide()
 		self:SetDisabled(false)
 	end
-	
+
 	local function Control_OnEnter(this)
 		this.obj:Fire("OnEnter")
 	end
-	
+
 	local function Control_OnLeave(this)
 		this.obj:Fire("OnLeave")
 	end
-	
-	
+
+
 	local function SetDisabled(self, disabled)
 		self.disabled = disabled
 		if disabled then
 		end
 	end
-	
+
 	local function SetWidth(self, width)
 		self.frame:SetWidth(width)
 	end
-	
+
 	local function Constructor()
 		local num  = AceGUI:GetNextWidgetNum(Type)
 
@@ -72,19 +72,19 @@ do
 
 		end)
 
-		item:SetScript("OnClick", function(self, button, down) 
+		item:SetScript("OnClick", function(self, button, down)
 			if button == "RightButton" then
 				AF.ShowEmpoweredItem(AzeriteLocations["Head"])
 				EquipItemByName(frame.itemLink)
 				AF.ShowEmpoweredItem(AF.createItemLocation(frame.itemLink))
 			else
-			if (frame.location)then 
+			if (frame.location)then
 				AF.ShowEmpoweredItem(frame.location)
 				AF.Bag:Hide()
 			end
 			end
 		end)
-		
+
 		item:SetScript("OnLeave", function(self) GameTooltip:Hide() end)
 
 		local traits = frame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
@@ -106,7 +106,7 @@ do
 		self.SetDisabled = SetDisabled
 		self.SetText = SetText
 		self.SetWidth = SetWidth
-		
+
 		self.frame = frame
 		frame.obj = self
 		self.item = item
@@ -117,13 +117,13 @@ do
 		traits.obj = self
 
 		self.alignoffset = 30
-		
+
 		frame:SetHeight(109)
 		frame:SetWidth(500)
 
 		AceGUI:RegisterAsWidget(self)
 		return self
 	end
-	
+
 	AceGUI:RegisterWidgetType(Type,Constructor,Version)
 end

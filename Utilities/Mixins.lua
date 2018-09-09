@@ -69,11 +69,11 @@ local function UpdateValues(location, tierIndex)
 	for id, rank in pairs(maxValue[location][tierIndex]) do
 		if rank >= max then
 			id.TraitRank:SetTextColor(GREEN_FONT_COLOR:GetRGB())
-		else 
+		else
 			id.TraitRank:SetTextColor(YELLOW_FONT_COLOR:GetRGB())
 		end
 
-		if string.find(rank, "-") then 
+		if string.find(rank, "-") then
 			id.TraitRank:SetTextColor(RED_FONT_COLOR:GetRGB())
 		end
 	end
@@ -81,7 +81,7 @@ end
 
 
 local function AzeriteEmpoweredItemPowerMixin_OnShow(self,...)
-	if self.azeriteItemDataSource then 
+	if self.azeriteItemDataSource then
 		local location = self.azeriteItemDataSource:GetItemLocation()
 		local HasAnyUnselectedPowers = C_AzeriteEmpoweredItem.HasAnyUnselectedPowers(location)
 		local DB = AF.ReturnSelectedAzeriteTraits()
@@ -95,16 +95,16 @@ local function AzeriteEmpoweredItemPowerMixin_OnShow(self,...)
 
 		local traitRank = AF.getTraitRanking(self:GetAzeritePowerID(),location, DB)
 		local tierIndex = self:GetTierIndex()
-		
+
 		maxValue[location] = maxValue[location] or {}
 		maxValue[location][tierIndex] = maxValue[location][tierIndex] or {}
 		maxValue[location][tierIndex][self] = traitRank or 0
 
 		UpdateValues(location, tierIndex)
 
-		if traitRank and self.TraitRank then --and HasAnyUnselectedPowers then 
+		if traitRank and self.TraitRank then --and HasAnyUnselectedPowers then
 			self.AdditionalTraits:SetPoint("CENTER",0,20)
-			if string.find(traitRank, "-") then 
+			if string.find(traitRank, "-") then
 				self.TraitRank:SetText(("%s"):format(traitRank))
 				self.TraitRank:SetTextColor(RED_FONT_COLOR:GetRGB())
 			else
@@ -116,7 +116,7 @@ local function AzeriteEmpoweredItemPowerMixin_OnShow(self,...)
 			self.AdditionalTraits:SetPoint("CENTER",0,0)
 		end
 
-		if self.AdditionalTraits and duplicateTraits > 0 then 
+		if self.AdditionalTraits and duplicateTraits > 0 then
 			self.AdditionalTraits:SetText(("%sX"):format(duplicateTraits+1))
 			self.AdditionalTraits:Show()
 		else

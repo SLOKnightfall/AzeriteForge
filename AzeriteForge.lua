@@ -3,7 +3,7 @@
 --	AzeriteForge v@project-version@
 --	Author: SLOKnightfall
 
---
+--	
 --	///////////////////////////////////////////////////////////////////////////////////////////
 local HasActiveAzeriteItem, FindActiveAzeriteItem, GetAzeriteItemXPInfo, GetPowerLevel = C_AzeriteItem.HasActiveAzeriteItem, C_AzeriteItem.FindActiveAzeriteItem, C_AzeriteItem.GetAzeriteItemXPInfo, C_AzeriteItem.GetPowerLevel
 
@@ -21,8 +21,8 @@ BINDING_NAME_AZERITEFORGE_OPEN_CHEST = L["Shoulder Powers"]
 BINDING_NAME_AZERITEFORGE_OPEN_SHOULDER = L["Chest Powers"]
 
 local BagScrollFrame = AF.BagScrollFrame
-local currentXp, currentMaxXp, startXp =  0, 0 , 0
-local currentLevel, startLevel = 0 , 0
+local currentXp, currentMaxXp, startXp =  0, 0 , 0 
+local currentLevel, startLevel = 0 , 0 
 local lastXpGain = 0
 local azeriteItemLocation
 local azeriteIcon = "Interface/Icons/Inv_smallazeriteshard"
@@ -38,8 +38,8 @@ local powerLocationButtonIDs = AF.powerLocationButtonIDs
 
 local bagDataStorage = {}
 
-local globalDb
-local configDb
+local globalDb 
+local configDb 
 local WeeklyQuestGain = 0
 local WeeklyQuestRequired = 0
 AF.searchbar = nil
@@ -54,7 +54,7 @@ local buttons = AF.Buttons
 local AzeriteTraitsName_to_ID ={}
 local UnselectedPowers = AF.UnselectedPowers
 local AzeriteLocations = {["Head"] = ItemLocation:CreateFromEquipmentSlot(1),
-			["Shoulder"] = ItemLocation:CreateFromEquipmentSlot(3),
+			["Shoulder"] = ItemLocation:CreateFromEquipmentSlot(3), 
 			["Chest"]= ItemLocation:CreateFromEquipmentSlot(5),
 			[1] = "Head",
 			[3] = "Shoulder",
@@ -116,14 +116,14 @@ do
 		else
 			--error("Invalid argument 2 to :Pour, must be either a string or a table.")
 		end
-
+		
 		return message
 	end
 
 	function DebugPour(...)
 		DEFAULT_CHAT_FRAME:AddMessage(string.format(...));
 		Debug(...)
-
+		
 	end
 
 	function GetDebugger()
@@ -153,7 +153,7 @@ do
 
 		 debugger:Display()
 		 return debugger
-
+		
 	end
 
 	private.Debug = Debug
@@ -170,7 +170,7 @@ local function inTable(table, value)
 		if type(data) == "table" then
 			return inTable(data, value)
 		else
-			if tostring(data) == tostring(value) then
+			if tostring(data) == tostring(value) then 
 				return true
 			end
 		end
@@ -181,10 +181,10 @@ end
 local function validTrait(traitID)
 	local traitClasses = AzeriteForge.TraitData[traitID].classesId
 	local traitSpecs = AzeriteForge.TraitData[traitID].specsId
-	if (inTable(traitClasses, classID) and (traitSpecs and inTable(traitSpecs, specID))) then
+	if (inTable(traitClasses, classID) and (traitSpecs and inTable(traitSpecs, specID))) then  
 		return true
 
-	elseif (inTable(traitClasses, classID) and not traitSpecs) then
+	elseif (inTable(traitClasses, classID) and not traitSpecs) then 
 		return true
 
 	else
@@ -221,7 +221,7 @@ function AF.getTraitRanking(traitID, locationID)
 		rank = 0
 		local  _, stackedRank = AF:FindStackedTraits(traitID, locationID, SelectedAzeriteTraits)
 		local maxRank = 1
-
+	 
 		for index, itemrank in pairs(AF.traitRanks[traitID]) do
 			maxRank = itemrank
 		end
@@ -250,7 +250,7 @@ function AF.getTraitRanking(traitID, locationID)
 
 		end
 
-		rank = AF.traitRanks[traitID][rank]
+		rank = AF.traitRanks[traitID][rank]	
 	end
 
 	return rank
@@ -262,7 +262,7 @@ local function toggleAF_CharacterPage_Icon(toggle)
 
 	if not wasEarnedByMe then AF_CharacterPage_Icon:Hide(); return end
 
-	if toggle then
+	if toggle then 
 		AF_CharacterPage_Icon:Show()
 	else
 		AF_CharacterPage_Icon:Hide()
@@ -293,7 +293,7 @@ function AF.ShowEmpoweredItem(itemLocation)
 			OpenAzeriteEmpoweredItemUIFromItemLocation(itemLocation);
 
 			for i in pairs (powerLocationButtonIDs) do
-				if i == equipmentSlotID then
+				if i == equipmentSlotID then 
 					powerLocationButtonIDs[i]:LockHighlight()
 				else
 					powerLocationButtonIDs[i]:UnlockHighlight()
@@ -315,7 +315,7 @@ function AF.duplicateNameCheck(profileName)
 			print("Duplicate Name Found. Choose another name")
 			return true
 		else
-
+			
 		end
 
 	end
@@ -330,7 +330,7 @@ local function createNewProfile(profileName)
 	if AF.duplicateNameCheck(profileName) then return  end
 
 	spec = GetSpecialization()
-	specID, specName = GetSpecializationInfo(spec)
+	specID, specName = GetSpecializationInfo(spec) 
 	className, classFile, classID = UnitClass("player")
 
 	AF.db.global.userWeightLists[profileName] = {}
@@ -440,12 +440,12 @@ local options = {
 
 
 
-
+				
 
 
 			},
 
-
+			
 		},
 	weights = {
 		    name = L["Weight Profiles"],
@@ -467,13 +467,13 @@ local options = {
 				get = function(info) return AF.db.char.weightProfile[specID]  end
 				},
 			profileDescription = {
-				name = function()
+				name = function() 
 				local profile =  AF.db.char.weightProfile[specID]
 				--print(specID)
 				if not AF.db.global.userWeightLists[profile] then return end
 				local profileSpecID = AF.db.global.userWeightLists[profile]["specID"] or 0
 				local _, name, _,icon, _, class = GetSpecializationInfoByID(profileSpecID)
-				if icon then
+				if icon then 
 					icon = "|T"..icon..(":25:25:|t")
 				else
 					icon = ""
@@ -496,7 +496,7 @@ local options = {
 					AF.traitRanks["specID"] = specID
 					AF.traitRanks["classID"] = classID
 					AF.db.global.userWeightLists[profile] = AF.traitRanks
-					end,
+					end,	
 				},
 			resetIlevel = {
 				type = "execute",
@@ -511,7 +511,7 @@ local options = {
 					AF.traitRanks["classID"] = classID
 					AF.db.global.userWeightLists[profile] = AF.traitRanks
 					end,
-
+					
 				},
 			clearData = {
 				type = "execute",
@@ -527,7 +527,7 @@ local options = {
 					AF.db.global.userWeightLists[profile] = AF.traitRanks
 
 					end,
-
+					
 				},
 			importData = {
 				type = "execute",
@@ -537,14 +537,14 @@ local options = {
 				func = function()
 					AzeriteForge.ImportWindow:Show()
 					end,
-
+					
 				},
 			exportData = {
 				type = "execute",
 				name = L["Export Data"],
 				order = 5,
 				width = "double",
-				func = function() AF:ExportData() end,
+				func = function() AF:ExportData() end,	
 				},
 
 			createNewProfile = {
@@ -568,7 +568,7 @@ local options = {
 				name = L["Create Profile"],
 				order = 5,
 				width = "double",
-				func = function(info, val)  createNewProfile(newProfileName)end,
+				func = function(info, val)  createNewProfile(newProfileName)end,	
 				},
 					},
 
@@ -595,7 +595,7 @@ local talent_options = {
     handler = AzeriteForge,
     type = 'group',
     args = {
-    	bagData = {
+    	bagData = {	
 		name = "BagData",
 		type = "group",
 		args = {
@@ -605,7 +605,7 @@ local talent_options = {
 				name = "AzeriteForge",
 				},
 		},
-	},
+	},	
 	options={
 		name = "Options",
 		type = "group",
@@ -636,7 +636,7 @@ local talent_options = {
 	stats = {
 		name = "Stats",
 		type = "group",
-		args={
+		args={	
 			Topheader = {
 				order = 0,
 				type = "header",
@@ -668,15 +668,15 @@ local DB_DEFAULTS = {
 	profile = {
 		showMapicon = true,
 		debugPrint = false,
-		MMDB = {
+		MMDB = { 
 			hide = false,
 		--minimap = {},
 		},
 		tooltipCurrentTraits = false,
 		tooltipIconsOnly = false,
-		enhancedTooltip = true,
+		enhancedTooltip = true,	
 		unavailableAlert = false,
-		unavailableAlertsound = false,
+		unavailableAlertsound = false, 
 		showCharacterPageIcon = true,
 		showRankTotal = true
 	},
@@ -729,7 +729,7 @@ function AF:GetAzeriteTraits()
 	headPower_Header:SetRelativeWidth(1)
 	scroll:AddChild(headPower_Header)
 
-	if not GetInventoryItemID("player", 1) then
+	if not GetInventoryItemID("player", 1) then 
 		buttons.headSlotButton:Hide()
 	else
 		buttons.headSlotButton:Show()
@@ -742,7 +742,7 @@ function AF:GetAzeriteTraits()
 	chestPower_Header:SetRelativeWidth(1)
 	scroll:AddChild(chestPower_Header)
 
-	if not GetInventoryItemID("player", 3) then --or C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItem(itemLocation) then
+	if not GetInventoryItemID("player", 3) then --or C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItem(itemLocation) then 
 		buttons.shoulderSlotButton:Hide()
 	else
 		buttons.shoulderSlotButton:Show()
@@ -754,7 +754,7 @@ function AF:GetAzeriteTraits()
 	shoulderPower_Header:SetText(L["Shoulder Powers"])
 	shoulderPower_Header:SetRelativeWidth(1)
 	scroll:AddChild(shoulderPower_Header)
-	if not GetInventoryItemID("player", 5) then
+	if not GetInventoryItemID("player", 5) then 
 		buttons.chestSlotButton:Hide()
 	else
 		buttons.chestSlotButton:Show()
@@ -777,7 +777,7 @@ function updateInventoryLDB()
 	buttons.headSlotButton:SetNormalTexture(GetItemIcon(GetInventoryItemID("player", 1))  or "Interface\\Icons\\inv_boot_helm_draenordungeon_c_01")
 	buttons.shoulderSlotButton:SetNormalTexture(GetItemIcon(GetInventoryItemID("player", 3)) or "Interface\\Icons\\inv_misc_desecrated_clothshoulder")
 	buttons.chestSlotButton:SetNormalTexture(GetItemIcon(GetInventoryItemID("player", 5)) or "Interface\\Icons\\inv_chest_chain")
-
+	
 	--LDB Icons
 	AF.setLDBItems("Head")
 	AF.setLDBItems("Shoulder")
@@ -793,7 +793,7 @@ end
 
 local function UpdateWeeklyQuest()
 	local questID = C_IslandsQueue.GetIslandsWeeklyQuestID();
-
+	
 	local _, _, _, WeeklyGain, WeeklyRequired = GetQuestObjectiveInfo(questID, 1, false);
 	WeeklyQuestGain = WeeklyGain or 0
 	WeeklyQuestRequired = WeeklyRequired or 0
@@ -845,7 +845,7 @@ function AF:OnEnable()
 	AF:CreateFrames()
 	AF.OldDataConvert()
 
---AF:RawHook(AzeriteEmpoweredItemPowerMixin,"OnEnter",true)
+--AF:RawHook(AzeriteEmpoweredItemPowerMixin,"OnEnter",true) 
 end
 
 function AF:PLAYER_ENTERING_WORLD()
@@ -853,21 +853,19 @@ function AF:PLAYER_ENTERING_WORLD()
 	specID, specName = GetSpecializationInfo(spec)
 	className, classFile, classID = UnitClass("player")
 
-
-
-	AF:BuildAzeriteDataTables()
-	AF.BuildWeightedProfileList()
-	AF.loadWeightProfile()
-
+	
 	AF:GetAzeriteData()
 	AF:GetAzeriteTraits()
+	AF:BuildAzeriteDataTables()
+	AF.loadWeightProfile()
 
-
+	AF.BuildWeightedProfileList()
+	
 	--AF:LoadClassTraitRanks()
-
+	
 	UpdateWeeklyQuest()
 	AF:updateInfoLDB()
-	toggleAF_CharacterPage_Icon(AzeriteForge.db.profile.showCharacterPageIcon)
+	toggleAF_CharacterPage_Icon(AzeriteForge.db.profile.showCharacterPageIcon) 
 
 	AF:Aurora()
 end
@@ -891,7 +889,7 @@ end
 
 function AF:PLAYER_SPECIALIZATION_CHANGED(event, ...)
 	spec = GetSpecialization()
-	specID, specName = GetSpecializationInfo(spec)
+	specID, specName = GetSpecializationInfo(spec) 
 	AF.loadWeightProfile()
 	AF:BuildAzeriteDataTables()
 	AF.BuildWeightedProfileList()
@@ -901,7 +899,7 @@ function AF:PLAYER_SPECIALIZATION_CHANGED(event, ...)
 	--AF:LoadClassTraitRanks()
 
 	AF:updateInfoLDB()
-
+	
 	AF.BuildWeightedProfileList()
 
 	AF:updateInfoLDB()
@@ -917,7 +915,7 @@ function AF.loadWeightProfile()
 	 local weightProfile = AF.db.global.userWeightLists[userProfile]
 
 	local profileData = {}
-	if not userProfile or not weightProfile  then
+	if not userProfile or not weightProfile  then 
 		userProfile =  "[Default] - "..className.." "..specName
 		profileData = AF.loadDefaultData("StackData")
 		AF.db.global.userWeightLists[userProfile] =  profileData
@@ -925,7 +923,7 @@ function AF.loadWeightProfile()
 		AF.db.char.weightProfile[specID] = userProfile
 		AF.traitRanks = profileData
 		AF.BuildWeightedProfileList()
-
+		
 	else
 
 	--local userProfile = AF.db.char.weightProfile[specID] or ""
@@ -933,9 +931,9 @@ function AF.loadWeightProfile()
 		AF.traitRanks = profileData
 	end
 
-
-	AF.db.global.userWeightLists[userProfile] = AF.traitRanks
-
+	
+	AF.db.global.userWeightLists[userProfile] = AF.traitRanks 
+	
 --return profileData
 end
 
@@ -957,7 +955,7 @@ function AF:AZERITE_ITEM_EXPERIENCE_CHANGED(event, ...)
 	AF:updateInfoLDB()
 	AF:GetAzeriteData()
   -- if it's not equal then we will defer the xp gain to the power level event
-	if GetPowerLevel(azeriteItemLocation) == currentLevel then
+	if GetPowerLevel(azeriteItemLocation) == currentLevel then 
     --self:GetAzeriteData()
     --self:SetBrokerText()
     --self:RecordXpGain(lastXpGain)
@@ -992,8 +990,8 @@ function AF:GetAzeriteData()
 	if not HasActiveAzeriteItem() then
 		return
 	end
-
-	if not azeriteItemLocation then
+	
+	if not azeriteItemLocation then 
 		-- set up start values
 		currentMaxXp = currentMaxXp or 1
 		azeriteItemLocation = FindActiveAzeriteItem()
@@ -1021,7 +1019,7 @@ function AF:FindStackedTraits(powerID, locationID, traitList)
 	for location, data in pairs(traitList) do
 		for level , level_data in pairs(traitList[location]) do
 			for index , spellID in pairs(traitList[location][level]["azeritePowerIDs"]) do
-				if spellID == powerID  and ItemLocation ~= location then
+				if spellID == powerID  and ItemLocation ~= location then 
 					foundLocations = (foundLocations or "")..location..","
 					count = count + 1
 				end
@@ -1045,7 +1043,7 @@ function AF:GetAzeriteLocationTraits(location)
 		local tierLevel = allTierInfo[j]["unlockLevel"]
 
 		for index, azeritePowerIDs in pairs (allTierInfo[j]["azeritePowerIDs"]) do
-
+		
 			if azeritePowerIDs == 13 then break end -- Ignore +5 item level tier
 
 			AvailableAzeriteTraits[location][j] = AvailableAzeriteTraits[location][j] or {}
@@ -1053,7 +1051,7 @@ function AF:GetAzeriteLocationTraits(location)
 			AvailableAzeriteTraits[location][j]["azeritePowerIDs"] = AvailableAzeriteTraits[location][j]["azeritePowerIDs"] or {}
 			AvailableAzeriteTraits[location][j]["azeritePowerIDs"][index] = azeritePowerIDs
 
-			local azeriteSpellID = AzeriteTooltip_GetSpellID(azeritePowerIDs)
+			local azeriteSpellID = AzeriteTooltip_GetSpellID(azeritePowerIDs)				
 			local azeritePowerName, _, icon = GetSpellInfo(azeriteSpellID)
 			local isSelected = C_AzeriteEmpoweredItem.IsPowerSelected(locationData, azeritePowerIDs)
 			local isAvailable = C_AzeriteEmpoweredItem.IsPowerAvailableForSpec(azeritePowerIDs, specID)
@@ -1077,11 +1075,11 @@ function AF:GetAzeriteLocationTraits(location)
 				item.traits:SetPoint("TOPLEFT", item.item, "TOPRIGHT", 5, 0)
 				item.traits:SetWidth(165)
 
-				if not isAvailable then
+				if not isAvailable then 
 					item.traits:SetTextColor(RED_FONT_COLOR.r,RED_FONT_COLOR.g,RED_FONT_COLOR.b)
-					if AzeriteForge.db.profile.unavailableAlert then
+					if AzeriteForge.db.profile.unavailableAlert then 
 					print((L[RED_FONT_COLOR_CODE.."%s item has traits unuseable in current spec"]):format(location))
-						if AzeriteForge.db.profile.unavailableAlertsound then
+						if AzeriteForge.db.profile.unavailableAlertsound then 
 							PlaySound(6595)
 						end
 					end
@@ -1153,7 +1151,7 @@ function AF:TextGetter(traitID, profile)
 			text = ("%s[%s]:%s,"):format(text,i,d)
 			--text = text.."["..tostring(i).."]:"..tostring(d)..","
 		end
-	return text
+	return text 
 end
 
 
@@ -1182,10 +1180,10 @@ function AF.loadDefaultData(DB)
 
 	if not AzeriteForge[DB][specID] then
 		Debug("No default data found - possibly healer class")
-		return traitRanks
+		return traitRanks 
 	end
 
-	for name, data in pairs(AzeriteForge[DB][specID]) do
+	for name, data in pairs(AzeriteForge[DB][specID]) do	
 		 if AzeriteTraitsName_to_ID[name] then
 			traitRanks[AzeriteTraitsName_to_ID[name]] = data
 		 end
@@ -1231,14 +1229,14 @@ function AF:CreateTraitMenu(aceTable,disable, profile)
 		local name = azeriteTraits[traitID].name
 		local icon = azeriteTraits[traitID].icon
 		local spellID = azeriteTraits[traitID].spellID
-		if name and azeriteTraits[traitID].valid then
+		if name and azeriteTraits[traitID].valid then 
 		count = count + 1
 			aceTable[name] = {
 			type = "header",
 			name = name,
 			width = "full",
 			order = count,
-			hidden = function() local search = nil; if AF.searchbar then
+			hidden = function() local search = nil; if AF.searchbar then 
 			search = not string.match(string.lower(azeriteTraits[traitID].name), string.lower(AF.searchbar))end;
 			return search or (azeriteTraits[traitID] and not azeriteTraits[traitID].valid) or false end,
 			disabled = disable,
@@ -1253,7 +1251,7 @@ function AF:CreateTraitMenu(aceTable,disable, profile)
 			icon = icon,
 			order = count+.1,
 			disabled = disable,
-			hidden = function() local search = nil; if AF.searchbar then
+			hidden = function() local search = nil; if AF.searchbar then 
 			search = not string.match(string.lower(azeriteTraits[traitID].name), string.lower(AF.searchbar))end;
 			return search or (azeriteTraits[traitID] and not azeriteTraits[traitID].valid) or false end,
 			disabled = disable,
@@ -1268,11 +1266,11 @@ function AF:CreateTraitMenu(aceTable,disable, profile)
 			icon = icon,
 			order = count+.2,
 			disabled = disable,
-			hidden = function() local search = nil; if AF.searchbar then
+			hidden = function() local search = nil; if AF.searchbar then 
 			search = not string.match(string.lower(azeriteTraits[traitID].name), string.lower(AF.searchbar))end;
 			return search or (azeriteTraits[traitID] and not azeriteTraits[traitID].valid) or false end,
 			disabled = disable,
-			get = function(info)
+			get = function(info)  
 				--if not AF.traitRanks[traitID] then  return "" end
 				return AF:TextGetter(traitID,profile)
 
@@ -1280,7 +1278,7 @@ function AF:CreateTraitMenu(aceTable,disable, profile)
 				end,
 			set = function(info,val) AF.traitRanks[traitID] = {}; return AF:ParseText(traitID,val) end,
 			}
-
+			
 
 		end
 
@@ -1294,7 +1292,7 @@ local tooltipCatcher = CreateFrame("GameTooltip",nil, UIParent)
 --Tooltip stuff
 function AF:BuildTraitText(itemLink, tooltip, name, force)
 	if force then tooltip = tooltipCatcher end
-
+	
 	-- Current Azerite LevelcreateItemLocation
 	local azeriteItemLocation = AF.createItemLocation(itemLink)
 
@@ -1331,10 +1329,10 @@ function AF:BuildTraitText(itemLink, tooltip, name, force)
 			else
 				azeriteTooltipText = GRAY_FONT_COLOR_CODE.."Level "..tierLevel..": |r\n"..azeriteTooltipText
 			end
-			local textBreakCounter = 0
+			local textBreakCounter = 0 
 			local empoweredLocation = AF.createItemLocation(itemLink)
 			local tierRankTotal = 0
-
+		
 
 			for i, _ in pairs(allTierInfo[j]["azeritePowerIDs"]) do
 				local azeritePowerID = allTierInfo[j]["azeritePowerIDs"][i]
@@ -1349,10 +1347,10 @@ function AF:BuildTraitText(itemLink, tooltip, name, force)
 				local isSelected
 				local selectedText = ">>%s<<"
 
-				if empoweredLocation and azeritePowerID then
+				if empoweredLocation and azeritePowerID then 
 					isSelected = C_AzeriteEmpoweredItem.IsPowerSelected(empoweredLocation, azeritePowerID)
 				end
-
+						
 				textBreakCounter = textBreakCounter+1
 				if textBreakCounter == 2 then
 					textBreakCounter = 0
@@ -1360,7 +1358,7 @@ function AF:BuildTraitText(itemLink, tooltip, name, force)
 				end
 
 				if tierLevel <= currentLevel then
-
+					
 					if isSelected and not C_AzeriteEmpoweredItem.IsPowerAvailableForSpec(azeritePowerID, specID) then
 						iconText = selectedText:format(iconText) --">>"..iconText.."<<"
 						fontColor = RED_FONT_COLOR_CODE
@@ -1370,11 +1368,11 @@ function AF:BuildTraitText(itemLink, tooltip, name, force)
 					elseif C_AzeriteEmpoweredItem.IsPowerAvailableForSpec(azeritePowerID, specID) then
 
 						fontColor = LIGHTYELLOW_FONT_COLOR_CODE
-
+					
 					elseif not Config.tooltipCurrentTraits then
 						iconShade = 150
 						fontColor = DISABLED_FONT_COLOR_CODE
-					else
+					else 
 						fontColor = GRAY_FONT_COLOR_CODE
 					end
 				else
@@ -1383,17 +1381,17 @@ function AF:BuildTraitText(itemLink, tooltip, name, force)
 				end
 
 				local azeriteIcon = iconText:format(iconSize,iconSize,iconShade,iconShade,iconShade)
-
+				
 				--iconText = (rank  and iconText..rank.." ") or iconText
-
+				
 				local traitText = (force or not Config.tooltipIconsOnly) and fontColor..azeritePowerName or ""
 				if rank then traitText = ("%s (%s) "):format(traitText, rank) end
 
-
-				if rank and isSelected then
+				
+				if rank and isSelected then 
 					rankTotals = ("%s Tier%s: %s"):format(rankTotals,j, rank )
 					totalSelected = rank + totalSelected
-				elseif not rank and isSelected then
+				elseif not rank and isSelected then 
 					rankTotals = ("%s Tier%s: %s"):format(rankTotals,j, 0 )
 				end
 
@@ -1405,13 +1403,13 @@ function AF:BuildTraitText(itemLink, tooltip, name, force)
 
 			--rankTotals = ("%s %s"):format(rankTotals,"/" )
 
-			if Config.enhancedTooltip then
+			if Config.enhancedTooltip then 
 				tooltip:AddLine(azeriteTooltipText)
 			end
-			fullText = fullText.. azeriteTooltipText
+			fullText = fullText.. azeriteTooltipText		
 	end
 
-	if Config.showRankTotal  then
+	if Config.showRankTotal  then 
 		rankTotals = ("%s [%s/%s}"):format(rankTotals, totalSelected, maxRankTotal )
 		tooltip:AddLine(rankTotals)
 	end

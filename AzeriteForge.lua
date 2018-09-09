@@ -853,14 +853,16 @@ function AF:PLAYER_ENTERING_WORLD()
 	specID, specName = GetSpecializationInfo(spec)
 	className, classFile, classID = UnitClass("player")
 
-
+	
 
 	AF:BuildAzeriteDataTables()
 	AF.BuildWeightedProfileList()
+	AF.loadWeightProfile()
+
 	AF:GetAzeriteData()
 	AF:GetAzeriteTraits()
 
-	AF.loadWeightProfile()
+	
 	--AF:LoadClassTraitRanks()
 	
 	UpdateWeeklyQuest()

@@ -11,3 +11,4 @@ before_install: luarocks install --local luacheck
 
 before_script: /home/travis/.luarocks/bin/luacheck . -only "011"
 
+script: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash

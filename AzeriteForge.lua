@@ -200,32 +200,22 @@ end
 
 local sortTable = {}
 
-function AF.getTraitRanking(traitID, locationID)
+function AF.getTraitRanking(traitID, locationID, itemLink)
 	if not AF.traitRanks[traitID] then return false end
 
 	local itemLevel = 0
-	local itemLink = nil
 	local rank = 0
-	local bag, slot = locationID:GetBagAndSlot()
-
-	if locationID.equipmentSlotIndex then
-		itemLink = GetInventoryItemLink("player", locationID.equipmentSlotIndex)
-
-	elseif bag and slot then
-		itemLink = GetContainerItemLink(bag, slot)
-
-	end
+	local itemLocation, itemLocationID
 
 	if itemLink then
 		 _, _, _, itemLevel = GetItemInfo(itemLink)
+		 itemLocationID = _G[string.gsub(select(9,GetItemInfo(itemLink)),"INVTYPE", "INVSLOT")]
+		 --itemLocation = ItemLocation:CreateFromEquipmentSlot(itemLocation)
 	end
-
-	local ItemLocation = AzeriteLocations[locationID] or AzeriteLocations[locationID.equipmentSlotIndex] or locationID
-
 
 	if #AF.traitRanks[traitID] >0 then
 		rank = 0
-		local  _, stackedRank = AF:FindStackedTraits(traitID, locationID, SelectedAzeriteTraits)
+		local  _, stackedRank = AF:FindStackedTraits(traitID, itemLocationID, SelectedAzeriteTraits)
 		local maxRank = 1
 
 		for index, itemrank in pairs(AF.traitRanks[traitID]) do
@@ -433,6 +423,14 @@ local options = {
 				order = 12,
 				set = function(info,val) AzeriteForge.db.profile.showCharacterPageIcon = val; toggleAF_CharacterPage_Icon(val) end,
 				get = function(info) return AzeriteForge.db.profile.showCharacterPageIcon end,
+				width = "full",
+				},
+			showPowersWindow = {
+				type = "toggle",
+				name = L["Show Powers Summary when the Azerite Power Window Opens"],
+				order = 12.1,
+				set = function(info,val) AzeriteForge.db.profile.showPowersWindow = val end,
+				get = function(info) return AzeriteForge.db.profile.showPowersWindow end,
 				width = "full",
 				},
 			unavailableAlert = {
@@ -693,7 +691,8 @@ local DB_DEFAULTS = {
 		unavailableAlert = false,
 		unavailableAlertsound = false,
 		showCharacterPageIcon = true,
-		showRankTotal = true
+		showRankTotal = true,
+		showPowersWindow = true,
 	},
 	global = {
 		userWeightLists = {}
@@ -727,7 +726,7 @@ function AF:GetAzeriteTraits()
 	SelectedAzeriteTraits = {["Shoulder"] = {}, ["Head"] = {}, ["Chest"]= {},}
 
 	--AF.PowerSummaryFrame
-	AceGUI:Release(AF.PowerSummaryFrame.scrollFrame)
+	--AceGUI:Release(AF.PowerSummaryFrame.scrollFrame)
 
 	local scroll = AceGUI:Create("ScrollFrame")
 	scroll:SetLayout("Flow")
@@ -857,10 +856,40 @@ function AF:OnEnable()
 	AF:SecureHookScript(GameTooltip,"OnTooltipSetItem")
 	AF:SecureHookScript(ItemRefTooltip,"OnTooltipSetItem")
 	AF:SecureHookScript(WorldMapTooltip,"OnTooltipSetItem")
+
+	AF:SecureHook(GameTooltip, "SetHyperlink", "OnTooltipSetItem")
+	AF:SecureHook(WorldMapCompareTooltip1, "SetCompareItem", "OnTooltipSetItem")
+	AF:SecureHook(GameTooltip.shoppingTooltips[1], "SetCompareItem", "OnTooltipSetItem")
+	AF:SecureHook("EmbeddedItemTooltip_SetItemByQuestReward")
+
 	AF:CreateFrames()
 	Profiles.OldDataConvert()
 
+
+
+end
+
+
+
+
+
+
+
+
 --AF:RawHook(AzeriteEmpoweredItemPowerMixin,"OnEnter",true)
+
+function AF:EmbeddedItemTooltip_SetItemByQuestReward(self,questLogIndex, questID)
+
+	local iName, itemTexture, quantity, quality, isUsable, itemID = GetQuestLogRewardInfo(questLogIndex, questID)
+	if not itemID or type(itemID) ~= "number" then return end
+
+	local itemName, itemLink = GetItemInfo(itemID)
+	if not itemName then return end
+
+  	if C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItemByID(itemLink)  then
+    		AF:BuildTraitText(itemLink, self.Tooltip, itemName)
+		self.Tooltip:Show()
+	end
 end
 
 function AF:PLAYER_ENTERING_WORLD()
@@ -1035,13 +1064,13 @@ end
 
 --Looks to see if an Azerite ability is on other gear pieces
 function AF:FindStackedTraits(powerID, locationID, traitList)
-	local ItemLocation = AzeriteLocations[locationID] or AzeriteLocations[locationID.equipmentSlotIndex] or locationID
+	--local ItemLocation = AzeriteLocations[locationID] or AzeriteLocations[locationID.equipmentSlotIndex] or locationID
 	local foundLocations = nil
 	local count = 0
 	for location, data in pairs(traitList) do
 		for level , level_data in pairs(traitList[location]) do
 			for index , spellID in pairs(traitList[location][level]["azeritePowerIDs"]) do
-				if spellID == powerID  and ItemLocation ~= location then
+				if spellID == powerID  and locationID ~= locationIDs[location] then
 					foundLocations = (foundLocations or "")..location..","
 					count = count + 1
 				end
@@ -1054,6 +1083,7 @@ end
 
 function AF:GetAzeriteLocationTraits(location)
 	local locationData = AzeriteLocations[location]
+
 	--if not C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItem(locationData) then return end
 	if not C_Item.DoesItemExist(locationData) or not C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItem(locationData) then return end
 
@@ -1303,6 +1333,8 @@ function AF:BuildTraitText(itemLink, tooltip, name, force)
 
 	-- Current Azerite LevelcreateItemLocation
 	local azeriteItemLocation = AF.createItemLocation(itemLink)
+	--local azeriteItemLocation = tooltip:GetItemLocation()
+
 
 	rankTotals = ""
 
@@ -1351,7 +1383,7 @@ function AF:BuildTraitText(itemLink, tooltip, name, force)
 				local traitText = ""
 				local fontColor = GREEN_FONT_COLOR_CODE
 				local textBreak = ""
-				local rank = AF.getTraitRanking(azeritePowerID, azeriteItemLocation)
+				local rank = AF.getTraitRanking(azeritePowerID, azeriteItemLocation, itemLink)
 				tierRankTotal = max(tierRankTotal, rank or 0)
 				local isSelected
 				local selectedText = ">>%s<<"
@@ -1423,6 +1455,7 @@ function AF:BuildTraitText(itemLink, tooltip, name, force)
 		tooltip:AddLine(rankTotals)
 	end
 		fullText = string.gsub(fullText, "\n\n", "\n")
+
 
 	return  fullText, maxRankTotal, totalSelected
 end

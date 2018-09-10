@@ -50,4 +50,5 @@ L["Create New Profile"] = true
 L["Create Profile"] = true
 L["Weight Profiles"] = true
 L["Show Ranks Totals in Tooltip"] = true
+L["Show Powers Summary when the Azerite Power Window Opens"] = true
 

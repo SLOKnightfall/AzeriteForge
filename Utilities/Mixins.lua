@@ -13,7 +13,8 @@ local maxValue = {}
 LoadAddOn("Blizzard_AzeriteUI")
 local function AzeriteEmpoweredItemPowerMixin_OnEnter(self,...)
 	local location = self.azeriteItemDataSource:GetItemLocation()
-	local duplicateLocations = AF:FindStackedTraits(self:GetAzeritePowerID(),location,AF.ReturnSelectedAzeriteTraits())
+	local locationID = location:GetEquipmentSlot()
+	local duplicateLocations = AF:FindStackedTraits(self:GetAzeritePowerID(),locationID,AF.ReturnSelectedAzeriteTraits())
 
 	if duplicateLocations then
 		GameTooltip_AddColoredLine(GameTooltip, (L["Found on: %s"]):format(duplicateLocations), RED_FONT_COLOR);
@@ -85,15 +86,17 @@ local function AzeriteEmpoweredItemPowerMixin_OnShow(self,...)
 		local location = self.azeriteItemDataSource:GetItemLocation()
 		local HasAnyUnselectedPowers = C_AzeriteEmpoweredItem.HasAnyUnselectedPowers(location)
 		local DB = AF.ReturnSelectedAzeriteTraits()
+		local itemLink = C_Item.GetItemLink(location)
+		local locationID = _G[string.gsub(select(9,GetItemInfo(itemLink)),"INVTYPE", "INVSLOT")]
 
-		local _, duplicateTraits = AF:FindStackedTraits(self:GetAzeritePowerID(),location, DB)
+		local _, duplicateTraits = AF:FindStackedTraits(self:GetAzeritePowerID(),locationID, DB)
 
 
 		if HasAnyUnselectedPowers then
 			DB = AvailableAzeriteTraits
 		end
 
-		local traitRank = AF.getTraitRanking(self:GetAzeritePowerID(),location, DB)
+		local traitRank = AF.getTraitRanking(self:GetAzeritePowerID(),location, itemLink)
 		local tierIndex = self:GetTierIndex()
 
 		maxValue[location] = maxValue[location] or {}

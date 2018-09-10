@@ -100,7 +100,6 @@ do
 		local weights = frame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
 		weights:ClearAllPoints()
 		weights:SetPoint("TOP", item, "BOTTOM",0, -7)
-		weights:SetText("DDDDDDDD")
 		--weights:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT")
 		weights:SetTextColor(1, 1, 1, 1)
 		frame.weights = text

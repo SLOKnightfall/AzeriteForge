@@ -16,7 +16,7 @@ local powerLocationButtonIDs = AF.powerLocationButtonIDs
 AF.UnselectedPowers = {}
 local UnselectedPowers = AF.UnselectedPowers
 
-AF.BagScrollFrame = {}
+--AF.BagScrollFrame = {}
 local locationIDs = {["Head"] = 1, ["Shoulder"] = 3, ["Chest"] = 5,}
 local azeriteIcon = "Interface/Icons/Inv_smallazeriteshard"
 local AzeriteLocations = {["Head"] = ItemLocation:CreateFromEquipmentSlot(1),
@@ -177,11 +177,12 @@ local function CreateBagInfoFrame()
 	AceGUI:RegisterAsContainer(widget)
 	widget:SetLayout("Fill")
 	AzeriteForge.Bag.widget= widget
-	local scroll = AceGUI:Create("ScrollFrame")
-	scroll:SetLayout("List")
-	widget:AddChild(scroll)
 
-	AF.BagScrollFrame = scroll
+	--local scroll = AceGUI:Create("ScrollFrame")
+	--scroll:SetLayout("List")
+	--widget:AddChild(scroll)
+
+	--AF.BagScrollFrame = scroll
 end
 
 
@@ -366,11 +367,11 @@ local function CreateAzeriteDataFrame()
 
 	AceGUI:RegisterAsContainer(widget)
 	widget:SetLayout("Fill")
-	local scroll = AceGUI:Create("ScrollFrame")
-	scroll:SetLayout("List")
-	widget:AddChild(scroll)
+	--local scroll = AceGUI:Create("ScrollFrame")
+	--scroll:SetLayout("List")
+	--widget:AddChild(scroll)
 	AF.PowerSummaryFrame = widget
-	AF.PowerSummaryFrame.scrollFrame = scroll
+	--AF.PowerSummaryFrame.scrollFrame = scroll
 
 --Overlay
 	local overlay = CreateFrame('Frame', "AzeriteForge_Overlay", UIParent)
@@ -383,7 +384,7 @@ local function CreateAzeriteDataFrame()
 	overlay:SetMovable(false)
 	overlay:SetToplevel(true)
 
-	AF:HookScript(AzeriteEmpoweredItemUI, "OnShow", function()  C_Timer.NewTimer(.2, function()f:Show(); overlay:Show() end) end)
+	AF:HookScript(AzeriteEmpoweredItemUI, "OnShow", function()  if AzeriteForge.db.profile.showPowersWindow  then C_Timer.NewTimer(.2, function()f:Show();end)   end overlay:Show() end)
 	AF:HookScript(AzeriteEmpoweredItemUI, "OnHide", function() f:Hide(); overlay:Hide(); AzeriteForge.Bag:Hide() end)
 
 	local headSlotButton = CreateFrame("Button", "AZ_HeadSlotButton" , overlay)
@@ -582,7 +583,7 @@ end
 
 
 local function findInventoryLocation(itemLink)
-	for i = 0, NUM_BAG_SLOTS do
+	for i = 0,  NUM_BAG_SLOTS + GetNumBankSlots() do
 		for j = 1, GetContainerNumSlots(i) do
 			local _, _, _, _, _, _, bagItemLink = GetContainerItemInfo(i, j);
 			if itemLink == bagItemLink then
@@ -636,11 +637,17 @@ end
 
 
 function AF:UpdateBagDataMenu(filter, filterLocation)
+
+	--local content = CreateFrame("Frame",nil, AzeriteForge.Bag)
+	--content:SetPoint("TOPLEFT",15,-35)
+	--content:SetPoint("BOTTOMRIGHT",-15,15)
+	--local container = AceGUI:Create("AzForgeBagContainer")
+
 	filterLocation = filterLocation or ""
 	local filterText = filter or ""
 	local count = 0
 	local sortTable = {}
-	AceGUI:Release(AF.BagScrollFrame)
+	--AceGUI:Release(AF.BagScrollFrame)
 
 	local scroll = AceGUI:Create("ScrollFrame")
 	scroll:SetLayout("Flow")

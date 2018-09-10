@@ -26,7 +26,7 @@ local function AzeriteEmpoweredItemPowerMixin_OnEnter(self,...)
 	local hasTraitStacks = AF:FindStackedTraits(self:GetAzeritePowerID(),locationID,AF.ReturnSelectedAzeriteTraits())
 
 	if hasTraitStacks then
-		GameTooltip_AddColoredLine(GameTooltip, (L["Found on: %s"]):format(duplicateLocations), RED_FONT_COLOR);
+		GameTooltip_AddColoredLine(GameTooltip, (L["Found on: %s"]):format(hasTraitStacks), RED_FONT_COLOR);
 	end
 
 	GameTooltip:Show();
@@ -94,8 +94,8 @@ local function AzeriteEmpoweredItemPowerMixin_OnShow(self,...)
 	if self.azeriteItemDataSource then
 		local location = self.azeriteItemDataSource:GetItemLocation()
 		local item = self.azeriteItemDataSource:GetItem()
+		local HasAnyUnselectedPowers, itemLink, locationID
 
-local HasAnyUnselectedPowers, itemLink, locationID
 		if location then 
 			HasAnyUnselectedPowers = C_AzeriteEmpoweredItem.HasAnyUnselectedPowers(location)
 			itemLink = C_Item.GetItemLink(location)
@@ -105,17 +105,13 @@ local HasAnyUnselectedPowers, itemLink, locationID
 			HasAnyUnselectedPowers = true
 
 		end
+
 		locationID = _G[string.gsub(select(9,GetItemInfo(itemLink)),"INVTYPE", "INVSLOT")]
-
 		location = location or ItemLocation:CreateFromEquipmentSlot(locationID)
-
 		
 		local DB = AF.ReturnSelectedAzeriteTraits()
 
-
-
 		local _, duplicateTraits = AF:FindStackedTraits(self:GetAzeritePowerID(),locationID, DB)
-
 
 		if HasAnyUnselectedPowers then
 			DB = AvailableAzeriteTraits
@@ -145,7 +141,7 @@ local HasAnyUnselectedPowers, itemLink, locationID
 		end
 
 		if self.AdditionalTraits and duplicateTraits > 0 then
-			self.AdditionalTraits:SetText(("%sX"):format(duplicateTraits+1))
+			self.AdditionalTraits:SetText(("%sX"):format(duplicateTraits))
 			self.AdditionalTraits:Show()
 		else
 			self.AdditionalTraits:Hide()

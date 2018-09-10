@@ -222,7 +222,7 @@ function Profiles.BuildWeightedProfileList()
 	local specID = Utilities.RefreshClassInfo()
 	local counter = 1
 
-	createSelectedMenuPage()
+	--createSelectedMenuPage()
 
 	for x in pairs(AF.options.args.weights.args) do
 		if string.find(x ,"build_")  then

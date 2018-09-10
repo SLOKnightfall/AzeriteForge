@@ -66,8 +66,8 @@ local AzeriteLocations = {["Head"] = ItemLocation:CreateFromEquipmentSlot(1),
 			[3] = "Shoulder",
 			[5] = "Chest",}
 local locationIDs = {["Head"] = 1, ["Shoulder"] = 3, ["Chest"] = 5,}
-local AvailableAzeriteTraits = {["Shoulder"] = {}, ["Head"] = {}, ["Chest"]= {},}
-local SelectedAzeriteTraits = {["Shoulder"] = {}, ["Head"] = {}, ["Chest"]= {},}
+local AvailableAzeriteTraits = {}
+local SelectedAzeriteTraits = {}
 
 
 function AF.ReturnSelectedAzeriteTraits()
@@ -222,7 +222,7 @@ function AF.getTraitRanking(traitID, locationID, itemLink)
 			maxRank = itemrank
 		end
 
-		rank = AF.traitRanks[traitID][stackedRank + 1] or maxRank
+		rank = AF.traitRanks[traitID][stackedRank] or maxRank
 
 
 	else
@@ -449,16 +449,7 @@ local options = {
 				get = function(info) return AzeriteForge.db.profile.unavailableAlertsound end,
 				width = "full",
 				},
-
-
-
-
-
-
-
 			},
-
-
 		},
 	weights = {
 		    name = L["Weight Profiles"],
@@ -722,11 +713,8 @@ end
 
 
 function AF:GetAzeriteTraits()
-	AvailableAzeriteTraits = {["Shoulder"] = {}, ["Head"] = {}, ["Chest"]= {},}
-	SelectedAzeriteTraits = {["Shoulder"] = {}, ["Head"] = {}, ["Chest"]= {},}
-
-	--AF.PowerSummaryFrame
-	--AceGUI:Release(AF.PowerSummaryFrame.scrollFrame)
+	wipe(AvailableAzeriteTraits)
+	wipe(SelectedAzeriteTraits)
 
 	local scroll = AceGUI:Create("ScrollFrame")
 	scroll:SetLayout("Flow")
@@ -778,11 +766,8 @@ function AF:GetAzeriteTraits()
 	end
 
 	UnselectedPowersCount = AzeriteUtil.GetEquippedItemsUnselectedPowersCount()
-
 	updateInventoryLDB()
 end
-
-
 
 
 
@@ -816,10 +801,7 @@ end
 
 
 function AF:OnInitialize()
-self:RegisterEvent("ACHIEVEMENT_EARNED")
-
-
-
+	self:RegisterEvent("ACHIEVEMENT_EARNED")
 end
 
 
@@ -829,7 +811,6 @@ function AF:OnEnable()
 	self.db = LibStub("AceDB-3.0"):New("AzeriteForgeDB", DB_DEFAULTS, true)
 		--AzeriteForgeDB.SavedSpecData = AzeriteForgeDB.SavedSpecData or {}
 	--AzeriteForgeDB.SavedSpecData[specID] = AF.traitRanks
-
 
 
 	LibStub("AceConfig-3.0"):RegisterOptionsTable("AzeriteForge_Talents", talent_options)
@@ -864,16 +845,7 @@ function AF:OnEnable()
 
 	AF:CreateFrames()
 	Profiles.OldDataConvert()
-
-
-
 end
-
-
-
-
-
-
 
 
 --AF:RawHook(AzeriteEmpoweredItemPowerMixin,"OnEnter",true)
@@ -892,9 +864,9 @@ function AF:EmbeddedItemTooltip_SetItemByQuestReward(self,questLogIndex, questID
 	end
 end
 
+
 function AF:PLAYER_ENTERING_WORLD()
 	specID, specName, classID, className = Utilities.RefreshClassInfo()
-
 
 	AF:GetAzeriteData()
 	AF:BuildAzeriteDataTables()
@@ -984,8 +956,6 @@ function AF.loadWeightProfile()
 
 
 	AF.db.global.userWeightLists[userProfile] = AF.traitRanks
-
---return profileData
 end
 
 
@@ -994,7 +964,6 @@ function AF.traitRanksProfileUpdate(userProfile)
 	local profileData = AF.db.global.userWeightLists[userProfile] --or {}
 
 	AF.traitRanks = profileData
---return profileData
 end
 
 
@@ -1066,17 +1035,14 @@ end
 function AF:FindStackedTraits(powerID, locationID, traitList)
 	--local ItemLocation = AzeriteLocations[locationID] or AzeriteLocations[locationID.equipmentSlotIndex] or locationID
 	local foundLocations = nil
-	local count = 0
-	for location, data in pairs(traitList) do
-		for level , level_data in pairs(traitList[location]) do
-			for index , spellID in pairs(traitList[location][level]["azeritePowerIDs"]) do
-				if spellID == powerID  and locationID ~= locationIDs[location] then
-					foundLocations = (foundLocations or "")..location..","
-					count = count + 1
-				end
-			end
-		end
+	local count = 0 
+	if not traitList[powerID] then return foundLocations, count end
+
+	for location in pairs(traitList[powerID]) do
+		foundLocations = (foundLocations or "")..location..","
+		count = count + 1
 	end
+
 	return foundLocations, count
 end
 
@@ -1084,7 +1050,6 @@ end
 function AF:GetAzeriteLocationTraits(location)
 	local locationData = AzeriteLocations[location]
 
-	--if not C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItem(locationData) then return end
 	if not C_Item.DoesItemExist(locationData) or not C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItem(locationData) then return end
 
 	local allTierInfo = C_AzeriteEmpoweredItem.GetAllTierInfo(locationData)
@@ -1095,13 +1060,10 @@ function AF:GetAzeriteLocationTraits(location)
 		local tierLevel = allTierInfo[j]["unlockLevel"]
 
 		for index, azeritePowerIDs in pairs (allTierInfo[j]["azeritePowerIDs"]) do
-
 			if azeritePowerIDs == 13 then break end -- Ignore +5 item level tier
 
-			AvailableAzeriteTraits[location][j] = AvailableAzeriteTraits[location][j] or {}
-			AvailableAzeriteTraits[location][j]["unlockLevel"] = tierLevel
-			AvailableAzeriteTraits[location][j]["azeritePowerIDs"] = AvailableAzeriteTraits[location][j]["azeritePowerIDs"] or {}
-			AvailableAzeriteTraits[location][j]["azeritePowerIDs"][index] = azeritePowerIDs
+			AvailableAzeriteTraits[azeritePowerIDs] = AvailableAzeriteTraits[azeritePowerIDs] or {}
+			AvailableAzeriteTraits[azeritePowerIDs][location] = true
 
 			local azeriteSpellID = AzeriteTooltip_GetSpellID(azeritePowerIDs)
 			local azeritePowerName, _, icon = GetSpellInfo(azeriteSpellID)
@@ -1110,9 +1072,8 @@ function AF:GetAzeriteLocationTraits(location)
 			local rank = AF.getTraitRanking(azeritePowerIDs, locationData)
 
 			if isSelected then
-				SelectedAzeriteTraits[location][j] = SelectedAzeriteTraits[location][j] or {}
-				SelectedAzeriteTraits[location][j]["azeritePowerIDs"] = SelectedAzeriteTraits[location][j]["azeritePowerIDs"] or {}
-				SelectedAzeriteTraits[location][j]["azeritePowerIDs"][index] = azeritePowerIDs
+				SelectedAzeriteTraits[azeritePowerIDs] = SelectedAzeriteTraits[azeritePowerIDs] or {}
+				SelectedAzeriteTraits[azeritePowerIDs][location] = true
 
 				local item = AceGUI:Create("AzeriteForgeItem")
 				item.item.icon:SetTexture(azeriteIcon)
@@ -1157,14 +1118,12 @@ function AF:GetAzeriteLocationTraits(location)
 	end
 	local HasAnyUnselectedPowers = C_AzeriteEmpoweredItem.HasAnyUnselectedPowers(locationData)
 	UnselectedPowers[location] = HasAnyUnselectedPowers
-
 end
 
 
 --Cycles though the various azerite power ids and builds a database info from it
 function AF:BuildAzeriteDataTables()
 	wipe(azeriteTraits)
-	--azeriteTraits = {}
 
 	for traitID, data in pairs(AzeriteForge.TraitData) do
 		if validTrait(traitID) then

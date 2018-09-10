@@ -13,10 +13,19 @@ local maxValue = {}
 LoadAddOn("Blizzard_AzeriteUI")
 local function AzeriteEmpoweredItemPowerMixin_OnEnter(self,...)
 	local location = self.azeriteItemDataSource:GetItemLocation()
-	local locationID = location:GetEquipmentSlot()
-	local duplicateLocations = AF:FindStackedTraits(self:GetAzeritePowerID(),locationID,AF.ReturnSelectedAzeriteTraits())
+	local item = self.azeriteItemDataSource:GetItem()
 
-	if duplicateLocations then
+	local HasAnyUnselectedPowers, itemLink, locationID
+
+	if location then 
+		itemLink = C_Item.GetItemLink(location)	
+	elseif item then
+		itemLink = item.itemLink
+	end
+	local locationID = _G[string.gsub(select(9,GetItemInfo(itemLink)),"INVTYPE", "INVSLOT")]
+	local hasTraitStacks = AF:FindStackedTraits(self:GetAzeritePowerID(),locationID,AF.ReturnSelectedAzeriteTraits())
+
+	if hasTraitStacks then
 		GameTooltip_AddColoredLine(GameTooltip, (L["Found on: %s"]):format(duplicateLocations), RED_FONT_COLOR);
 	end
 
@@ -84,10 +93,26 @@ end
 local function AzeriteEmpoweredItemPowerMixin_OnShow(self,...)
 	if self.azeriteItemDataSource then
 		local location = self.azeriteItemDataSource:GetItemLocation()
-		local HasAnyUnselectedPowers = C_AzeriteEmpoweredItem.HasAnyUnselectedPowers(location)
+		local item = self.azeriteItemDataSource:GetItem()
+
+local HasAnyUnselectedPowers, itemLink, locationID
+		if location then 
+			HasAnyUnselectedPowers = C_AzeriteEmpoweredItem.HasAnyUnselectedPowers(location)
+			itemLink = C_Item.GetItemLink(location)
+		elseif item then
+			itemLink = item.itemLink
+			location = item:GetItemLocation()
+			HasAnyUnselectedPowers = true
+
+		end
+		locationID = _G[string.gsub(select(9,GetItemInfo(itemLink)),"INVTYPE", "INVSLOT")]
+
+		location = location or ItemLocation:CreateFromEquipmentSlot(locationID)
+
+		
 		local DB = AF.ReturnSelectedAzeriteTraits()
-		local itemLink = C_Item.GetItemLink(location)
-		local locationID = _G[string.gsub(select(9,GetItemInfo(itemLink)),"INVTYPE", "INVSLOT")]
+
+
 
 		local _, duplicateTraits = AF:FindStackedTraits(self:GetAzeritePowerID(),locationID, DB)
 

@@ -5,7 +5,7 @@
 local L = LibStub("AceLocale-3.0"):NewLocale("AzeriteForge", "enUS", true)
 if not L then return end
 
-
+L["Power Summary"]= true
 L["AzeriteForge"] = true
 L["Toggle Character Info"] = true
 L["Head Azerite Powers"] = true

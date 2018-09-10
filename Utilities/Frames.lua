@@ -16,7 +16,6 @@ local powerLocationButtonIDs = AF.powerLocationButtonIDs
 AF.UnselectedPowers = {}
 local UnselectedPowers = AF.UnselectedPowers
 
---AF.BagScrollFrame = {}
 local locationIDs = {["Head"] = 1, ["Shoulder"] = 3, ["Chest"] = 5,}
 local azeriteIcon = "Interface/Icons/Inv_smallazeriteshard"
 local AzeriteLocations = {["Head"] = ItemLocation:CreateFromEquipmentSlot(1),
@@ -141,48 +140,31 @@ end
 
 --AzeriteEmpoweredItemUI
 local function CreateBagInfoFrame()
-	local window = CreateGenericFrame ("AzeriteForgeItemFrame", AzeriteEmpoweredItemUI)
+	local refresh = false
 
-	window:ClearAllPoints()
-	window:SetPoint("TOPLEFT", AzeriteEmpoweredItemUI, "TOPLEFT",-5,-20)
-	window:SetPoint("BOTTOMRIGHT", AzeriteEmpoweredItemUI,"BOTTOMRIGHT")
-	window:SetParent(UIParent)
-	window.title:SetText(L["Azerite Gear"])
-	window:SetScript("OnShow", function(self)
-		buttons.inventoryButton:LockHighlight()
-			AF:UpdateBagDataMenu("")
-
-		end)
-
-	window:SetScript("OnHide", function(self)
-		buttons.inventoryButton:UnlockHighlight()
-		end)
-
-	local content = CreateFrame("Frame",nil, window)
-	content:SetPoint("TOPLEFT",15,-35)
-	content:SetPoint("BOTTOMRIGHT",-15,15)
-
-	AzeriteForge.Bag = window
-
-	--This creats a cusomt AceGUI container which lets us imbed a AceGUI menu into our frame.
-	local widget = {
-		frame     = window,
-		content   = content,
-		type      = "AzForgeBagContainer"
-	}
-	widget["OnRelease"] = function(self)
-		self.status = nil
-		wipe(self.localstatus)
+	if AzeriteForge.Bag then 
+		AceGUI:Release(AzeriteForge.Bag)
+		refresh = AzeriteForge.Bag:IsShown()
 	end
-	AceGUI:RegisterAsContainer(widget)
-	widget:SetLayout("Fill")
-	AzeriteForge.Bag.widget= widget
+	local f = AceGUI:Create("AzeriteForgeFrame")
+	
+	AceGUI:RegisterAsContainer(f)
+	f:SetLayout("Fill")
+	AzeriteForgeItemFrame = f
+	f:SetParent(AzeriteEmpoweredItemUI)
+	f:ClearAllPoints()
+	f:SetPoint("TOPLEFT", AzeriteEmpoweredItemUI, "TOPLEFT",-5,-15)
+	f:SetPoint("BOTTOMRIGHT", AzeriteEmpoweredItemUI,"BOTTOMRIGHT")
+	f:SetFrameStrata("DIALOG")
+	AzeriteForge.Bag = f
+	f:Hide()
 
-	--local scroll = AceGUI:Create("ScrollFrame")
-	--scroll:SetLayout("List")
-	--widget:AddChild(scroll)
+	f.title:SetText(L["Azerite Gear"])
+	f:SetScript("OnShow", function(self)
+		buttons.inventoryButton:LockHighlight()
+			--AF:UpdateBagDataMenu("")
 
-	--AF.BagScrollFrame = scroll
+		end)
 end
 
 
@@ -307,85 +289,33 @@ local shoulderTraitsAvalable = false
 local function CreateAzeriteDataFrame()
 ---------
 --Powers Window
-	local f = CreateFrame('Frame', "AzeriteForge_PowersList", UIParent, "InsetFrameTemplate")
-	f:SetClampedToScreen(true)
-	f:SetSize(250, 160)
+	local f = AceGUI:Create("AzeriteForgeFrame")
+	AzeriteForge_PowersList = f
+	AceGUI:RegisterAsContainer(f)
+	f:SetLayout("Fill")
+	AF.PowerSummaryFrame = f
+	f:SetParent(AzeriteEmpoweredItemUI)
+	f.title:SetText(L["Power Summary"])
+	f.title:SetJustifyV("CENTER")
+	f:SetWidth(250)
+	f:SetHeight(160)
 	f:SetPoint("TOPLEFT",AzeriteEmpoweredItemUI,"TOPRIGHT")
 	f:SetPoint("BOTTOMLEFT",AzeriteEmpoweredItemUI,"BOTTOMRIGHT")
-	f:Hide()
-	f:EnableMouse(true)
-	f:SetFrameStrata('DIALOG')
-	f:SetMovable(false)
-	f:SetToplevel(true)
 
-	local close_ = CreateFrame("Button", nil, f)
-	close_:SetNormalTexture("Interface\\Buttons\\UI-Panel-MinimizeButton-Up")
-	close_:SetPushedTexture("Interface\\Buttons\\UI-Panel-MinimizeButton-Down")
-	close_:SetHighlightTexture("Interface\\Buttons\\UI-Panel-MinimizeButton-Highlight", "ADD")
-	close_:SetSize(32, 32)
-	close_:SetPoint("TOPRIGHT", f, "TOPRIGHT", 0, 0)
-	close_:SetScript("OnClick", function(self)
-		self:GetParent():Hide()
-		self:GetParent().free = true
-		end)
-
-	f.close = close_
-
-	--f:Show()
-
-	local content = CreateFrame("Frame",nil, f)
-	content:SetPoint("TOPLEFT",15,-15)
-	content:SetPoint("BOTTOMRIGHT",-15,25)
-	--This creats a cusomt AceGUI container which lets us imbed a AceGUI menu into our frame.
-	local widget = {
-		frame     = f,
-		content   = content,
-		type      = "AzForgeDataContainer"
-	}
-
-	widget["OnRelease"] = function(self)
-		self.status = nil
-		wipe(self.localstatus)
-		end
-
-	f:SetScript("OnShow", function(self)
-		--LibStub("AceConfigDialog-3.0"):Open("AzeriteForge_Talents", widget, "stats")
-		buttons.powerWindowButton:LockHighlight()
-		f:SetToplevel(true)
-		end)
-
-	f:SetScript("OnHide", function(self)
-	buttons.powerWindowButton:UnlockHighlight()
-		--f:Hide()
-		--RestoreUIPanelArea("CharacterFrame")
-		end)
-
-	LibStub("AceGUI-3.0"):RegisterAsContainer(widget)
-
-	widget:SetLayout("Fill")
-
-
-	AceGUI:RegisterAsContainer(widget)
-	widget:SetLayout("Fill")
-	--local scroll = AceGUI:Create("ScrollFrame")
-	--scroll:SetLayout("List")
-	--widget:AddChild(scroll)
-	AF.PowerSummaryFrame = widget
-	--AF.PowerSummaryFrame.scrollFrame = scroll
 
 --Overlay
 	local overlay = CreateFrame('Frame', "AzeriteForge_Overlay", UIParent)
 	overlay:SetClampedToScreen(true)
 	overlay:SetSize(250, 160)
-	overlay:SetPoint("TOPLEFT",AzeriteEmpoweredItemUI,"TOPLEFT")
+	overlay:SetPoint("TOPLEFT",AzeriteEmpoweredItemUI,"TOPLEFT",0,-20)
 	overlay:SetPoint("BOTTOMRIGHT",AzeriteEmpoweredItemUI,"BOTTOMRIGHT")
-	overlay:EnableMouse(true)
+	--overlay:EnableMouse(true)
 	overlay:SetFrameStrata('LOW')
 	overlay:SetMovable(false)
 	overlay:SetToplevel(true)
 
-	AF:HookScript(AzeriteEmpoweredItemUI, "OnShow", function()  if AzeriteForge.db.profile.showPowersWindow  then C_Timer.NewTimer(.2, function()f:Show();end)   end overlay:Show() end)
-	AF:HookScript(AzeriteEmpoweredItemUI, "OnHide", function() f:Hide(); overlay:Hide(); AzeriteForge.Bag:Hide() end)
+	AF:HookScript(AzeriteEmpoweredItemUI, "OnShow", function()  if AzeriteForge.db.profile.showPowersWindow  then C_Timer.NewTimer(.2, function()AF.PowerSummaryFrame:Show();end)   end overlay:Show() end)
+	AF:HookScript(AzeriteEmpoweredItemUI, "OnHide", function() AF.PowerSummaryFrame:Hide(); overlay:Hide(); AzeriteForge.Bag:Hide() end)
 
 	local headSlotButton = CreateFrame("Button", "AZ_HeadSlotButton" , overlay)
 	buttons.headSlotButton = headSlotButton
@@ -501,11 +431,11 @@ local function CreateAzeriteDataFrame()
 			LibStub("AceConfigDialog-3.0"):Open("AzeriteForge", "weights")
 
 		else
-			if f:IsShown() then
-				f:Hide()
+			if AF.PowerSummaryFrame:IsShown() then
+				AF.PowerSummaryFrame:Hide()
 			else
 				--LibStub("AceConfigDialog-3.0"):Open("AzeriteForge_Talents", widget, "stats")
-				f:Show()
+				AF.PowerSummaryFrame:Show()
 			end
 		end
 
@@ -553,6 +483,8 @@ local function CreateAzeriteDataFrame()
 	inventoryButton:SetWidth(45)
 	inventoryButton:SetHeight(45)
 	inventoryButton:SetScript("OnClick", function(self, button, down)
+
+		AF:UpdateBagDataMenu("")
 		if AzeriteForge.Bag:IsShown() then
 			AzeriteForge.Bag:Hide()
 		else
@@ -577,8 +509,9 @@ function AF:CreateFrames()
 	addFramesToAzeriteEmpoweredItemUI()
 	AF:CreateImportFrame()
 	CreateCharacterFrameTabs()
-	CreateAzeriteDataFrame()
 	CreateBagInfoFrame()
+	CreateAzeriteDataFrame()
+	
 end
 
 
@@ -637,21 +570,25 @@ end
 
 
 function AF:UpdateBagDataMenu(filter, filterLocation)
-
-	--local content = CreateFrame("Frame",nil, AzeriteForge.Bag)
-	--content:SetPoint("TOPLEFT",15,-35)
-	--content:SetPoint("BOTTOMRIGHT",-15,15)
-	--local container = AceGUI:Create("AzForgeBagContainer")
-
+	if AF.Bag.container then
+		AceGUI:Release(AzeriteForge.Bag.container)
+	end
 	filterLocation = filterLocation or ""
 	local filterText = filter or ""
 	local count = 0
 	local sortTable = {}
-	--AceGUI:Release(AF.BagScrollFrame)
+
+	
+	local content = AceGUI:Create("SimpleGroup")
+	content:SetLayout("Fill")
+	AF.Bag:AddChild(content)
+	content:SetPoint("TOPLEFT",15,-35)
+	content:SetPoint("BOTTOMRIGHT",-15,15)
+	AzeriteForge.Bag.container = content
 
 	local scroll = AceGUI:Create("ScrollFrame")
 	scroll:SetLayout("Flow")
-	AzeriteForge.Bag.widget:AddChild(scroll)
+	content:AddChild(scroll)
 	AF.BagScrollFrame = scroll
 
 	local searchBar = AceGUI:Create("EditBox")

@@ -26,7 +26,6 @@ BINDING_NAME_AZERITEFORGE_OPEN_HEAD = L["Head Powers"]
 BINDING_NAME_AZERITEFORGE_OPEN_CHEST = L["Shoulder Powers"]
 BINDING_NAME_AZERITEFORGE_OPEN_SHOULDER = L["Chest Powers"]
 
-local BagScrollFrame = AF.BagScrollFrame
 local currentXp, currentMaxXp, startXp =  0, 0 , 0
 local currentLevel, startLevel = 0 , 0
 local lastXpGain = 0
@@ -216,6 +215,7 @@ function AF.getTraitRanking(traitID, locationID, itemLink)
 	if #AF.traitRanks[traitID] >0 then
 		rank = 0
 		local  _, stackedRank = AF:FindStackedTraits(traitID, itemLocationID, SelectedAzeriteTraits)
+		stackedRank = stackedRank + 1
 		local maxRank = 1
 
 		for index, itemrank in pairs(AF.traitRanks[traitID]) do
@@ -223,8 +223,6 @@ function AF.getTraitRanking(traitID, locationID, itemLink)
 		end
 
 		rank = AF.traitRanks[traitID][stackedRank] or maxRank
-
-
 	else
 		rank = itemLevel
 		sortTable = {}
@@ -246,7 +244,7 @@ function AF.getTraitRanking(traitID, locationID, itemLink)
 
 		end
 
-		rank = AF.traitRanks[traitID][rank]
+		rank = 0--AF.traitRanks[traitID][rank]
 	end
 
 	return rank
@@ -715,16 +713,22 @@ end
 function AF:GetAzeriteTraits()
 	wipe(AvailableAzeriteTraits)
 	wipe(SelectedAzeriteTraits)
+	--local refresh = true
+	if AF.PowerSummaryFrame.container then 
+		AceGUI:Release(AF.PowerSummaryFrame.container)
+	end
+		
+	local content = AceGUI:Create("SimpleGroup")
+	content:SetLayout("Fill")
+	AF.PowerSummaryFrame:AddChild(content)
+	content:SetPoint("TOPLEFT",15,-35)
+	content:SetPoint("BOTTOMRIGHT",-15,15)
+	AF.PowerSummaryFrame.container = content
 
 	local scroll = AceGUI:Create("ScrollFrame")
 	scroll:SetLayout("Flow")
-	AF.PowerSummaryFrame:AddChild(scroll)
+	content:AddChild(scroll)
 	AF.PowerSummaryFrame.scrollFrame = scroll
-
-	local AF_Header = AceGUI:Create("Heading")
-	AF_Header:SetText(L["AzeriteForge"])
-	AF_Header:SetRelativeWidth(1)
-	scroll:AddChild(AF_Header)
 
 	local headPower_Header = AceGUI:Create("Heading")
 	headPower_Header:SetText(L["Head Powers"])
@@ -1033,16 +1037,16 @@ end
 
 --Looks to see if an Azerite ability is on other gear pieces
 function AF:FindStackedTraits(powerID, locationID, traitList)
-	--local ItemLocation = AzeriteLocations[locationID] or AzeriteLocations[locationID.equipmentSlotIndex] or locationID
 	local foundLocations = nil
 	local count = 0 
 	if not traitList[powerID] then return foundLocations, count end
 
 	for location in pairs(traitList[powerID]) do
-		foundLocations = (foundLocations or "")..location..","
-		count = count + 1
+		if AzeriteLocations[locationID] ~= location then 
+			foundLocations = (foundLocations or "")..location..","
+			count = count + 1
+		end
 	end
-
 	return foundLocations, count
 end
 
@@ -1412,6 +1416,7 @@ function AF:BuildTraitText(itemLink, tooltip, name, force)
 	if Config.showRankTotal  then
 		rankTotals = ("%s [%s/%s}"):format(rankTotals, totalSelected, maxRankTotal )
 		tooltip:AddLine(rankTotals)
+		tooltip:Show()
 	end
 		fullText = string.gsub(fullText, "\n\n", "\n")
 

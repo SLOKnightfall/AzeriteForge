@@ -118,6 +118,7 @@ local function AzeriteEmpoweredItemPowerMixin_OnShow(self,...)
 		end
 
 		local traitRank = AF.getTraitRanking(self:GetAzeritePowerID(),location, itemLink)
+		--print(traitRank)
 		local tierIndex = self:GetTierIndex()
 
 		maxValue[location] = maxValue[location] or {}
@@ -141,7 +142,7 @@ local function AzeriteEmpoweredItemPowerMixin_OnShow(self,...)
 		end
 
 		if self.AdditionalTraits and duplicateTraits > 0 then
-			self.AdditionalTraits:SetText(("%sX"):format(duplicateTraits))
+			self.AdditionalTraits:SetText(("%sX"):format(duplicateTraits+1))
 			self.AdditionalTraits:Show()
 		else
 			self.AdditionalTraits:Hide()

@@ -24,6 +24,7 @@ BINDING_HEADER_AZERITEFORGE = "AzeriteForge"
 BINDING_NAME_AZERITEFORGE_OPEN_HEAD = L["Head Powers"]
 BINDING_NAME_AZERITEFORGE_OPEN_CHEST = L["Shoulder Powers"]
 BINDING_NAME_AZERITEFORGE_OPEN_SHOULDER = L["Chest Powers"]
+BINDING_NAME_AZERITEFORGE_OPEN_WEIGHTS = L["Weights"]
 
 local currentXp, currentMaxXp, startXp =  0, 0 , 0
 local currentLevel, startLevel = 0 , 0
@@ -1382,9 +1383,11 @@ function AF:BuildTraitText(itemLink, tooltip, name, force)
 	if force then tooltip = tooltipCatcher end
 
 	-- Current Azerite LevelcreateItemLocation
-	local azeriteItemLocation = AF.createItemLocation(itemLink)
+	--local azeriteItemLocation = AF.createItemLocation(itemLink)
 	--local azeriteItemLocation = tooltip:GetItemLocation()
 
+	local locationID = _G[string.gsub(select(9,GetItemInfo(itemLink)),"INVTYPE", "INVSLOT")]
+	local azeriteItemLocation = ItemLocation:CreateFromEquipmentSlot(locationID) or 0
 
 	rankTotals = ""
 

@@ -8,4 +8,8 @@
    <Binding name= "AZERITEFORGE_OPEN_SHOULDER" category="ADDONS">
    AzeriteForge.ShowEmpoweredItem(ItemLocation:CreateFromEquipmentSlot(5));
  </Binding>
+ <Binding name= "AZERITEFORGE_OPEN_WEIGHTS" category="ADDONS">
+	 InterfaceOptionsFrame_OpenToCategory(AzeriteForge.optionsFrame2)
+	 InterfaceOptionsFrame_OpenToCategory(AzeriteForge.optionsFrame2)
+ </Binding>
 </Bindings>

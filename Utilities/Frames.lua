@@ -537,6 +537,14 @@ end
 
 
 local function createItemLocation(itemLink)
+
+	local locationID = _G[string.gsub(select(9,GetItemInfo(itemLink)),"INVTYPE", "INVSLOT")]
+	local location = ItemLocation:CreateFromEquipmentSlot(locationID) or 0
+	return location
+
+
+--[[
+
 	local bag, slot = findInventoryLocation(itemLink)
 
 	if bag then
@@ -552,7 +560,8 @@ local function createItemLocation(itemLink)
 		end
 	end
 
-	return false
+	return 0
+	]]--
 end
 
 function AF.createItemLocation(itemLink)

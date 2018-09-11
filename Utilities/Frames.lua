@@ -288,19 +288,7 @@ local shoulderTraitsAvalable = false
 --------
 local function CreateAzeriteDataFrame()
 ---------
---Powers Window
-	local f = AceGUI:Create("AzeriteForgeFrame")
-	AzeriteForge_PowersList = f
-	AceGUI:RegisterAsContainer(f)
-	f:SetLayout("Fill")
-	AF.PowerSummaryFrame = f
-	f:SetParent(AzeriteEmpoweredItemUI)
-	f.title:SetText(L["Power Summary"])
-	f.title:SetJustifyV("CENTER")
-	f:SetWidth(250)
-	f:SetHeight(160)
-	f:SetPoint("TOPLEFT",AzeriteEmpoweredItemUI,"TOPRIGHT")
-	f:SetPoint("BOTTOMLEFT",AzeriteEmpoweredItemUI,"BOTTOMRIGHT")
+
 
 
 --Overlay
@@ -428,7 +416,9 @@ local function CreateAzeriteDataFrame()
 	powerWindowButton:SetScript("OnClick", function(self, button, down)
 		local Shift = IsShiftKeyDown()
 		if Shift then
-			LibStub("AceConfigDialog-3.0"):Open("AzeriteForge", "weights")
+			--LibStub("AceConfigDialog-3.0"):Open("AzeriteForge", "weights")
+			InterfaceOptionsFrame_OpenToCategory(AF.optionsFrame2)
+			InterfaceOptionsFrame_OpenToCategory(AF.optionsFrame2) 
 
 		else
 			if AF.PowerSummaryFrame:IsShown() then
@@ -501,6 +491,24 @@ local function CreateAzeriteDataFrame()
 	inventoryButton:SetScript("OnLeave", function()
 			GameTooltip:Hide()
 		end)
+
+
+		--Powers Window
+
+	local f = AceGUI:Create("AzeriteForgeFrame")
+	
+	AceGUI:RegisterAsContainer(f)
+	f:SetLayout("Fill")
+	AF.PowerSummaryFrame = f
+	f:SetParent(overlay)
+	f.title:SetText(L["Power Summary"])
+	f.title:SetJustifyV("CENTER")
+	f:SetWidth(250)
+	f:SetHeight(160)
+	f:SetPoint("TOPLEFT",overlay,"TOPRIGHT")
+	f:SetPoint("BOTTOMLEFT",overlay,"BOTTOMRIGHT")
+	f:Hide()
+	AzeriteForge_PowersList = f
 end
 
 
@@ -660,20 +668,20 @@ end
 function AF.Aurora()
 	if not IsAddOnLoaded("Aurora") then return end
 --Powers Window
-	Aurora.Skin.InsetFrameTemplate(AzeriteForge_PowersList)
+	Aurora.Skin.InsetFrameTemplate(AzeriteForge_PowersList.frame)
 	Aurora.Skin.UIPanelCloseButton(AzeriteForge_PowersList.close)
-	local Background = AzeriteForge_PowersListBg
+	local Background = AzeriteForge_PowersList.background
 
 	Background:SetDesaturated(true)
 	Background:SetAlpha(0.8)
 	Background:Show()
 
 --Bag Window
-	Aurora.Skin.InsetFrameTemplate(_G.AzeriteForgeItemFrame)
+	Aurora.Skin.InsetFrameTemplate(_G.AzeriteForgeItemFrame.frame)
 	Aurora.Skin.UIPanelCloseButton(_G.AzeriteForgeItemFrame.close)
 
-	local Background = AzeriteForgeItemFrameBg
-
+	local Background = AzeriteForgeItemFrame.background
+--
 	Background:SetDesaturated(true)
 	Background:SetAlpha(0.9)
 	Background:Show()

@@ -450,7 +450,7 @@ local options = {
 				type = "toggle",
 				name = L["Show all non class saved profiles"],
 				order = 15,
-				set = function(info,val) AzeriteForge.db.profile.showAllProfiles = val end,
+				set = function(info,val) AzeriteForge.db.profile.showAllProfiles = val; Profiles.BuildWeightedProfileList() end,
 				get = function(info) return AzeriteForge.db.profile.showAllProfiles end,
 				width = "full",
 				},			
@@ -975,8 +975,9 @@ end
 function AF.loadWeightProfile()
 	AF.db.char.weightProfile = AF.db.char.weightProfile or {}
 	--AF.db.char.weightProfile[specID] = AF.db.char.weightProfile[specID] or {}
-	 local userProfile = AF.db.char.weightProfile[specID]
+	
 	  specID, specName, classID, className = Utilities.RefreshClassInfo()
+	  local userProfile = AF.db.char.weightProfile[specID]
 	 local weightProfile = AF.db.global.userWeightLists[userProfile]
 
 	local profileData = {}
@@ -1198,17 +1199,46 @@ end
 function AF:ParseText(traitID, val)
 	local text = {string.split(",",val)}
 
-	if string.find(text[1], "%[") then
+	if val == "" then 
+		print("Cleared Weight.")
+
+		wipe(AF.traitRanks[tonumber(traitID)])
+	elseif string.match(val, "%a+") then
+		print("Invalid weight entered.  Should only contain numbers.")
+		return false
+
+	elseif string.find(text[1], "%[") then
+		local ilevels = {}
+		table[tonumber(traitID)] = {}
 		for i,data in ipairs(text) do
-			for w,x in string.gmatch(data,"%[(%w+)%]:(%p?%w+)") do
-				AF.traitRanks[tonumber(traitID)][tonumber(w)] = tonumber(x)
+			for w,x in string.gmatch(data,"%[(%w+)%]:(%p?%w+)") do 
+				if w and tonumber(w) and x  and tonumber(x) then 
+				--wipe(AF.traitRanks[tonumber(traitID)]
+					ilevels[tonumber(w)] = tonumber(x)
+					--AF.traitRanks[tonumber(traitID)][tonumber(w)] = tonumber(x)
+				else
+					print("Invalid weight entered.  Use the format [rank/ilevel]:weight,")
+					return false
+				end
+				AF.traitRanks[tonumber(traitID)] = {}
+				AF.traitRanks[tonumber(traitID)] = CopyTable(ilevels)
+
 			end
 		end
 	else
+
 		for i, data in ipairs(text) do
-			text[i] = tonumber(data)
+				if i and tonumber(i) and data  and tonumber(data) then 
+					text[tonumber(i)] = tonumber(data)
+				else
+					print("Invalid weight entered.")
+					return false
+				end
+			AF.traitRanks[traitID] = {}
+			AF.traitRanks[traitID] = CopyTable(text)
 		end
-		AF.traitRanks[traitID] = CopyTable(text)
+	--else --elseif string.match(text[1], "%d+,%d*,?%d*") the
+		--print("Invalid weight entered.  Use the format [rank/ilevel]:weight,")
 	end
 end
 
@@ -1317,7 +1347,7 @@ function AF:CreateTraitMenu(aceTable,disable, profile)
 
 
 				end,
-			set = function(info,val) AF.traitRanks[traitID] = {}; return AF:ParseText(traitID,val) end,
+			set = function(info,val) return AF:ParseText(traitID,val) end,
 			}
 
 

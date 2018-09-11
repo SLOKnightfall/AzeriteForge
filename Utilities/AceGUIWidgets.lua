@@ -212,6 +212,7 @@ do
 		frame:SetHeight(100)
 		frame:SetPoint("CENTER")
 		frame:SetMovable(false)
+		
 		--frame:EnableMouse(true)
 
 		local titlebg = frame:CreateTexture(nil, "BORDER")
@@ -232,7 +233,7 @@ do
 		self.type = Type
 		self.num = num
 		self.content = frame
-
+		self.background = _G["AzeriteForgeFrame"..num.."Bg"]
 
 		self.OnRelease = OnRelease
 		self.OnAcquire = OnAcquire

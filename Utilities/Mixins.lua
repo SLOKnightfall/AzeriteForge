@@ -1,11 +1,12 @@
 local FOLDER_NAME, private = ...
 local TextDump = LibStub("LibTextDump-1.0")
-AzeriteForge = LibStub("AceAddon-3.0"):GetAddon("AzeriteForge")
+local AzeriteForge = LibStub("AceAddon-3.0"):GetAddon("AzeriteForge")
 local L = LibStub("AceLocale-3.0"):GetLocale("AzeriteForge")
 AzeriteForgeMiniMap = LibStub("LibDBIcon-1.0")
 local AF = AzeriteForge
 local maxValue = {}
-
+local Utilities = AF.Utilities
+local azeriteIcon = "Interface/Icons/Inv_smallazeriteshard"
 
 --#####################################
 --Modified blizzard plugins
@@ -51,6 +52,18 @@ local function AzeriteEmpoweredItemPowerMixin_Setup(self,...)
 	f:SetPoint("CENTER",0,-20)
 	f:Hide()
 	self.TraitRank = f
+
+	local border = self:CreateTexture(nil, 'OVERLAY')
+	border:SetWidth(67); border:SetHeight(67)
+	border:SetPoint('CENTER', self)
+	border:SetTexture("Interface/Buttons/UI-GROUPLOOT-PASS-DOWN")
+	border:SetBlendMode('ADD')
+	border:Hide()
+	--border:SetVertexColor(0.4, 0.4, 0.4)
+	self.border = border
+
+			
+	
 end
 
 AF:SecureHook(AzeriteEmpoweredItemPowerMixin,"Setup", AzeriteEmpoweredItemPowerMixin_Setup)
@@ -116,6 +129,10 @@ local function AzeriteEmpoweredItemPowerMixin_OnShow(self,...)
 		if HasAnyUnselectedPowers then
 			DB = AvailableAzeriteTraits
 		end
+		local specID, specName, classID, className = Utilities.RefreshClassInfo()
+		local IsPowerAvailableForSpec =  C_AzeriteEmpoweredItem.IsPowerAvailableForSpec(self:GetAzeritePowerID(), specID)
+
+
 
 		local traitRank = AF.getTraitRanking(self:GetAzeritePowerID(),location, itemLink)
 		--print(traitRank)
@@ -141,11 +158,21 @@ local function AzeriteEmpoweredItemPowerMixin_OnShow(self,...)
 			self.AdditionalTraits:SetPoint("CENTER",0,0)
 		end
 
+
 		if self.AdditionalTraits and duplicateTraits > 0 then
 			self.AdditionalTraits:SetText(("%sX"):format(duplicateTraits+1))
 			self.AdditionalTraits:Show()
 		else
 			self.AdditionalTraits:Hide()
+		end
+
+		
+		if not IsPowerAvailableForSpec then
+			--self.IconOn:SetDesaturated(true)
+			--self.border:Show()
+		else 
+			--self.IconOn:SetDesaturated(false)
+			--self.border:Hide()
 		end
 	end
 end

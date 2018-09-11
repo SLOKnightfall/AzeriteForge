@@ -126,39 +126,42 @@ function Profiles.BuildWeightedProfileList()
 	for name, data in pairs(AF.db.global.userWeightLists) do
 		local profileSpecID = tonumber(AF.db.global.userWeightLists[name]["specID"]) or 0
 
-		if not validSpec[profileSpecID] then break end
+		if AzeriteForge.db.profile.showAllProfiles  or ( not AzeriteForge.db.profile.showAllProfiles and validSpec[profileSpecID])  then
 
-		local dataTable = {}
-		dataTable.name = name
-		dataTable.spec = specID
-		local defaultList = Utilities.BuildDefaultTable(dataTable)
-		counter = counter + 1
+			local dataTable = {}
+			dataTable.name = name
+			dataTable.spec = specID
+			local defaultList = Utilities.BuildDefaultTable(dataTable)
+			counter = counter + 1
 
-		local fontColor = ""
-		local _, _, _,icon = GetSpecializationInfoByID(profileSpecID)
-		local iconText = ""
+			local fontColor = ""
+			local _, _, _,icon = GetSpecializationInfoByID(profileSpecID)
+			local iconText = ""
 
 
-		if AF.db.char.weightProfile[specID] == name then
-			fontColor = GREEN_FONT_COLOR_CODE
-		elseif specID ~= profileSpecID then
-			fontColor = GRAY_FONT_COLOR_CODE
-		else
+			if AF.db.char.weightProfile[specID] == name then
+				fontColor = GREEN_FONT_COLOR_CODE
+			elseif specID == profileSpecID then
+				fontColor = NORMAL_FONT_COLOR_CODE
+			elseif validSpec[profileSpecID] then 
+				fontColor = GRAY_FONT_COLOR_CODE
+			elseif  not validSpec[profileSpecID] then
+				fontColor = RED_FONT_COLOR_CODE
+	
+			end
 
-			fontColor = NORMAL_FONT_COLOR_CODE
+			if icon then
+				iconText = "|T"..icon..(":25:25:|t")
+			end
+
+			AF:CreateTraitMenu(defaultList.args , true, AF.db.global.userWeightLists[name] )
+			local tablename = ("build_%s,%s"):format(name, counter)
+
+			defaultList.name = fontColor..iconText..name
+			
+
+			defaultList.args.profileHeader.name = name
+			AF.options.args.profiles.args[tablename] = defaultList
 		end
-
-		if icon then
-			iconText = "|T"..icon..(":25:25:|t")
-		end
-
-		AF:CreateTraitMenu(defaultList.args , true, AF.db.global.userWeightLists[name] )
-		local tablename = ("build_%s,%s"):format(name, counter)
-
-		defaultList.name = fontColor..iconText..name
-		
-
-		defaultList.args.profileHeader.name = name
-		AF.options.args.profiles.args[tablename] = defaultList
 	end
 end

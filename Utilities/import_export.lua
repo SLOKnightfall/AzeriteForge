@@ -143,6 +143,8 @@ function AF:ImportData(data)
 		AzeritePowerWeightsImport(data)
 	end
 	 AzeriteForge.ImportWindow:Hide()
+	 InterfaceOptionsFrame_OpenToCategory(self.optionsFrame2)
+	 InterfaceOptionsFrame_OpenToCategory(self.optionsFrame2)
 end
 
 

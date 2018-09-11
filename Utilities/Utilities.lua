@@ -9,6 +9,7 @@ local AceGUI = LibStub("AceGUI-3.0")
 
 AF.Utilities = {}
 local Utilities = AF.Utilities
+AF.Profiles = {}
 local Profiles = AF.Profiles
 
 -- ----------------------------------------------------------------------------
@@ -124,8 +125,10 @@ function Utilities.duplicateNameCheck(profileName)
 end
 
 
-function Utilities.BuildDefaultTable()
-	local data = {}
+function Utilities.BuildDefaultTable(dataTable)
+	local data = dataTable
+	local specID, specName, classID, className = Utilities.RefreshClassInfo()
+	local profileSpecID = AF.db.global.userWeightLists[data.name]["specID"] or 0
 	local defaultList = {
 			name = "List",
 			type = "group",
@@ -153,7 +156,7 @@ function Utilities.BuildDefaultTable()
 					name = function()
 
 						if not AF.db.global.userWeightLists[data.name] then return end
-						local profileSpecID = AF.db.global.userWeightLists[data.name]["specID"] or 0
+						
 						local _, name, _,icon, _, class = GetSpecializationInfoByID(profileSpecID)
 
 						if icon then
@@ -173,7 +176,7 @@ function Utilities.BuildDefaultTable()
 					--width = "double",
 					func = function(info, val) Profiles.LoadSelectedProfile(data.name); Profiles.BuildWeightedProfileList()
 						end,
-					disabled = function() return data.name == AF.db.char.weightProfile[specID] end,
+					disabled = function() return data.name == AF.db.char.weightProfile[specID] or data.spec ~= profileSpecID end,
 						},
 				deleteProfile = {
 					type = "execute",

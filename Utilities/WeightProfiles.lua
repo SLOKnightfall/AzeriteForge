@@ -108,132 +108,30 @@ local function deleteProfile(profileName)
 end
 
 
-
-local function createSelectedMenuPage()
-	AF.options.args.weights = Utilities.BuildDefaultTable()
-	AF.options.args.weights.name = L["Weight Profiles"]
-	AF.options.args.weights.args.userDefinedName.name = "Profile Name"
-	AF.options.args.weights.args.profileHeader.name = "Selected Profile"
-	AF.options.args.weights.args.setProfile = nil
-	AF.options.args.weights.args.deleteProfile = nil
-	AF.options.args.weights.args.copyProfile = nil
-
-	AF.options.args.weights.args.resetStacking = {
-		type = "execute",
-		name = L["Reset Default Data with Stacking Data"],
-		order = 1,
-		width = "double",
-		func = function() local data = AF.loadDefaultData("StackData")
-			local specID, specName, classID, className = Utilities.RefreshClassInfo()
-			local profile = AF.db.char.weightProfile[specID]
-			wipe(AF.traitRanks)
-			AF.traitRanks = CopyTable(data)
-			AF.traitRanks["specID"] = specID
-			AF.traitRanks["classID"] = classID
-			AF.db.global.userWeightLists[profile] = AF.traitRanks
-			end,
-		}
-	AF.options.args.weights.args.resetIlevel = {
-		type = "execute",
-		name = L["Reset Default Data with iLevel Data"],
-		order = 2,
-		width = "double",
-		func = function() local data = AF.loadDefaultData("iLevelData")
-			local specID, specName, classID, className = Utilities.RefreshClassInfo()
-			local profile = AF.db.char.weightProfile[specID]
-			wipe(AF.traitRanks)
-			AF.traitRanks = CopyTable(data)
-			AF.traitRanks["specID"] = specID
-			AF.traitRanks["classID"] = classID
-			AF.db.global.userWeightLists[profile] = AF.traitRanks
-			end,
-
-		}
-
-	AF.options.args.weights.args.clearData = {
-		type = "execute",
-		name = L["Clear all data"],
-		order = 3,
-		width = "double",
-		func = function()
-			local specID, specName, classID, className = Utilities.RefreshClassInfo()
-			local profile = AF.db.char.weightProfile[specID]
-			--local DB = AF.db.global.userWeightLists[weightProfile]
-			wipe(AF.traitRanks)
-			AF.traitRanks["specID"] = specID
-			AF.traitRanks["classID"] = classID
-			AF.db.global.userWeightLists[profile] = AF.traitRanks
-
-			end,
-
-		}
-
-	AF.options.args.weights.args.importData = {
-		type = "execute",
-		name = L["Import Data"],
-		order = 4,
-		width = "double",
-		func = function()
-			AzeriteForge.ImportWindow:Show()
-			end,
-
-		}
-
-	AF.options.args.weights.args.exportData = {
-		type = "execute",
-		name = L["Export Data"],
-		order = 5,
-		width = "double",
-		func = function() AF:ExportData() end,
-		}
-
-	AF.options.args.weights.args.createNewProfile = {
-				name = L["Create New Profile"],
-				type = "group",
-				handler = AzeriteForge,
-				type = "group",
-				inline =false,
-				order = 1,
-				args = {
-				createProfileTextbox = {
-					name = "Profile Name",
-					type = "input",
-					width = "full",
-					order = .01,
-					set = function(info,val) newProfileName = val  end,
-					get = function(info)  return newProfileName end,
-						},
-				createProfilebutton = {
-				type = "execute",
-				name = L["Create Profile"],
-				order = 5,
-				width = "double",
-				func = function(info, val)  createNewProfile(newProfileName)end,
-				},
-					},
-
-
-				}
-	AF:CreateTraitMenu(AF.options.args.weights.args)
-end
-
-
 function Profiles.BuildWeightedProfileList()
 	local specID = Utilities.RefreshClassInfo()
 	local counter = 1
 
-	--createSelectedMenuPage()
-
-	for x in pairs(AF.options.args.weights.args) do
+	for x in pairs(AF.options.args.profiles.args) do
 		if string.find(x ,"build_")  then
-			AF.options.args.weights.args[x] = nil
+			AF.options.args.profiles.args[x] = nil
 		end
+	end
+	local validSpec = {}
+	for i=1, GetNumSpecializations() do
+		local id = GetSpecializationInfo(i)
+		validSpec[tonumber(id)] = true
 	end
 
 	for name, data in pairs(AF.db.global.userWeightLists) do
-		local profileSpecID = AF.db.global.userWeightLists[name]["specID"] or 0
+		local profileSpecID = tonumber(AF.db.global.userWeightLists[name]["specID"]) or 0
 
-		local defaultList = Utilities.BuildDefaultTable()
+		if not validSpec[profileSpecID] then break end
+
+		local dataTable = {}
+		dataTable.name = name
+		dataTable.spec = specID
+		local defaultList = Utilities.BuildDefaultTable(dataTable)
 		counter = counter + 1
 
 		local fontColor = ""
@@ -243,6 +141,8 @@ function Profiles.BuildWeightedProfileList()
 
 		if AF.db.char.weightProfile[specID] == name then
 			fontColor = GREEN_FONT_COLOR_CODE
+		elseif specID ~= profileSpecID then
+			fontColor = GRAY_FONT_COLOR_CODE
 		else
 
 			fontColor = NORMAL_FONT_COLOR_CODE
@@ -256,9 +156,9 @@ function Profiles.BuildWeightedProfileList()
 		local tablename = ("build_%s,%s"):format(name, counter)
 
 		defaultList.name = fontColor..iconText..name
-		data.name = name
+		
 
 		defaultList.args.profileHeader.name = name
-		AF.options.args.weights.args[tablename] = defaultList
+		AF.options.args.profiles.args[tablename] = defaultList
 	end
 end

@@ -5,6 +5,7 @@
 local L = LibStub("AceLocale-3.0"):NewLocale("AzeriteForge", "enUS", true)
 if not L then return end
 
+L["Show all non class saved profiles"] = true
 L["Power Summary"]= true
 L["AzeriteForge"] = true
 L["Toggle Character Info"] = true
@@ -41,7 +42,7 @@ L["Alert user if equiped item has un-useable trait"] = true
  L["Play Alert Sound when triggered"] = true
  L[RED_FONT_COLOR_CODE.."%s item has traits unuseable in current spec" ] = true
   L["Display Azerite Power Icon on Character Sheet"] = true
-
+L["Active Profile"] = true
  L["Set as active profile"] = true
  L["Delete Profile"] = true
 L["Copy Profile"] = true
@@ -52,3 +53,9 @@ L["Weight Profiles"] = true
 L["Show Ranks Totals in Tooltip"] = true
 L["Show Powers Summary when the Azerite Power Window Opens"] = true
 
+L["WEIGHT_INSTRUCTIONS"] = [[Flat Weights:  Enter the number that you want the weight to be.
+Stacked Weights:  enter the values in order IE: 5,10,50
+iLevel: use the following layout for each weight:   [ilevel]:weight,
+IE:  [325]:131,[340]:327,[355]:530,[370]:789,[385]:1042,IE: 5,10,50 ]]
+
+L["Weights"] = true

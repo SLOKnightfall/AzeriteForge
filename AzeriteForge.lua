@@ -18,7 +18,6 @@ local AF = AzeriteForge
 local Utilities = AF.Utilities
 local Debug = Utilities.Debug
 
-AF.Profiles = AF.Profiles or {}
 local Profiles = AF.Profiles
 
 BINDING_HEADER_AZERITEFORGE = "AzeriteForge"
@@ -447,12 +446,23 @@ local options = {
 				get = function(info) return AzeriteForge.db.profile.unavailableAlertsound end,
 				width = "full",
 				},
+			showAllProfiles = {
+				type = "toggle",
+				name = L["Show all non class saved profiles"],
+				order = 15,
+				set = function(info,val) AzeriteForge.db.profile.showAllProfiles = val end,
+				get = function(info) return AzeriteForge.db.profile.showAllProfiles end,
+				width = "full",
+				},			
 			},
 		},
+	
+
 	weights = {
-		    name = L["Weight Profiles"],
+		    name = L["Active Profile"],
 		    handler = AzeriteForge,
 		    type = "group",
+		    guiInline  = true,
 		    args = {
 		    	profileHeader = {
 				name = "Selected Profile",
@@ -549,7 +559,37 @@ local options = {
 				func = function() AF:ExportData() end,
 				},
 
-			createNewProfile = {
+			
+
+		    	search = {
+				name = "Search",
+				type = "input",
+				width = "full",
+				order = 7,
+				set = function(info,val) AF.searchbar = val end,
+				get = function(info) return AF.searchbar end
+				},
+			weightsHeader = {
+				name = L["Weights"],
+				type = "header",
+				width = "full",
+				order = 8,
+				},
+			weightDescription = {
+				name = L["WEIGHT_INSTRUCTIONS"],
+				type = "description",
+				width = "full",
+				order = 9,
+				},
+			},
+		   },
+	profiles = {
+		    name = L["Weight Profiles"],
+		    handler = AzeriteForge,
+		    type = "group",
+		    --guiInline  = true,
+		    args = {
+		    createNewProfile = {
 				name = L["Create New Profile"],
 				type = "group",
 				handler = AzeriteForge,
@@ -576,18 +616,10 @@ local options = {
 
 
 				},
-
-		    	search = {
-				name = "Search",
-				type = "input",
-				width = "full",
-				order = 7,
-				set = function(info,val) AF.searchbar = val end,
-				get = function(info) return AF.searchbar end
-				},
-			},
+		    },
 		   },
 	},
+
 }
 
 
@@ -659,6 +691,8 @@ local talent_options = {
 				type = "header",
 				name = L["Chest Powers"],
 				},
+
+			 
 			},
 		},
 	},
@@ -682,6 +716,7 @@ local DB_DEFAULTS = {
 		showCharacterPageIcon = true,
 		showRankTotal = true,
 		showPowersWindow = true,
+		showAllProfiles = false,
 	},
 	global = {
 		userWeightLists = {}
@@ -819,8 +854,11 @@ function AF:OnEnable()
 
 	LibStub("AceConfig-3.0"):RegisterOptionsTable("AzeriteForge_Talents", talent_options)
 	LibStub("AceConfig-3.0"):RegisterOptionsTable("AzeriteForge", options)
-	self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("AzeriteForge", "AzeriteForge")
-
+	self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("AzeriteForge", "AzeriteForge",nil, "options")
+	self.optionsFrame2 = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("AzeriteForge",  L["Active Profile"],"AzeriteForge","weights")
+	self.optionsFrame3 = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("AzeriteForge",  L["Weight Profiles"],"AzeriteForge","profiles")
+--InterfaceOptionsFrame_OpenToCategory(self.optionsFrame)
+--InterfaceOptionsFrame_OpenToCategory(self.optionsFrame)
 	globalDb = self.db.global
 	configDb = self.db.profile
 	Config = self.db.profile
@@ -1176,12 +1214,17 @@ end
 
 
 function AF.loadDefaultData(DB)
-	local traitRanks = {}
 	specID, specName, classID, className = Utilities.RefreshClassInfo()
+	local traitRanks = {}	
+	traitRanks["specID"] = specID
+	traitRanks["classID"] = classID
+
 
 	if not AzeriteForge[DB][specID] then
 		Debug("No default data found - possibly healer class")
+
 		return traitRanks
+
 	end
 
 	for name, data in pairs(AzeriteForge[DB][specID]) do
@@ -1189,9 +1232,6 @@ function AF.loadDefaultData(DB)
 			traitRanks[AzeriteTraitsName_to_ID[name]] = data
 		 end
 	end
-
-	traitRanks["specID"] = specID
-	traitRanks["classID"] = classID
 
 	return traitRanks
 end

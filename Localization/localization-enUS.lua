@@ -16,6 +16,7 @@ L["Azerite Items in Bag"] = true
 L["Head Powers"] = true
 L["Shoulder Powers"] = true
 L["Chest Powers"] = true
+L["Gray out unusable powers on the Power Page"] =  true
 
 L["Reset Default Data with Stacking Data"] = true
 L["Reset Default Data with iLevel Data"] = true

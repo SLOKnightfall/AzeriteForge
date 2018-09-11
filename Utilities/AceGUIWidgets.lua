@@ -18,7 +18,6 @@ local AzeriteLocations = {["Head"] = ItemLocation:CreateFromEquipmentSlot(1),
 
 --Constructor for ACE-GUI item
 do
-
 	local Type = "AzeriteForgeItem"
 	local Version = 1
 
@@ -187,7 +186,7 @@ do
 	local function SetParent(self,parent)
 		self.frame:SetParent(parent)
 	end
-	
+
 	local function IsShown(self)
 		return self.frame:IsShown()
 	end
@@ -212,7 +211,7 @@ do
 		frame:SetHeight(100)
 		frame:SetPoint("CENTER")
 		frame:SetMovable(false)
-		
+
 		--frame:EnableMouse(true)
 
 		local titlebg = frame:CreateTexture(nil, "BORDER")
@@ -228,7 +227,7 @@ do
 		close:SetPoint("TOPRIGHT", 2, 1)
 		close:SetScript("OnClick", function() frame:Hide() end)
 
-		
+
 		local self = {}
 		self.type = Type
 		self.num = num
@@ -267,3 +266,17 @@ do
 
 	AceGUI:RegisterWidgetType(Type,Constructor,Version)
 end
+
+
+--[[-----------------------------------------------------------------------------
+Fix for texture error between Aurora & ACE Heading Widget
+-------------------------------------------------------------------------------]]
+
+AF:RawHook(AceGUI.WidgetRegistry,"Heading", function(self)
+	local frame =  AF.hooks[AceGUI.WidgetRegistry]["Heading"]()
+	frame.left:SetTexture("")
+	frame.right:SetTexture("")
+	frame.left:SetTexture("Interface\\Tooltips\\UI-Tooltip-Border")
+	frame.right:SetTexture("Interface\\Tooltips\\UI-Tooltip-Border")
+	return frame
+end)

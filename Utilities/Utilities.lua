@@ -156,7 +156,7 @@ function Utilities.BuildDefaultTable(dataTable)
 					name = function()
 
 						if not AF.db.global.userWeightLists[data.name] then return end
-						
+
 						local _, name, _,icon, _, class = GetSpecializationInfoByID(profileSpecID)
 
 						if icon then

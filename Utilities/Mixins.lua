@@ -18,8 +18,8 @@ local function AzeriteEmpoweredItemPowerMixin_OnEnter(self,...)
 
 	local HasAnyUnselectedPowers, itemLink, locationID
 
-	if location then 
-		itemLink = C_Item.GetItemLink(location)	
+	if location then
+		itemLink = C_Item.GetItemLink(location)
 	elseif item then
 		itemLink = item.itemLink
 	end
@@ -62,8 +62,8 @@ local function AzeriteEmpoweredItemPowerMixin_Setup(self,...)
 	--border:SetVertexColor(0.4, 0.4, 0.4)
 	self.border = border
 
-			
-	
+
+
 end
 
 AF:SecureHook(AzeriteEmpoweredItemPowerMixin,"Setup", AzeriteEmpoweredItemPowerMixin_Setup)
@@ -109,7 +109,7 @@ local function AzeriteEmpoweredItemPowerMixin_OnShow(self,...)
 		local item = self.azeriteItemDataSource:GetItem()
 		local HasAnyUnselectedPowers, itemLink, locationID
 
-		if location then 
+		if location then
 			HasAnyUnselectedPowers = C_AzeriteEmpoweredItem.HasAnyUnselectedPowers(location)
 			itemLink = C_Item.GetItemLink(location)
 		elseif item then
@@ -121,7 +121,7 @@ local function AzeriteEmpoweredItemPowerMixin_OnShow(self,...)
 
 		locationID = _G[string.gsub(select(9,GetItemInfo(itemLink)),"INVTYPE", "INVSLOT")]
 		location = location or ItemLocation:CreateFromEquipmentSlot(locationID)
-		
+
 		local DB = AF.ReturnSelectedAzeriteTraits()
 
 		local _, duplicateTraits = AF:FindStackedTraits(self:GetAzeritePowerID(),locationID, DB)
@@ -130,12 +130,15 @@ local function AzeriteEmpoweredItemPowerMixin_OnShow(self,...)
 			DB = AvailableAzeriteTraits
 		end
 		local specID, specName, classID, className = Utilities.RefreshClassInfo()
-		local IsPowerAvailableForSpec =  C_AzeriteEmpoweredItem.IsPowerAvailableForSpec(self:GetAzeritePowerID(), specID)
 
+		local powerData =  AF.azeriteTraits[self:GetAzeritePowerID()]
 
+		local IsPowerAvailableForSpec =  powerData and powerData["valid"] or false
+		local isPowerSelected = self:IsSelected()
+		--if isPowerSelected then print(GetSpellInfo(AzeriteTooltip_GetSpellID(self:GetAzeritePowerID()))) end
 
 		local traitRank = AF.getTraitRanking(self:GetAzeritePowerID(),location, itemLink)
-		--print(traitRank)
+
 		local tierIndex = self:GetTierIndex()
 
 		maxValue[location] = maxValue[location] or {}
@@ -166,12 +169,13 @@ local function AzeriteEmpoweredItemPowerMixin_OnShow(self,...)
 			self.AdditionalTraits:Hide()
 		end
 
-		
-		if not IsPowerAvailableForSpec then
-			--self.IconOn:SetDesaturated(true)
+
+		if AzeriteForge.db.profile.desaturateUnuseable  and not IsPowerAvailableForSpec then
+			self.IconOn:SetDesaturated(true)
 			--self.border:Show()
-		else 
-			--self.IconOn:SetDesaturated(false)
+			--print(self:GetAzeritePowerID())
+		else
+			self.IconOn:SetDesaturated(false)
 			--self.border:Hide()
 		end
 	end

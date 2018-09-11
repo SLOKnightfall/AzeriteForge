@@ -51,6 +51,8 @@ AF.searchbar = nil
 
 local UnselectedLocationTraits = {}
 local azeriteTraits = {}
+AF.azeriteTraits = azeriteTraits
+
 AF.traitRanks = {}
 local ap = {}
 local ReforgeCost = {}
@@ -125,7 +127,7 @@ do
 	end
 
 	function DebugPour(...)
-		DEFAULT_CHAT_FRAME:AddMessage(string.format(...));
+		DEFAULT_CHAT_FRAME:AddMessage(string.format(...))
 		Debug(...)
 
 	end
@@ -279,12 +281,12 @@ end
 function AF.BuildAzeriteInfoTooltip(frame)
 	local RespecCost = C_AzeriteEmpoweredItem.GetAzeriteEmpoweredItemRespecCost()
 
-	frame:AddLine(("Current Level: %s"):format(currentLevel),1.0, 1.0, 1.0);
-	frame:AddLine(("XP: %s/%s"):format(currentXp, currentMaxXp), 1.0, 1.0, 1.0);
-	frame:AddLine(("Xp to Next Level: %s"):format(currentMaxXp - currentXp), 1.0, 1.0, 1.0);
-	frame:AddLine(("Current Respec Cost: %sg"):format(RespecCost/10000), 1.0, 1.0, 1.0);
-	frame:AddLine(("Islands: %s/%s"):format(WeeklyQuestGain, WeeklyQuestRequired ), 1.0, 1.0, 1.0);
-	frame:AddLine(("Remaining: %s"):format( WeeklyQuestRequired- WeeklyQuestGain ), 1.0, 1.0, 1.0);
+	frame:AddLine(("Current Level: %s"):format(currentLevel),1.0, 1.0, 1.0)
+	frame:AddLine(("XP: %s/%s"):format(currentXp, currentMaxXp), 1.0, 1.0, 1.0)
+	frame:AddLine(("Xp to Next Level: %s"):format(currentMaxXp - currentXp), 1.0, 1.0, 1.0)
+	frame:AddLine(("Current Respec Cost: %sg"):format(RespecCost/10000), 1.0, 1.0, 1.0)
+	frame:AddLine(("Islands: %s/%s"):format(WeeklyQuestGain, WeeklyQuestRequired ), 1.0, 1.0, 1.0)
+	frame:AddLine(("Remaining: %s"):format( WeeklyQuestRequired- WeeklyQuestGain ), 1.0, 1.0, 1.0)
 end
 
 
@@ -294,7 +296,7 @@ function AF.ShowEmpoweredItem(itemLocation)
 
 	if ItemLocationMixin:IsEquipmentSlot(itemLocation) or not C_Item.DoesItemExist(itemLocation) then return end
 		if C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItem(itemLocation) then
-			OpenAzeriteEmpoweredItemUIFromItemLocation(itemLocation);
+			OpenAzeriteEmpoweredItemUIFromItemLocation(itemLocation)
 
 			for i in pairs (powerLocationButtonIDs) do
 				if i == equipmentSlotID then
@@ -304,7 +306,7 @@ function AF.ShowEmpoweredItem(itemLocation)
 				end
 			end
 		else
-			DEFAULT_CHAT_FRAME:AddMessage("Equipped item is not an Azerite item.");
+			DEFAULT_CHAT_FRAME:AddMessage("Equipped item is not an Azerite item.")
 		end
 end
 
@@ -430,13 +432,21 @@ local options = {
 				get = function(info) return AzeriteForge.db.profile.showPowersWindow end,
 				width = "full",
 				},
+			desaturateUnuseable = {
+				type = "toggle",
+				name = L["Gray out unusable powers on the Power Page"],
+				order = 12.2,
+				set = function(info,val) AzeriteForge.db.profile.desaturateUnuseable = val end,
+				get = function(info) return AzeriteForge.db.profile.desaturateUnuseable end,
+				width = "full",
+				},
 			unavailableAlert = {
 				type = "toggle",
 				name = L["Alert user if equiped item has un-useable trait"],
 				order = 13,
 				set = function(info,val) AzeriteForge.db.profile.unavailableAlert = val end,
 				get = function(info) return AzeriteForge.db.profile.unavailableAlert end,
-				width = "full",
+				width = "double",
 				},
 			unavailableAlertSound = {
 				type = "toggle",
@@ -444,7 +454,7 @@ local options = {
 				order = 14,
 				set = function(info,val) AzeriteForge.db.profile.unavailableAlertsound = val end,
 				get = function(info) return AzeriteForge.db.profile.unavailableAlertsound end,
-				width = "full",
+				--width = "double",
 				},
 			showAllProfiles = {
 				type = "toggle",
@@ -453,10 +463,10 @@ local options = {
 				set = function(info,val) AzeriteForge.db.profile.showAllProfiles = val; Profiles.BuildWeightedProfileList() end,
 				get = function(info) return AzeriteForge.db.profile.showAllProfiles end,
 				width = "full",
-				},			
+				},
 			},
 		},
-	
+
 
 	weights = {
 		    name = L["Active Profile"],
@@ -559,7 +569,7 @@ local options = {
 				func = function() AF:ExportData() end,
 				},
 
-			
+
 
 		    	search = {
 				name = "Search",
@@ -692,7 +702,7 @@ local talent_options = {
 				name = L["Chest Powers"],
 				},
 
-			 
+
 			},
 		},
 	},
@@ -717,6 +727,7 @@ local DB_DEFAULTS = {
 		showRankTotal = true,
 		showPowersWindow = true,
 		showAllProfiles = false,
+		desaturateUnuseable = true,
 	},
 	global = {
 		userWeightLists = {}
@@ -749,10 +760,10 @@ function AF:GetAzeriteTraits()
 	wipe(AvailableAzeriteTraits)
 	wipe(SelectedAzeriteTraits)
 	--local refresh = true
-	if AF.PowerSummaryFrame.container then 
+	if AF.PowerSummaryFrame.container then
 		AceGUI:Release(AF.PowerSummaryFrame.container)
 	end
-		
+
 	local content = AceGUI:Create("SimpleGroup")
 	content:SetLayout("Fill")
 	AF.PowerSummaryFrame:AddChild(content)
@@ -768,6 +779,8 @@ function AF:GetAzeriteTraits()
 	local headPower_Header = AceGUI:Create("Heading")
 	headPower_Header:SetText(L["Head Powers"])
 	headPower_Header:SetRelativeWidth(1)
+	headPower_Header.right:SetTexture("Interface\\Tooltips\\UI-Tooltip-Border")
+	headPower_Header.left:SetTexture("Interface\\Tooltips\\UI-Tooltip-Border")
 	scroll:AddChild(headPower_Header)
 
 	if not GetInventoryItemID("player", 1) then
@@ -781,6 +794,8 @@ function AF:GetAzeriteTraits()
 	local chestPower_Header = AceGUI:Create("Heading")
 	chestPower_Header:SetText(L["Chest Powers"])
 	chestPower_Header:SetRelativeWidth(1)
+	chestPower_Header.right:SetTexture("Interface\\Tooltips\\UI-Tooltip-Border")
+	chestPower_Header.left:SetTexture("Interface\\Tooltips\\UI-Tooltip-Border")
 	scroll:AddChild(chestPower_Header)
 
 	if not GetInventoryItemID("player", 3) then --or C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItem(itemLocation) then
@@ -794,6 +809,8 @@ function AF:GetAzeriteTraits()
 	local shoulderPower_Header = AceGUI:Create("Heading")
 	shoulderPower_Header:SetText(L["Shoulder Powers"])
 	shoulderPower_Header:SetRelativeWidth(1)
+	shoulderPower_Header.right:SetTexture("Interface\\Tooltips\\UI-Tooltip-Border")
+	shoulderPower_Header.left:SetTexture("Interface\\Tooltips\\UI-Tooltip-Border")
 	scroll:AddChild(shoulderPower_Header)
 	if not GetInventoryItemID("player", 5) then
 		buttons.chestSlotButton:Hide()
@@ -830,9 +847,9 @@ function AF:updateInfoLDB()
 end
 
 local function UpdateWeeklyQuest()
-	local questID = C_IslandsQueue.GetIslandsWeeklyQuestID();
+	local questID = C_IslandsQueue.GetIslandsWeeklyQuestID()
 
-	local _, _, _, WeeklyGain, WeeklyRequired = GetQuestObjectiveInfo(questID, 1, false);
+	local _, _, _, WeeklyGain, WeeklyRequired = GetQuestObjectiveInfo(questID, 1, false)
 	WeeklyQuestGain = WeeklyGain or 0
 	WeeklyQuestRequired = WeeklyRequired or 0
 end
@@ -975,7 +992,7 @@ end
 function AF.loadWeightProfile()
 	AF.db.char.weightProfile = AF.db.char.weightProfile or {}
 	--AF.db.char.weightProfile[specID] = AF.db.char.weightProfile[specID] or {}
-	
+
 	  specID, specName, classID, className = Utilities.RefreshClassInfo()
 	  local userProfile = AF.db.char.weightProfile[specID]
 	 local weightProfile = AF.db.global.userWeightLists[userProfile]
@@ -1077,11 +1094,11 @@ end
 --Looks to see if an Azerite ability is on other gear pieces
 function AF:FindStackedTraits(powerID, locationID, traitList)
 	local foundLocations = nil
-	local count = 0 
+	local count = 0
 	if not traitList[powerID] then return foundLocations, count end
 
 	for location in pairs(traitList[powerID]) do
-		if AzeriteLocations[locationID] ~= location then 
+		if AzeriteLocations[locationID] ~= location then
 			foundLocations = (foundLocations or "")..location..","
 			count = count + 1
 		end
@@ -1199,7 +1216,7 @@ end
 function AF:ParseText(traitID, val)
 	local text = {string.split(",",val)}
 
-	if val == "" then 
+	if val == "" then
 		print("Cleared Weight.")
 
 		wipe(AF.traitRanks[tonumber(traitID)])
@@ -1211,8 +1228,8 @@ function AF:ParseText(traitID, val)
 		local ilevels = {}
 		table[tonumber(traitID)] = {}
 		for i,data in ipairs(text) do
-			for w,x in string.gmatch(data,"%[(%w+)%]:(%p?%w+)") do 
-				if w and tonumber(w) and x  and tonumber(x) then 
+			for w,x in string.gmatch(data,"%[(%w+)%]:(%p?%w+)") do
+				if w and tonumber(w) and x  and tonumber(x) then
 				--wipe(AF.traitRanks[tonumber(traitID)]
 					ilevels[tonumber(w)] = tonumber(x)
 					--AF.traitRanks[tonumber(traitID)][tonumber(w)] = tonumber(x)
@@ -1228,7 +1245,7 @@ function AF:ParseText(traitID, val)
 	else
 
 		for i, data in ipairs(text) do
-				if i and tonumber(i) and data  and tonumber(data) then 
+				if i and tonumber(i) and data  and tonumber(data) then
 					text[tonumber(i)] = tonumber(data)
 				else
 					print("Invalid weight entered.")
@@ -1245,7 +1262,7 @@ end
 
 function AF.loadDefaultData(DB)
 	specID, specName, classID, className = Utilities.RefreshClassInfo()
-	local traitRanks = {}	
+	local traitRanks = {}
 	traitRanks["specID"] = specID
 	traitRanks["classID"] = classID
 

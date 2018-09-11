@@ -142,12 +142,12 @@ end
 local function CreateBagInfoFrame()
 	local refresh = false
 
-	if AzeriteForge.Bag then 
+	if AzeriteForge.Bag then
 		AceGUI:Release(AzeriteForge.Bag)
 		refresh = AzeriteForge.Bag:IsShown()
 	end
 	local f = AceGUI:Create("AzeriteForgeFrame")
-	
+
 	AceGUI:RegisterAsContainer(f)
 	f:SetLayout("Fill")
 	AzeriteForgeItemFrame = f
@@ -418,7 +418,7 @@ local function CreateAzeriteDataFrame()
 		if Shift then
 			--LibStub("AceConfigDialog-3.0"):Open("AzeriteForge", "weights")
 			InterfaceOptionsFrame_OpenToCategory(AF.optionsFrame2)
-			InterfaceOptionsFrame_OpenToCategory(AF.optionsFrame2) 
+			InterfaceOptionsFrame_OpenToCategory(AF.optionsFrame2)
 
 		else
 			if AF.PowerSummaryFrame:IsShown() then
@@ -496,7 +496,7 @@ local function CreateAzeriteDataFrame()
 		--Powers Window
 
 	local f = AceGUI:Create("AzeriteForgeFrame")
-	
+
 	AceGUI:RegisterAsContainer(f)
 	f:SetLayout("Fill")
 	AF.PowerSummaryFrame = f
@@ -519,7 +519,7 @@ function AF:CreateFrames()
 	CreateCharacterFrameTabs()
 	CreateBagInfoFrame()
 	CreateAzeriteDataFrame()
-	
+
 end
 
 
@@ -586,7 +586,7 @@ function AF:UpdateBagDataMenu(filter, filterLocation)
 	local count = 0
 	local sortTable = {}
 
-	
+
 	local content = AceGUI:Create("SimpleGroup")
 	content:SetLayout("Fill")
 	AF.Bag:AddChild(content)

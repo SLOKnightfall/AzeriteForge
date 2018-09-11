@@ -143,11 +143,11 @@ function Profiles.BuildWeightedProfileList()
 				fontColor = GREEN_FONT_COLOR_CODE
 			elseif specID == profileSpecID then
 				fontColor = NORMAL_FONT_COLOR_CODE
-			elseif validSpec[profileSpecID] then 
+			elseif validSpec[profileSpecID] then
 				fontColor = GRAY_FONT_COLOR_CODE
 			elseif  not validSpec[profileSpecID] then
 				fontColor = RED_FONT_COLOR_CODE
-	
+
 			end
 
 			if icon then
@@ -158,7 +158,7 @@ function Profiles.BuildWeightedProfileList()
 			local tablename = ("build_%s,%s"):format(name, counter)
 
 			defaultList.name = fontColor..iconText..name
-			
+
 
 			defaultList.args.profileHeader.name = name
 			AF.options.args.profiles.args[tablename] = defaultList

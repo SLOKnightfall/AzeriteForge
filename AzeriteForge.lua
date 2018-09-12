@@ -792,12 +792,12 @@ function AF:GetAzeriteTraits()
 		AF:UnselectTraits("Head")
 	end
 
-	local chestPower_Header = AceGUI:Create("Heading")
-	chestPower_Header:SetText(L["Chest Powers"])
-	chestPower_Header:SetRelativeWidth(1)
-	chestPower_Header.right:SetTexture("Interface\\Tooltips\\UI-Tooltip-Border")
-	chestPower_Header.left:SetTexture("Interface\\Tooltips\\UI-Tooltip-Border")
-	scroll:AddChild(chestPower_Header)
+	local shoulderPower_Header = AceGUI:Create("Heading")
+	shoulderPower_Header:SetText(L["Shoulder Powers"])
+	shoulderPower_Header:SetRelativeWidth(1)
+	shoulderPower_Header.right:SetTexture("Interface\\Tooltips\\UI-Tooltip-Border")
+	shoulderPower_Header.left:SetTexture("Interface\\Tooltips\\UI-Tooltip-Border")
+	scroll:AddChild(shoulderPower_Header)
 
 	if not GetInventoryItemID("player", 3) then --or C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItem(itemLocation) then
 		buttons.shoulderSlotButton:Hide()
@@ -807,12 +807,13 @@ function AF:GetAzeriteTraits()
 		AF:UnselectTraits("Shoulder")
 	end
 
-	local shoulderPower_Header = AceGUI:Create("Heading")
-	shoulderPower_Header:SetText(L["Shoulder Powers"])
-	shoulderPower_Header:SetRelativeWidth(1)
-	shoulderPower_Header.right:SetTexture("Interface\\Tooltips\\UI-Tooltip-Border")
-	shoulderPower_Header.left:SetTexture("Interface\\Tooltips\\UI-Tooltip-Border")
-	scroll:AddChild(shoulderPower_Header)
+	local chestPower_Header = AceGUI:Create("Heading")
+	chestPower_Header:SetText(L["Chest Powers"])
+	chestPower_Header:SetRelativeWidth(1)
+	chestPower_Header.right:SetTexture("Interface\\Tooltips\\UI-Tooltip-Border")
+	chestPower_Header.left:SetTexture("Interface\\Tooltips\\UI-Tooltip-Border")
+	scroll:AddChild(chestPower_Header)
+
 	if not GetInventoryItemID("player", 5) then
 		buttons.chestSlotButton:Hide()
 	else
@@ -825,7 +826,6 @@ function AF:GetAzeriteTraits()
 	UnselectedPowersCount = AzeriteUtil.GetEquippedItemsUnselectedPowersCount()
 	updateInventoryLDB()
 end
-
 
 
 function updateInventoryLDB()

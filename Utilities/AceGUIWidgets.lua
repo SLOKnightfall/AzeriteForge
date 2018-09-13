@@ -280,3 +280,164 @@ AF:RawHook(AceGUI.WidgetRegistry,"Heading", function(self)
 	frame.right:SetTexture("Interface\\Tooltips\\UI-Tooltip-Border")
 	return frame
 end)
+
+
+do
+	local Type = "AzeriteForgeWeight"
+	local Version = 1
+
+	local function OnAcquire(self)
+		self:SetDisabled(false)
+		self.showbutton = true
+	end
+
+	local function OnRelease(self)
+		self.frame:ClearAllPoints()
+		self.frame:Hide()
+		self:SetDisabled(false)
+	end
+
+	local function Control_OnEnter(this)
+		this.obj:Fire("OnEnter")
+	end
+
+	local function Control_OnLeave(this)
+		this.obj:Fire("OnLeave")
+	end
+
+
+	local function SetDisabled(self, disabled)
+		self.disabled = disabled
+		if disabled then
+		end
+	end
+
+	local function SetWidth(self, width)
+		self.frame:SetWidth(width)
+	end
+
+	local function Constructor()
+		local num  = AceGUI:GetNextWidgetNum(Type)
+		local frame = CreateFrame("Frame","AzeriteForgeWeight"..num,UIParent)
+		frame:SetSize(250,50)
+		frame:Show()
+		frame:SetPoint("CENTER")
+
+		local name = frame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+		name:ClearAllPoints()
+		name:SetPoint("TOPLEFT", frame, "TOPLEFT", 25,-15)
+		name:SetTextColor(1, 1, 1, 1)
+		name:SetJustifyH("LEFT")
+		frame.name = text
+
+		local power = CreateFrame("Button", "AzeriteForgeWeight"..num.."item" ,frame,"ItemButtonTemplate")
+		power:SetSize(35,35)
+		power:SetPoint("TOPLEFT", name, "BOTTOMLEFT", 0,-5)
+		
+		local weights = frame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+		weights:ClearAllPoints()
+		weights:SetPoint("TOPLEFT", power, "TOPRIGHT",15, 3)
+		weights:SetSize(450,25)
+		weights:SetTextColor(1, 1, 1, 1)
+		weights:SetJustifyH("LEFT")
+		frame.weights = text
+--[[
+		local weights = CreateFrame("EditBox", "AzeriteForgeWeight"..num.."weights" ,frame, "InputBoxTemplate")
+		weights:ClearAllPoints()
+		weights:ClearFocus()
+		weights:SetPoint("TOPLEFT", power, "TOPRIGHT",15, 3)
+		weights:SetSize(250,25)
+		--weights:SetText("Rank/iLevel")
+		--weights:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT")
+		--id_editbox:SetTextColor(1, 1, 1, 1)
+		--id_editbox:SetText("1,2,3")
+		weights:SetAutoFocus(false)
+		weights:EnableMouse(false)
+		weights:ClearFocus()
+		weights:SetTextColor(0.5,0.5,0.5)
+		weights:SetTextColor(0.5,0.5,0.5)
+]]--
+
+
+		local id_editbox = CreateFrame("EditBox", "AzeriteForgeWeight"..num.."ide_editbox" ,frame, "InputBoxInstructionsTemplate")
+		id_editbox:ClearAllPoints()
+		id_editbox:ClearFocus()
+		id_editbox:SetPoint("TOPLEFT", weights, "BOTTOMLEFT",0, 0)
+		id_editbox:SetSize(100,25)
+		id_editbox.Instructions:SetText("Rank/iLevel")
+		--weights:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT")
+		--id_editbox:SetTextColor(1, 1, 1, 1)
+		--id_editbox:SetText("1,2,3")
+		id_editbox:SetAutoFocus(false)
+
+		local weight_editbox = CreateFrame("EditBox", "AzeriteForgeWeight"..num.."ide_editbox" ,frame, "InputBoxInstructionsTemplate")
+		weight_editbox:ClearAllPoints()
+		weight_editbox:SetPoint("LEFT", id_editbox, "RIGHT",5,0)
+		weight_editbox:SetSize(100,50)
+		weight_editbox:SetAutoFocus(false)
+		--self.Instructions:SetText(SEARCH);
+		weight_editbox.Instructions:SetText("Weight")
+
+
+		local add_button = CreateFrame("Button", "AzeriteForgeWeight"..num.."add" ,frame,"UIPanelButtonTemplate")
+		add_button:ClearAllPoints()
+		add_button:SetPoint("LEFT", weight_editbox, "RIGHT",5, 0)
+		add_button:SetSize(20,20)
+		add_button:SetText("+")
+		
+		local remove_button = CreateFrame("Button", "AzeriteForgeWeight"..num.."remove" ,frame,"UIPanelButtonTemplate")
+		remove_button:ClearAllPoints()
+		remove_button:SetPoint("LEFT", add_button, "RIGHT",5, 0)
+		remove_button:SetSize(20,20)
+		remove_button:SetText("-")
+
+		local clear_button = CreateFrame("Button", "AzeriteForgeWeight"..num.."remove" ,frame,"UIPanelButtonTemplate")
+		clear_button:ClearAllPoints()
+		clear_button:SetPoint("LEFT", remove_button, "RIGHT",5, 0)
+		clear_button:SetSize(20,20)
+		clear_button:SetText("X")
+
+		local self = {}
+		self.type = Type
+		self.num = num
+		self.location = location
+		self.itemLink = frame.itemLink
+
+		self.OnRelease = OnRelease
+		self.OnAcquire = OnAcquire
+
+		self.SetDisabled = SetDisabled
+		self.SetText = SetText
+		self.SetWidth = SetWidth
+
+		self.frame = frame
+		frame.obj = self
+		self.name = name
+		name.obj = self
+		self.power = power
+		power.obj = self
+		self.weights = weights
+		weights.obj = self
+		self.add_button = add_button
+		add_button.obj = self
+		self.remove_button = remove_button
+		remove_button.obj = self
+		self.clear_button = clear_button
+		clear_button.obj = self
+
+		self.weight_editbox = weight_editbox
+		weight_editbox.obj = self
+		self.id_editbox = id_editbox
+		id_editbox.obj = self
+
+		self.alignoffset = 30
+
+		frame:SetHeight(75)
+		frame:SetWidth(500)
+
+		AceGUI:RegisterAsWidget(self)
+		return self
+	end
+
+	AceGUI:RegisterWidgetType(Type,Constructor,Version)
+end

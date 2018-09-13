@@ -241,12 +241,13 @@ function AF.getTraitRanking(traitID, locationID, itemLink)
 			end
 			rank = ilevel
 		end
-		if rank <= sortTable[1] then
-			rank = sortTable[1]
+		local baseRank = sortTable[1] or 0
+		if rank <= baseRank then
+			rank = baseRank
 
 		end
 
-		rank = 0--AF.traitRanks[traitID][rank]
+		rank = AF.traitRanks[traitID][rank]
 	end
 
 	return rank
@@ -475,7 +476,8 @@ local options = {
 		    type = "group",
 		    guiInline  = true,
 		    args = {
-		    	profileHeader = {
+		    	--[[
+			profileHeader = {
 				name = "Selected Profile",
 				type = "header",
 				width = "full",
@@ -516,8 +518,8 @@ local options = {
 					local profile = AF.db.char.weightProfile[specID]
 					wipe(AF.traitRanks)
 					AF.traitRanks = CopyTable(data)
-					AF.traitRanks["specID"] = specID
-					AF.traitRanks["classID"] = classID
+					AF.traitRanks["specID"] =  tonumber(specID)
+					AF.traitRanks["classID"] = tonumber(classID)
 					AF.db.global.userWeightLists[profile] = AF.traitRanks
 					end,
 				},
@@ -530,8 +532,8 @@ local options = {
 					local profile = AF.db.char.weightProfile[specID]
 					wipe(AF.traitRanks)
 					AF.traitRanks = CopyTable(data)
-					AF.traitRanks["specID"] = specID
-					AF.traitRanks["classID"] = classID
+					AF.traitRanks["specID"] = tonumber(specID)
+					AF.traitRanks["classID"] = tonumber(classID)
 					AF.db.global.userWeightLists[profile] = AF.traitRanks
 					end,
 
@@ -545,8 +547,8 @@ local options = {
 					local profile = AF.db.char.weightProfile[specID]
 					--local DB = AF.db.global.userWeightLists[weightProfile]
 					wipe(AF.traitRanks)
-					AF.traitRanks["specID"] = specID
-					AF.traitRanks["classID"] = classID
+					AF.traitRanks["specID"] = tonumber(specID)
+					AF.traitRanks["classID"] = tonumber(classID)
 					AF.db.global.userWeightLists[profile] = AF.traitRanks
 
 					end,
@@ -592,7 +594,9 @@ local options = {
 				width = "full",
 				order = 9,
 				},
+			]]--
 			},
+		
 		   },
 	profiles = {
 		    name = L["Weight Profiles"],
@@ -862,6 +866,14 @@ function AF:OnInitialize()
 end
 
 
+
+function bob()
+	local scroll = AceGUI:Create("AzeriteForgeWeight") 
+	scroll.frame:Show()
+LibStub("AceConfigDialog-3.0")["BlizOptions"]["AzeriteForge"]["AzeriteForge".."\001".."options"]:AddChild(scroll)
+end
+
+
 function AF:OnEnable()
 	if not Utilities.HasTheHeart() then return  false end
 
@@ -872,9 +884,26 @@ function AF:OnEnable()
 
 	LibStub("AceConfig-3.0"):RegisterOptionsTable("AzeriteForge_Talents", talent_options)
 	LibStub("AceConfig-3.0"):RegisterOptionsTable("AzeriteForge", options)
-	self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("AzeriteForge", "AzeriteForge",nil, "options")
+	AzeriteForge.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("AzeriteForge", "AzeriteForge",nil, "options")
 	self.optionsFrame2 = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("AzeriteForge",  L["Active Profile"],"AzeriteForge","weights")
 	self.optionsFrame3 = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("AzeriteForge",  L["Weight Profiles"],"AzeriteForge","profiles")
+	
+	--print(AzeriteForge.optionsFrame[0])
+LibStub("AceConfigDialog-3.0")["BlizOptions"]["AzeriteForge"]["AzeriteForge".."\001".."weights"]["frame"]:SetScript("OnShow",
+	function()AzeriteForge:Balls() end)
+	for x,y in pairs(LibStub("AceConfigDialog-3.0")["BlizOptions"]["AzeriteForge"]["AzeriteForge".."\001".."weights"]) do
+	--print(x)
+	--print(type(x))
+	--if type(x) == "table" then 
+	--for x,y in pairs(x) do
+	--print(x)
+	--end
+
+
+	--end
+	--print(y)
+	end
+
 --InterfaceOptionsFrame_OpenToCategory(self.optionsFrame)
 --InterfaceOptionsFrame_OpenToCategory(self.optionsFrame)
 	globalDb = self.db.global
@@ -930,7 +959,7 @@ function AF:PLAYER_ENTERING_WORLD()
 
 	AF:GetAzeriteData()
 	AF:BuildAzeriteDataTables()
-	AF.loadWeightProfile()
+	Profiles.LoadProfile()
 	AF:GetAzeriteTraits()
 
 	Profiles.BuildWeightedProfileList()
@@ -980,7 +1009,7 @@ function AF:PLAYER_SPECIALIZATION_CHANGED(event, ...)
 
 	AF:GetAzeriteData()
 	AF:BuildAzeriteDataTables()
-	AF.loadWeightProfile()
+	Profiles.LoadProfile()
 	AF:GetAzeriteTraits()
 
 	Profiles.BuildWeightedProfileList()
@@ -1013,6 +1042,21 @@ function AF.loadWeightProfile()
 	--local userProfile = AF.db.char.weightProfile[specID] or ""
 		profileData = AF.db.global.userWeightLists[userProfile]
 		AF.traitRanks = profileData
+	end
+
+
+	for x, y in pairs(profileData) do
+		if type(y) == "table" then 
+			for i,d in pairs(y) do
+		--if x
+		--print(d)
+				if type(d) ~= "number" then
+					i = nil
+					print("Bad datga")
+				end
+			end
+		end
+
 	end
 
 
@@ -1264,8 +1308,8 @@ end
 function AF.loadDefaultData(DB)
 	specID, specName, classID, className = Utilities.RefreshClassInfo()
 	local traitRanks = {}
-	traitRanks["specID"] = specID
-	traitRanks["classID"] = classID
+	traitRanks["specID"] = tonumber(specID)
+	traitRanks["classID"] = tonumber(classID)
 
 
 	if not AzeriteForge[DB][specID] then

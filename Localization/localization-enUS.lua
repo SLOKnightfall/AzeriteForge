@@ -4,7 +4,8 @@
 
 local L = LibStub("AceLocale-3.0"):NewLocale("AzeriteForge", "enUS", true)
 if not L then return end
-
+L["Reset with Stacking Defaults"] = true
+L["Reset with iLevel Defaults"] = true
 L["Show all non class saved profiles"] = true
 L["Power Summary"]= true
 L["AzeriteForge"] = true
@@ -54,9 +55,8 @@ L["Weight Profiles"] = true
 L["Show Ranks Totals in Tooltip"] = true
 L["Show Powers Summary when the Azerite Power Window Opens"] = true
 
-L["WEIGHT_INSTRUCTIONS"] = [[Flat Weights:  Enter the number that you want the weight to be.
-Stacked Weights:  enter the values in order IE: 5,10,50
-iLevel: use the following layout for each weight:   [ilevel]:weight,
-IE:  [325]:131,[340]:327,[355]:530,[370]:789,[385]:1042,IE: 5,10,50 ]]
+L["WEIGHT_INSTRUCTIONS"] = [[To Add a Rank/iLevel:  Enter the rank & weight in the correct editbox and click the + button
+To Remove a Rank/iLevel:  Enter the rank to be removed in the rank/ilevel editbox and click the - button
+To Clear all ranks:  Click the X button]]
 
 L["Weights"] = true

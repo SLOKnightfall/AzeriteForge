@@ -176,14 +176,14 @@ function Utilities.BuildDefaultTable(dataTable)
 					--width = "double",
 					func = function(info, val) Profiles.LoadSelectedProfile(data.name); Profiles.BuildWeightedProfileList()
 						end,
-					disabled = function() return data.name == AF.db.char.weightProfile[specID] or data.spec ~= profileSpecID end,
+					disabled = function()  return data.name == AF.db.char.weightProfile[tonumber(specID)] or tonumber(data.spec) ~= tonumber(profileSpecID) end,
 						},
 				deleteProfile = {
 					type = "execute",
 					name = L["Delete Profile"],
 					order = .06,
 					--width = ",
-					func = function(info) deleteProfile(data.name)
+					func = function(info) Profiles.deleteProfile(data.name)
 						end,
 					disabled = function() return data.name == AF.db.char.weightProfile[specID]    end,
 					},

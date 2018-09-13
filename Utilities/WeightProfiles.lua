@@ -26,9 +26,10 @@ function Profiles.GetUserProfile()
 	AF.db.char.weightProfile[specID] = profile
  end
 
+local next = next 
 
 function Profiles.LoadProfile()
-	local specID, specName = Utilities.RefreshClassInfo()
+	local specID, specName, classID, className = Utilities.RefreshClassInfo()
 	AF.db.char.weightProfile = AF.db.char.weightProfile or {}
 	 local userProfile = AF.db.char.weightProfile[specID]
 	  local _, specName = Utilities.RefreshClassInfo()
@@ -53,6 +54,19 @@ function Profiles.LoadProfile()
 
 
 	AF.db.global.userWeightLists[userProfile] = AF.traitRanks
+
+--look for empy ranks and remove them
+	for x, y in pairs(AF.traitRanks) do
+
+		if type(y) == "table" then
+
+			if not next(y) then AF.Debug("bad data"..x); y = nil end
+
+		end
+	end
+
+	AF.traitRanks["specID"] = tonumber(AF.traitRanks["specID"])
+	AF.traitRanks["classID"] = tonumber(AF.traitRanks["classID"])
 --return profileData
 end
 
@@ -91,7 +105,7 @@ function Profiles.RenameProfile(orig, new)
 	local specID, specName, classID, className = Utilities.RefreshClassInfo()
 
 	local profile_specID = AF.db.global.userWeightLists[profile].specID
-	if specID ~= profile_specID then
+	if tonumber(specID) ~= tonumber(profile_specID) then
 	print("Wrong Spec")
 	return false
 	end
@@ -101,7 +115,7 @@ function Profiles.RenameProfile(orig, new)
  end
 
 
-local function deleteProfile(profileName)
+function Profiles.deleteProfile(profileName)
 	AF.db.global.userWeightLists[profileName] = nil
 	Profiles.BuildWeightedProfileList()
 	print(("%s - Profile Deleted"):format(profileName))

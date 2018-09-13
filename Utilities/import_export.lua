@@ -37,8 +37,8 @@ local function AZForgeImport(data)
 	local classID, specID
 
 	for importClassID, importSpecID in string.gmatch(data , "AZFORGE:(%w+):(%w+)") do
-		classID = importClassID
-		specID = importSpecID
+		classID = tonumber(importClassID)
+		specID = tonumber(importSpecID)
 	end
 
 	local traits = {string.split("^",data )}
@@ -51,8 +51,8 @@ local function AZForgeImport(data)
 			end
 		end
 	end
-	AF.traitRanks["specID"] = specID
-	AF.traitRanks["classID"] = classID
+	AF.traitRanks["specID"] = tonumber(specID)
+	AF.traitRanks["classID"] = tonumber(classID)
 	local profile = AF.db.char.weightProfile[specID]
 	AF.db.global.userWeightLists[specID] = AF.traitRanks
 

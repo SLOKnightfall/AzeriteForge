@@ -15,6 +15,8 @@ local powerLocationButtonIDs = AF.powerLocationButtonIDs
 
 AF.UnselectedPowers = {}
 local UnselectedPowers = AF.UnselectedPowers
+local Utilities = AF.Utilities
+local Profiles = AF.Profiles
 
 local locationIDs = {["Head"] = 1, ["Shoulder"] = 3, ["Chest"] = 5,}
 local azeriteIcon = "Interface/Icons/Inv_smallazeriteshard"
@@ -519,6 +521,7 @@ function AF:CreateFrames()
 	CreateCharacterFrameTabs()
 	CreateBagInfoFrame()
 	CreateAzeriteDataFrame()
+	--AF:Balls()
 
 end
 
@@ -696,4 +699,235 @@ function AF.Aurora()
 	Background:Show()
 
 	Aurora.Skin.UIPanelButtonTemplate(powerWindowButton2)
+end
+
+
+local weightFrames = {}
+local function refreshWeights()
+	for traitID, frame in pairs(weightFrames) do
+
+	local text = AF:TextGetter(traitID,AF.db.global.userWeightLists[profile]) 
+		if text then 
+			frame.weights:SetText(text)
+		else 
+			frame.weights:SetText("")
+		end
+	end
+end
+
+
+
+local function addWeight(traitID,rank, weight)
+	if not rank or not tonumber(rank) or not weight or not tonumber(weight) or not traitID then return print("invalid data") end
+
+	AF.traitRanks[tonumber(traitID)] = AF.traitRanks[tonumber(traitID)] or {}
+	AF.traitRanks[tonumber(traitID)][tonumber(rank)] = tonumber(weight)
+	refreshWeights()
+end
+local next = next
+
+local function removeWeight (traitID,rank)
+
+	if not rank  or not tonumber(rank) then return print("invalid data") end
+
+	AF.traitRanks[tonumber(traitID)] = AF.traitRanks[tonumber(traitID)] or {}
+	AF.traitRanks[tonumber(traitID)][tonumber(rank)] = nil
+	if not next(AF.traitRanks[tonumber(traitID)]) then AF.Debug("Empty Rank "..traitID); AF.traitRanks[tonumber(traitID)] = nil end
+	refreshWeights()
+end
+
+
+local function powerSearch(searchTerm)
+
+	for traitID, frame in pairs(weightFrames) do
+
+
+		local found = string.match(string.lower(AF.azeriteTraits[traitID].name), string.lower(searchTerm))
+					--return search or (azeriteTraits[traitID] and not azeriteTraits[traitID].valid) or false end,
+		if found then 
+			frame.frame:Show()
+		else 
+			frame.frame:Hide()
+		end
+	end
+end
+
+
+
+
+
+function AzeriteForge:Balls()
+
+
+local specID, specName, classID, className = Utilities.RefreshClassInfo()
+local window = LibStub("AceConfigDialog-3.0")["BlizOptions"]["AzeriteForge"]["AzeriteForge".."\001".."weights"]
+
+
+--local  window = AceGUI:Create("Window")
+window:SetCallback("OnClose", function(widget) AceGUI:Release(widget) end)
+window:SetLayout("Fill")
+
+local scrollcontainer = AceGUI:Create("SimpleGroup") -- "InlineGroup" is also good
+scrollcontainer:SetFullWidth(true)
+scrollcontainer:SetFullHeight(true) -- probably?
+scrollcontainer:SetLayout("Fill") -- important!
+
+window:AddChild(scrollcontainer)
+
+local scroll = AceGUI:Create("ScrollFrame")
+scroll:SetLayout("Flow") -- probably?
+scrollcontainer:AddChild(scroll)
+
+local header = AceGUI:Create("Heading")
+header:SetText("Selected Profile")
+header:SetRelativeWidth(1)
+scroll:AddChild(header)
+
+local profileName =  AceGUI:Create("EditBox")
+profileName:SetLabel("Profile Name")
+local text = AzeriteForge.db.char.weightProfile[specID]
+profileName:SetText(text)
+scroll:AddChild(profileName)
+profileName:SetWidth(200)
+profileName:SetCallback("OnEnterPressed", function(widget, event, text) if Profiles.RenameProfile(AF.db.char.weightProfile[specID], text) then AF.db.char.weightProfile[specID] = text end end)
+profileName:SetRelativeWidth(1)
+
+local profileDetails = AceGUI:Create("Label")
+
+scroll:AddChild(profileDetails)
+
+local profile =  AF.db.char.weightProfile[specID]
+
+if profile then 
+	 local profileSpecID = AF.db.global.userWeightLists[profile]["specID"] or 0
+	local _, name, _,icon, _, class = GetSpecializationInfoByID(profileSpecID)
+	if icon then
+		icon = "|T"..icon..(":25:25:|t")
+	else
+		icon = ""
+	end
+	profile = ("%sClass: %s, Spec: %s"):format(icon or "",class or "", name or"")
+end
+profileDetails:SetText(profile)
+profileDetails:SetRelativeWidth(1)
+
+
+
+
+local resetRanks = AceGUI:Create("Button")
+resetRanks:SetText( L["Reset with Stacking Defaults"])
+resetRanks:SetCallback("OnClick", function() local data = AF.loadDefaultData("StackData")
+					local profile = AF.db.char.weightProfile[specID]
+					wipe(AF.traitRanks)
+					AF.traitRanks = CopyTable(data)
+					AF.traitRanks["specID"] = tonumber(specID)
+					AF.traitRanks["classID"] = tonumber(classID)
+					AF.db.global.userWeightLists[profile] = AF.traitRanks
+					refreshWeights()
+					end)
+scroll:AddChild(resetRanks)
+resetRanks:SetRelativeWidth(.5)
+
+local resetiLevel = AceGUI:Create("Button")
+resetiLevel:SetCallback("OnClick", function() local data = AF.loadDefaultData("iLevelData")
+					local profile = AF.db.char.weightProfile[specID]
+					wipe(AF.traitRanks)
+					AF.traitRanks = CopyTable(data)
+					AF.traitRanks["specID"] = tonumber(specID)
+					AF.traitRanks["classID"] = tonumber(classID)
+					AF.db.global.userWeightLists[profile] = AF.traitRanks
+					refreshWeights()
+					end)
+resetiLevel:SetText(L["Reset with iLevel Defaults"])
+scroll:AddChild(resetiLevel)
+resetiLevel:SetRelativeWidth(.5)
+
+
+
+local importButton = AceGUI:Create("Button")
+importButton:SetCallback("OnClick",  function()	AzeriteForge.ImportWindow:Show() end)
+importButton:SetText(L["Import Data"])
+scroll:AddChild(importButton) 
+importButton:SetRelativeWidth(.5)
+
+local exportButton = AceGUI:Create("Button")
+exportButton:SetCallback("OnClick", function() AF:ExportData() end)
+exportButton:SetText(L["Export Data"])
+scroll:AddChild(exportButton)
+exportButton:SetRelativeWidth(.5)
+
+local clearData = AceGUI:Create("Button")
+clearData:SetCallback("OnClick",  function()
+					local profile = AF.db.char.weightProfile[specID]
+					--local DB = AF.db.global.userWeightLists[weightProfile]
+					wipe(AF.traitRanks)
+					AF.traitRanks["specID"] = tonumber(specID)
+					AF.traitRanks["classID"] = tonumber(classID)
+					AF.db.global.userWeightLists[profile] = AF.traitRanks
+					refreshWeights()
+
+					end)
+clearData:SetText(L["Clear all data"])
+scroll:AddChild(clearData)
+clearData:SetRelativeWidth(1)
+
+local header = AceGUI:Create("Heading")
+header:SetText(L["Weights"])
+header:SetWidth(1)
+scroll:AddChild(header)
+header:SetRelativeWidth(1)
+
+local profileDetails = AceGUI:Create("Label")
+profileDetails:SetText( L["WEIGHT_INSTRUCTIONS"])
+scroll:AddChild(profileDetails)
+profileDetails:SetRelativeWidth(1)
+
+local search =  AceGUI:Create("EditBox")
+search:SetLabel("Search")
+search:SetRelativeWidth(1)
+
+scroll:AddChild(search)
+search:SetWidth(200)
+search:SetCallback("OnEnterPressed", function(widget, event, text) powerSearch(text) end)
+
+	local sortTable = {}
+	for id, data in pairs(AF.azeriteTraits) do
+		tinsert(sortTable, id)
+	end
+	table.sort(sortTable, function(a,b) return AF.azeriteTraits[a].name < AF.azeriteTraits[b].name end)
+
+	for i,x in pairs (sortTable) do
+	end
+
+	for index, traitID in pairs(sortTable) do
+
+		local name = AF.azeriteTraits[traitID].name
+		--print(name)
+		local icon = AF.azeriteTraits[traitID].icon
+		local spellID = AF.azeriteTraits[traitID].spellID
+		if name and AF.azeriteTraits[traitID].valid then
+
+			--local header = AceGUI:Create("Heading")
+			--header:SetText(name)
+			--header:SetWidth(1)
+			--scroll:AddChild(header)
+			--header:SetRelativeWidth(1)
+			local weight = AceGUI:Create("AzeriteForgeWeight")
+			scroll:AddChild(weight)
+			weight.name:SetText(name)
+			weight.power.icon:SetTexture(icon)
+			weightFrames[traitID] = weight
+
+			local text = AF:TextGetter(traitID,AF.db.global.userWeightLists[profile]) 
+			if text then 
+			
+				weight.weights:SetText(text)
+			end
+
+			weight.clear_button:SetScript("OnClick", function() wipe(AF.traitRanks[tonumber(traitID)]); refreshWeights() end)
+			weight.add_button:SetScript("OnClick", function() addWeight(traitID,weight.id_editbox:GetText(), weight.weight_editbox:GetText()) end)
+			weight.remove_button:SetScript("OnClick", function() removeWeight(traitID,weight.id_editbox:GetText()) end)
+
+		end
+	end
 end

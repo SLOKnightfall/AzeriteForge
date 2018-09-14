@@ -7,6 +7,12 @@ local AF = AzeriteForge
 local maxValue = {}
 local Utilities = AF.Utilities
 local azeriteIcon = "Interface/Icons/Inv_smallazeriteshard"
+local itemEquipLocToSlot = {
+	["INVTYPE_HEAD"] = 1,
+	["INVTYPE_SHOULDER"] = 3,
+	["INVTYPE_CHEST"] = 5,
+	["INVTYPE_ROBE"] = 5
+}
 
 --#####################################
 --Modified blizzard plugins
@@ -23,7 +29,7 @@ local function AzeriteEmpoweredItemPowerMixin_OnEnter(self,...)
 	elseif item then
 		itemLink = item.itemLink
 	end
-	local locationID = _G[string.gsub(select(9,GetItemInfo(itemLink)),"INVTYPE", "INVSLOT")]
+	local locationID = itemEquipLocToSlot[select(9,GetItemInfo(itemLink))]
 	local hasTraitStacks = AF:FindStackedTraits(self:GetAzeritePowerID(),locationID,AF.ReturnSelectedAzeriteTraits())
 
 	if hasTraitStacks then
@@ -119,7 +125,7 @@ local function AzeriteEmpoweredItemPowerMixin_OnShow(self,...)
 
 		end
 
-		locationID = _G[string.gsub(select(9,GetItemInfo(itemLink)),"INVTYPE", "INVSLOT")]
+		locationID = itemEquipLocToSlot[select(9,GetItemInfo(itemLink))]
 		location = location or ItemLocation:CreateFromEquipmentSlot(locationID)
 
 		local DB = AF.ReturnSelectedAzeriteTraits()

@@ -26,6 +26,12 @@ local AzeriteLocations = {["Head"] = ItemLocation:CreateFromEquipmentSlot(1),
 			[1] = "Head",
 			[3] = "Shoulder",
 			[5] = "Chest",}
+local itemEquipLocToSlot = {
+	["INVTYPE_HEAD"] = 1,
+	["INVTYPE_SHOULDER"] = 3,
+	["INVTYPE_CHEST"] = 5,
+	["INVTYPE_ROBE"] = 5
+}
 
 
 local function addFramesToAzeriteEmpoweredItemUI()
@@ -539,10 +545,16 @@ local function findInventoryLocation(itemLink)
 end
 
 
+
+
+
+
+
 local function createItemLocation(itemLink)
 
-	local locationID = _G[string.gsub(select(9,GetItemInfo(itemLink)),"INVTYPE", "INVSLOT")]
+	local locationID = itemEquipLocToSlot[select(9,GetItemInfo(itemLink))]
 	local location = ItemLocation:CreateFromEquipmentSlot(locationID) or 0
+
 	return location
 
 

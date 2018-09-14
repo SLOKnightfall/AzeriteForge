@@ -69,6 +69,13 @@ local AzeriteLocations = {["Head"] = ItemLocation:CreateFromEquipmentSlot(1),
 local locationIDs = {["Head"] = 1, ["Shoulder"] = 3, ["Chest"] = 5,}
 local AvailableAzeriteTraits = {}
 local SelectedAzeriteTraits = {}
+local itemEquipLocToSlot = {
+	["INVTYPE_HEAD"] = 1,
+	["INVTYPE_SHOULDER"] = 3,
+	["INVTYPE_CHEST"] = 5,
+	["INVTYPE_ROBE"] = 5
+}
+
 
 
 function AF.ReturnSelectedAzeriteTraits()
@@ -210,7 +217,7 @@ function AF.getTraitRanking(traitID, locationID, itemLink)
 
 	if itemLink then
 		 _, _, _, itemLevel = GetItemInfo(itemLink)
-		 itemLocationID = _G[string.gsub(select(9,GetItemInfo(itemLink)),"INVTYPE", "INVSLOT")]
+		 itemLocationID = itemEquipLocToSlot[select(9,GetItemInfo(itemLink))]
 		 --itemLocation = ItemLocation:CreateFromEquipmentSlot(itemLocation)
 	end
 
@@ -1426,12 +1433,20 @@ local tooltipCatcher = CreateFrame("GameTooltip",nil, UIParent)
 function AF:BuildTraitText(itemLink, tooltip, name, force)
 	if force then tooltip = tooltipCatcher end
 
+	if not C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItemByID(itemLink) then return end
+
 	-- Current Azerite LevelcreateItemLocation
 	--local azeriteItemLocation = AF.createItemLocation(itemLink)
 	--local azeriteItemLocation = tooltip:GetItemLocation()
+	if C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItemByID(itemLink) then 
 
-	local locationID = _G[string.gsub(select(9,GetItemInfo(itemLink)),"INVTYPE", "INVSLOT")]
-	local azeriteItemLocation = ItemLocation:CreateFromEquipmentSlot(locationID) or 0
+	end
+
+	local locationID = itemEquipLocToSlot[select(9,GetItemInfo(itemLink))]
+
+	local azeriteItemLocation = ItemLocation:CreateFromEquipmentSlot(locationID)
+	--local azeriteItemLocation = tooltip:GetItemLocation()
+
 
 	rankTotals = ""
 

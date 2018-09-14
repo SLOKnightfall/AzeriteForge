@@ -126,7 +126,7 @@ local function AzeriteEmpoweredItemPowerMixin_OnShow(self,...)
 		end
 
 		locationID = itemEquipLocToSlot[select(9,GetItemInfo(itemLink))]
-		location = location or ItemLocation:CreateFromEquipmentSlot(locationID)
+		location = AF.createItemLocation(itemLink)--location or ItemLocation:CreateFromEquipmentSlot(locationID)
 
 		local DB = AF.ReturnSelectedAzeriteTraits()
 

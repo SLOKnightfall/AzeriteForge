@@ -217,8 +217,9 @@ function AF.getTraitRanking(traitID, locationID, itemLink)
 
 	if itemLink then
 		 _, _, _, itemLevel = GetItemInfo(itemLink)
-		 itemLocationID = itemEquipLocToSlot[select(9,GetItemInfo(itemLink))]
+		 --itemLocationID = itemEquipLocToSlot[select(9,GetItemInfo(itemLink))]
 		 --itemLocation = ItemLocation:CreateFromEquipmentSlot(itemLocation)
+		 itemLocationID = AF.createItemLocation(itemLink)
 	end
 
 	if #AF.traitRanks[traitID] >0 then
@@ -1443,9 +1444,14 @@ function AF:BuildTraitText(itemLink, tooltip, name, force)
 	end
 
 	local locationID = itemEquipLocToSlot[select(9,GetItemInfo(itemLink))]
-
+	
 	local azeriteItemLocation = ItemLocation:CreateFromEquipmentSlot(locationID)
 	--local azeriteItemLocation = tooltip:GetItemLocation()
+	 
+
+	local azeriteItemLocation = AF.createItemLocation(itemLink)--location or ItemLocation:CreateFromEquipmentSlot(locationID)
+
+	if not C_Item.DoesItemExist(azeriteItemLocation) or not C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItem(azeriteItemLocation) then return  end
 
 
 	rankTotals = ""

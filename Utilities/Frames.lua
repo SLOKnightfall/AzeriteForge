@@ -551,15 +551,6 @@ end
 
 
 local function createItemLocation(itemLink)
-
-	local locationID = itemEquipLocToSlot[select(9,GetItemInfo(itemLink))]
-	local location = ItemLocation:CreateFromEquipmentSlot(locationID) or 0
-
-	return location
-
-
---[[
-
 	local bag, slot = findInventoryLocation(itemLink)
 
 	if bag then
@@ -575,8 +566,8 @@ local function createItemLocation(itemLink)
 		end
 	end
 
-	return 0
-	]]--
+	return ItemLocation:CreateEmpty()
+
 end
 
 function AF.createItemLocation(itemLink)
@@ -651,7 +642,7 @@ function AF:UpdateBagDataMenu(filter, filterLocation)
 
 		local item = AceGUI:Create("AzeriteForgeItem")
 		local itemName, itemLink, itemRarity, itemLevel, _, _, _, _,itemEquipLoc, itemIcon = GetItemInfo(link)
-		local itemEquipLocID = _G[string.gsub(itemEquipLoc,"INVTYPE", "INVSLOT")]
+		local itemEquipLocID = itemEquipLocToSlot[itemEquipLoc]
 
 		count = count + 1
 		local traitText = ""

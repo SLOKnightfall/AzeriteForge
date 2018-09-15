@@ -217,9 +217,9 @@ function AF.getTraitRanking(traitID, locationID, itemLink)
 
 	if itemLink then
 		 _, _, _, itemLevel = GetItemInfo(itemLink)
-		 --itemLocationID = itemEquipLocToSlot[select(9,GetItemInfo(itemLink))]
+		 itemLocationID = itemEquipLocToSlot[select(9,GetItemInfo(itemLink))]
 		 --itemLocation = ItemLocation:CreateFromEquipmentSlot(itemLocation)
-		 itemLocationID = AF.createItemLocation(itemLink)
+		 --itemLocationID = AF.createItemLocation(itemLink)
 	end
 
 	if #AF.traitRanks[traitID] >0 then
@@ -897,7 +897,7 @@ function AF:OnEnable()
 	self.optionsFrame3 = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("AzeriteForge",  L["Weight Profiles"],"AzeriteForge","profiles")
 	
 	--print(AzeriteForge.optionsFrame[0])
-LibStub("AceConfigDialog-3.0")["BlizOptions"]["AzeriteForge"]["AzeriteForge".."\001".."weights"]["frame"]:SetScript("OnShow",
+	LibStub("AceConfigDialog-3.0")["BlizOptions"]["AzeriteForge"]["AzeriteForge".."\001".."weights"]["frame"]:SetScript("OnShow",
 	function()AzeriteForge:Balls() end)
 	for x,y in pairs(LibStub("AceConfigDialog-3.0")["BlizOptions"]["AzeriteForge"]["AzeriteForge".."\001".."weights"]) do
 	--print(x)
@@ -1450,10 +1450,10 @@ function AF:BuildTraitText(itemLink, tooltip, name, force)
 	 
 
 	local azeriteItemLocation = AF.createItemLocation(itemLink)--location or ItemLocation:CreateFromEquipmentSlot(locationID)
+local hasLocation = azeriteItemLocation:HasAnyLocation()
+	--if not azeriteItemLocation:HasAnyLocation() or not C_Item.DoesItemExist(azeriteItemLocation) or not C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItem(azeriteItemLocation) then return  end
 
-	if not C_Item.DoesItemExist(azeriteItemLocation) or not C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItem(azeriteItemLocation) then return  end
-
-
+--print(azeriteItemLocation:HasAnyLocation())
 	rankTotals = ""
 
 	if azeriteItemLocation then
@@ -1506,7 +1506,7 @@ function AF:BuildTraitText(itemLink, tooltip, name, force)
 				local isSelected
 				local selectedText = ">>%s<<"
 
-				if empoweredLocation and azeritePowerID then
+				if empoweredLocation and hasLocation and azeritePowerID then
 					isSelected = C_AzeriteEmpoweredItem.IsPowerSelected(empoweredLocation, azeritePowerID)
 				end
 

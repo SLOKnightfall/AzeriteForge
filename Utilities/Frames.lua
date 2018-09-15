@@ -566,7 +566,9 @@ local function createItemLocation(itemLink)
 		end
 	end
 
-	return ItemLocation:CreateEmpty()
+	local itemLocationID = itemEquipLocToSlot[select(9,GetItemInfo(itemLink))]
+	
+	return ItemLocation:CreateFromEquipmentSlot(y)--ItemLocation:CreateEmpty()
 
 end
 
@@ -708,6 +710,7 @@ end
 local weightFrames = {}
 local function refreshWeights()
 	for traitID, frame in pairs(weightFrames) do
+	local profile = Profiles.GetUserProfile()
 
 	local text = AF:TextGetter(traitID,AF.db.global.userWeightLists[profile]) 
 		if text then 
@@ -765,15 +768,18 @@ function AzeriteForge:Balls()
 local specID, specName, classID, className = Utilities.RefreshClassInfo()
 local window = LibStub("AceConfigDialog-3.0")["BlizOptions"]["AzeriteForge"]["AzeriteForge".."\001".."weights"]
 
+--if AF.profileContainer then AceGUI:Release(window) end
 
 --local  window = AceGUI:Create("Window")
 window:SetCallback("OnClose", function(widget) AceGUI:Release(widget) end)
 window:SetLayout("Fill")
 
 local scrollcontainer = AceGUI:Create("SimpleGroup") -- "InlineGroup" is also good
+--scrollcontainer:SetCallback("OnClose", function(widget) print("DDD"); AceGUI:Release(widget) end)
 scrollcontainer:SetFullWidth(true)
 scrollcontainer:SetFullHeight(true) -- probably?
 scrollcontainer:SetLayout("Fill") -- important!
+AF.profileContainer = scrollcontainer
 
 window:AddChild(scrollcontainer)
 
@@ -800,7 +806,7 @@ local profileDetails = AceGUI:Create("Label")
 scroll:AddChild(profileDetails)
 
 local profile =  AF.db.char.weightProfile[specID]
-
+local profileText = ""
 if profile then 
 	 local profileSpecID = AF.db.global.userWeightLists[profile]["specID"] or 0
 	local _, name, _,icon, _, class = GetSpecializationInfoByID(profileSpecID)
@@ -809,9 +815,9 @@ if profile then
 	else
 		icon = ""
 	end
-	profile = ("%sClass: %s, Spec: %s"):format(icon or "",class or "", name or"")
+	profileText = ("%sClass: %s, Spec: %s"):format(icon or "",class or "", name or"")
 end
-profileDetails:SetText(profile)
+profileDetails:SetText(profileText)
 profileDetails:SetRelativeWidth(1)
 
 
@@ -902,10 +908,12 @@ search:SetCallback("OnEnterPressed", function(widget, event, text) powerSearch(t
 	for i,x in pairs (sortTable) do
 	end
 
+	wipe(weightFrames)
+
 	for index, traitID in pairs(sortTable) do
 
 		local name = AF.azeriteTraits[traitID].name
-		--print(name)
+
 		local icon = AF.azeriteTraits[traitID].icon
 		local spellID = AF.azeriteTraits[traitID].spellID
 		if name and AF.azeriteTraits[traitID].valid then
@@ -922,12 +930,15 @@ search:SetCallback("OnEnterPressed", function(widget, event, text) powerSearch(t
 			weightFrames[traitID] = weight
 
 			local text = AF:TextGetter(traitID,AF.db.global.userWeightLists[profile]) 
+		
 			if text then 
 			
 				weight.weights:SetText(text)
+			else 
+				weight.weights:SetText("")
 			end
 
-			weight.clear_button:SetScript("OnClick", function() wipe(AF.traitRanks[tonumber(traitID)]); refreshWeights() end)
+			weight.clear_button:SetScript("OnClick", function() AF.traitRanks[tonumber(traitID)] = nil; refreshWeights() end)
 			weight.add_button:SetScript("OnClick", function() addWeight(traitID,weight.id_editbox:GetText(), weight.weight_editbox:GetText()) end)
 			weight.remove_button:SetScript("OnClick", function() removeWeight(traitID,weight.id_editbox:GetText()) end)
 

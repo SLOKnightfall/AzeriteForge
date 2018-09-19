@@ -71,6 +71,11 @@ function Profiles.LoadProfile()
 end
 
 
+function Profiles.GetProfileData(profile)
+	return AF.db.global.userWeightLists[profile]
+end
+
+
 function Profiles.OldDataConvert()
 	local specID, specName, classID, className = Utilities.RefreshClassInfo()
 	local defaultProfile = ("Recovered profile: %s - %s"):format(className, specName)

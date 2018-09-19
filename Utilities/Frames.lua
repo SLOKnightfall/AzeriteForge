@@ -554,21 +554,22 @@ local function createItemLocation(itemLink)
 	local bag, slot = findInventoryLocation(itemLink)
 
 	if bag then
-		return ItemLocation:CreateFromBagAndSlot(bag, slot)
+		return ItemLocation:CreateFromBagAndSlot(bag, slot), true
 
 	else
 		for x,y in pairs (locationIDs) do
 			local inventoryItemLink = GetInventoryItemLink("player", y)
 			if inventoryItemLink == itemLink then
 
-				return ItemLocation:CreateFromEquipmentSlot(y)
+				return ItemLocation:CreateFromEquipmentSlot(y), true
 			end
 		end
 	end
 
 	local itemLocationID = itemEquipLocToSlot[select(9,GetItemInfo(itemLink))]
 	
-	return ItemLocation:CreateFromEquipmentSlot(y)--ItemLocation:CreateEmpty()
+	--return ItemLocation:CreateFromEquipmentSlot(y), false--ItemLocation:CreateEmpty()
+	return ItemLocation:CreateEmpty(), false
 
 end
 

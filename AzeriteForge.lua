@@ -1436,24 +1436,15 @@ function AF:BuildTraitText(itemLink, tooltip, name, force)
 
 	if not C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItemByID(itemLink) then return end
 
-	-- Current Azerite LevelcreateItemLocation
-	--local azeriteItemLocation = AF.createItemLocation(itemLink)
-	--local azeriteItemLocation = tooltip:GetItemLocation()
+
 	if C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItemByID(itemLink) then 
 
 	end
 
 	local locationID = itemEquipLocToSlot[select(9,GetItemInfo(itemLink))]
 	
-	local azeriteItemLocation = ItemLocation:CreateFromEquipmentSlot(locationID)
-	--local azeriteItemLocation = tooltip:GetItemLocation()
-	 
+	local azeriteItemLocation, hasLocation = AF.createItemLocation(itemLink)--location or ItemLocation:CreateFromEquipmentSlot(locationID)
 
-	local azeriteItemLocation = AF.createItemLocation(itemLink)--location or ItemLocation:CreateFromEquipmentSlot(locationID)
-local hasLocation = azeriteItemLocation:HasAnyLocation()
-	--if not azeriteItemLocation:HasAnyLocation() or not C_Item.DoesItemExist(azeriteItemLocation) or not C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItem(azeriteItemLocation) then return  end
-
---print(azeriteItemLocation:HasAnyLocation())
 	rankTotals = ""
 
 	if azeriteItemLocation then
@@ -1470,7 +1461,6 @@ local hasLocation = azeriteItemLocation:HasAnyLocation()
 	local fullText = ""
 	local maxRankTotal = 0
 	local totalSelected = 0
-
 
 	tooltip:AddLine("\n"..L["Available Azerite Powers:"])
 
@@ -1503,7 +1493,7 @@ local hasLocation = azeriteItemLocation:HasAnyLocation()
 				local textBreak = ""
 				local rank = AF.getTraitRanking(azeritePowerID, azeriteItemLocation, itemLink)
 				tierRankTotal = max(tierRankTotal, rank or 0)
-				local isSelected
+				local isSelected = false
 				local selectedText = ">>%s<<"
 
 				if empoweredLocation and hasLocation and azeritePowerID then

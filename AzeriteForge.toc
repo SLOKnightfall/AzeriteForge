@@ -1,4 +1,4 @@
-## Interface: 80000
+## Interface: 80100
 ## Notes: Azerite Trait Weights and other Azerite information
 ## Title: AzeriteForge v.@project-version@
 ## Author: SLOKnightfall

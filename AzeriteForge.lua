@@ -59,6 +59,8 @@ local ap = {}
 local ReforgeCost = {}
 local buttons = AF.Buttons
 local AzeriteTraitsName_to_ID ={}
+local AzeriteID_to_spellID ={}
+local AzeriteSpellName_to_spellID = {}
 local UnselectedPowers = AF.UnselectedPowers
 local AzeriteLocations = {["Head"] = ItemLocation:CreateFromEquipmentSlot(1),
 			["Shoulder"] = ItemLocation:CreateFromEquipmentSlot(3),
@@ -997,6 +999,8 @@ function AF:OnDisable()
 	wipe(ReforgeCost)
 	wipe(AF.Buttons)
 	wipe(AzeriteTraitsName_to_ID)
+	wipe(AzeriteSpellName_to_spellID)
+	wipe(AzeriteID_to_spellID)
 	wipe(UnselectedPowers)
 end
 
@@ -1245,7 +1249,10 @@ function AF:BuildAzeriteDataTables()
 			azeriteTraits[traitID]["icon"] = icon
 			azeriteTraits[traitID]["valid"] = true
 			azeriteTraits[traitID]["name"] = name
+			azeriteTraits[traitID]["spell_name"] = AzeriteForge.TraitData[traitID]["spellName"]
 			AzeriteTraitsName_to_ID[name] = traitID
+			AzeriteID_to_spellID[traitID] = AzeriteForge.TraitData[traitID]["spellId"]
+			AzeriteSpellName_to_spellID[AzeriteForge.TraitData[traitID]["spellName"]] = AzeriteForge.TraitData[traitID]["spellId"]
 		end
 	end
 
@@ -1328,9 +1335,11 @@ function AF.loadDefaultData(DB)
 	end
 
 	for name, data in pairs(AzeriteForge[DB][specID]) do
-		 if AzeriteTraitsName_to_ID[name] then
-			traitRanks[AzeriteTraitsName_to_ID[name]] = data
-		 end
+		for ID, trait_data in pairs(azeriteTraits) do
+			if trait_data.spell_name == name then 
+				traitRanks[ID] = data
+			end
+		end
 	end
 
 	return traitRanks

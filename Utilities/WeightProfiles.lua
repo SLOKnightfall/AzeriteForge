@@ -143,6 +143,7 @@ function Profiles.BuildWeightedProfileList()
 	end
 
 	for name, data in pairs(AF.db.global.userWeightLists) do
+		if type(name) == "string" then 
 		local profileSpecID = tonumber(AF.db.global.userWeightLists[name]["specID"]) or 0
 
 		if AzeriteForge.db.profile.showAllProfiles  or ( not AzeriteForge.db.profile.showAllProfiles and validSpec[profileSpecID])  then
@@ -179,8 +180,9 @@ function Profiles.BuildWeightedProfileList()
 			defaultList.name = fontColor..iconText..name
 
 
-			defaultList.args.profileHeader.name = name
+			defaultList.args.profileHeader.name = tostring(name)
 			AF.options.args.profiles.args[tablename] = defaultList
+			end
 		end
 	end
 end

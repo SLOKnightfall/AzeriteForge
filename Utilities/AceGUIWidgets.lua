@@ -63,7 +63,7 @@ do
 		description:SetTextColor(1, 1, 1, 1)
 		frame.description = text
 
-		local item = CreateFrame("Button", "AzeriteForgeItem"..num.."item" ,frame,"ItemButtonTemplate")
+		local item = CreateFrame("ItemButton", "AzeriteForgeItem"..num.."item" ,frame)
 		item:SetSize(35,35)
 		item:SetPoint("TOPLEFT", description, "BOTTOMLEFT", 0,-5)
 		item.icon:SetTexture(azeriteIcon)
@@ -330,7 +330,7 @@ do
 		name:SetJustifyH("LEFT")
 		frame.name = text
 
-		local power = CreateFrame("Button", "AzeriteForgeWeight"..num.."item" ,frame,"ItemButtonTemplate")
+		local power = CreateFrame("ItemButton", "AzeriteForgeWeight"..num.."item" ,frame)
 		power:SetSize(35,35)
 		power:SetPoint("TOPLEFT", name, "BOTTOMLEFT", 0,-5)
 		

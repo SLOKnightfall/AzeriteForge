@@ -935,10 +935,10 @@ function AF:OnEnable()
 
 	AF:SecureHookScript(GameTooltip,"OnTooltipSetItem")
 	AF:SecureHookScript(ItemRefTooltip,"OnTooltipSetItem")
-	AF:SecureHookScript(WorldMapTooltip,"OnTooltipSetItem")
+	--AF:SecureHookScript(WorldMapTooltip,"OnTooltipSetItem")
 
 	AF:SecureHook(GameTooltip, "SetHyperlink", "OnTooltipSetItem")
-	AF:SecureHook(WorldMapCompareTooltip1, "SetCompareItem", "OnTooltipSetItem")
+	--AF:SecureHook(WorldMapCompareTooltip1, "SetCompareItem", "OnTooltipSetItem")
 	AF:SecureHook(GameTooltip.shoppingTooltips[1], "SetCompareItem", "OnTooltipSetItem")
 	AF:SecureHook("EmbeddedItemTooltip_SetItemByQuestReward")
 

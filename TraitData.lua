@@ -7509,4 +7509,34 @@ AzeriteForge.TraitData = {
 		["tier"] =  3,
 		["classesId"] = {1,2,3,4,5,6,7,8,9,10,11,12,},
 	},
+	[568]={
+		["spellName"] = "Person-Computer Interface",
+		["spellId"] =  300168,
+		["tier"] =  3,
+		["classesId"] = {1,2,3,4,5,6,7,8,9,10,11,12,},
+	},
+	[569]={
+		["spellName"] = "Clockwork Heart",
+		["spellId"] =  300170,
+		["tier"] =  3,
+		["classesId"] = {1,2,3,4,5,6,7,8,9,10,11,12,},
+	},
+	[575]={
+		["spellName"] = "Undulating Tides",
+		["spellId"] =  303008,
+		["tier"] =  3,
+		["classesId"] = {1,2,3,4,5,6,7,8,9,10,11,12,},
+	},
+	[577]={
+		["spellName"] = "Arcane Heart",
+		["spellId"] =  303006,
+		["tier"] =  3,
+		["classesId"] = {1,2,3,4,5,6,7,8,9,10,11,12,},
+	},
+	[576]={
+		["spellName"] = "Loyal to the End",
+		["spellId"] =  303007,
+		["tier"] =  3,
+		["classesId"] = {1,2,3,4,5,6,7,8,9,10,11,12,},
+	},
 }
